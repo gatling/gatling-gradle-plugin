@@ -1,8 +1,7 @@
 plugins {
   id 'java-gradle-plugin'
-  id 'groovy'
   id 'com.gradle.plugin-publish' version '0.12.0'
-  id 'maven-publish'
+  id 'groovy'
 }
 
 sourceCompatibility = '1.8'
@@ -31,11 +30,10 @@ test {
 gradlePlugin {
   plugins {
     gatlingPlugin {
-      // id = 'io.gatling.gradle'
-      id = 'ua.eshepelyuk.gatling'
+      id = "io.gatling.gradle"
       implementationClass = 'io.gatling.gradle.GatlingPlugin'
-      displayName = 'Gatling plugin for Gradle'
-      description = 'Gatling plugin for Gradle'
+      displayName = "Gatling plugin for Gradle"
+      description = "Gatling plugin for Gradle"
     }
   }
 }
