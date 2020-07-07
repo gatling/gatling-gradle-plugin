@@ -1,7 +1,7 @@
 plugins {
   id 'java-gradle-plugin'
   id 'groovy'
-  id 'com.gradle.plugin-publish' version '0.11.0'
+  id 'com.gradle.plugin-publish' version '0.12.0'
   id 'maven-publish'
 }
 
@@ -31,8 +31,11 @@ test {
 gradlePlugin {
   plugins {
     gatlingPlugin {
-      id = 'io.gatling.gradle'
+      // id = 'io.gatling.gradle'
+      id = 'ua.eshepelyuk.gatling'
       implementationClass = 'io.gatling.gradle.GatlingPlugin'
+      displayName = 'Gatling plugin for Gradle'
+      description = 'Gatling plugin for Gradle'
     }
   }
 }
@@ -40,15 +43,7 @@ gradlePlugin {
 pluginBundle {
   website = 'https://github.com/gatling/gatling-gradle-plugin'
   vcsUrl = 'https://github.com/gatling/gatling-gradle-plugin'
-  description = 'Gatling Simulation Execution'
   tags = ['gatling', 'load test', 'stress test', 'performance test', 'scala']
-
-  plugins {
-    gatlingPlugin {
-      displayName = 'Gatling Simulation Execution'
-      id = 'io.gatling.gradle'
-    }
-  }
 }
 
 validatePlugins.failOnWarning = false
