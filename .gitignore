@@ -1,0 +1,16 @@
+/src/test/resources/gradle-layout/userHome
+/.idea
+/gradle-gatling-plugin.iml
+.gradle
+build/
+
+*.iml
+out
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+.DS_Store
