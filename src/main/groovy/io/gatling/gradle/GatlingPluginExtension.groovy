@@ -1,7 +1,5 @@
 package io.gatling.gradle
 
-import org.gradle.api.Project
-
 class GatlingPluginExtension implements JvmConfigurable {
 
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
@@ -27,10 +25,7 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     String logLevel = "WARN"
 
-    private final Project project
-
-    GatlingPluginExtension(Project project) {
-        this.project = project
+    GatlingPluginExtension() {
         this.jvmArgs = DEFAULT_JVM_ARGS
         this.systemProperties = DEFAULT_SYSTEM_PROPS
     }

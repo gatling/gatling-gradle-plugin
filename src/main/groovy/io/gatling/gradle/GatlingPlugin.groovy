@@ -15,34 +15,30 @@ class GatlingPlugin implements Plugin<Project> {
 
     static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
 
-    private Project project
-
     void apply(Project project) {
 
         if (VersionNumber.parse(GradleVersion.current().version).major < 4) {
             throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 4.0")
         }
 
-        this.project = project
-
         project.pluginManager.apply ScalaPlugin
 
-        GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension, project)
+        GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
 
-        createConfiguration(gatlingExt)
+        createConfiguration(project, gatlingExt)
 
-        createGatlingTask(GATLING_RUN_TASK_NAME, null)
+        createGatlingTask(project, GATLING_RUN_TASK_NAME, null)
 
         project.tasks.getByName("processGatlingResources").doLast(new LogbackConfigTaskAction())
 
         project.tasks.addRule("Pattern: $GATLING_RUN_TASK_NAME-<SimulationClass>: Executes single Gatling simulation.") { String taskName ->
             if (taskName.startsWith(GATLING_TASK_NAME_PREFIX)) {
-                createGatlingTask(taskName, (taskName - GATLING_TASK_NAME_PREFIX))
+                createGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))
             }
         }
     }
 
-    void createGatlingTask(String taskName, String simulationFQN = null) {
+    void createGatlingTask(Project project, String taskName, String simulationFQN = null) {
         def task = project.tasks.create(name: taskName,
             dependsOn: project.tasks.gatlingClasses, type: GatlingRunTask,
             description: "Execute Gatling simulation", group: "Gatling")
@@ -56,7 +52,7 @@ class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void createConfiguration(GatlingPluginExtension gatlingExt) {
+    void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
         project.sourceSets {
             gatling {
                 scala.srcDirs = [gatlingExt.SIMULATIONS_DIR]
