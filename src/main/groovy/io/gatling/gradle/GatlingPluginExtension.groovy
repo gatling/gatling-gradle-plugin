@@ -6,7 +6,7 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
-    static final String SIMULATIONS_DIR = "src/gatling/simulations"
+    static final String SIMULATIONS_DIR = "src/gatling/scala"
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 

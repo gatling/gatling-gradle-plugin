@@ -20,7 +20,7 @@ abstract class GatlingSpec extends Specification {
         if (fixtureDir) {
             copyDirectory(new File(this.class.getResource(fixtureDir).file), projectDir.root)
         }
-        srcDir = new File(projectDir.root, "src/gatling/simulations")
+        srcDir = new File(projectDir.root, "src/gatling/scala")
         buildDir = new File(projectDir.root, "build")
     }
 

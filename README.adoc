@@ -81,7 +81,7 @@ Following directories are configured by default.
 [options="header", cols="1,2"]
 |===
 |Directory                      |   Purpose
-|`src/gatling/simulations`      |   Simulation sources (Scala code)
+|`src/gatling/scala`            |   Simulation sources (Scala code)
 |`src/gatling/resources`        |   Resources (feeders, configuration, bodies, etc)
 |===
 
