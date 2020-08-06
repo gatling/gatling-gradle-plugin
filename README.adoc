@@ -125,15 +125,10 @@ The plugin defines the following extension properties in the `gatling` closure
 |List<String>
 |[source,groovy]
 ----
-['-server', '-Xmx1G',
-'-XX:+UseG1GC', '-XX:MaxGCPauseMillis=30',
-'-XX:G1HeapRegionSize=16m',
-'-XX:InitiatingHeapOccupancyPercent=75',
-'-XX:+ParallelRefProcEnabled',
-'-XX:+PerfDisableSharedMem',
-'-XX:+AggressiveOpts',
-'-XX:+OptimizeStringConcat',
-'-XX:+HeapDumpOnOutOfMemoryError']
+['-server', '-Xmx1G', '-XX:+HeapDumpOnOutOfMemoryError',
+'-XX:+UseG1GC', '-XX:+ParallelRefProcEnabled',
+'-XX:MaxInlineLevel=20', '-XX:MaxTrivialSize=12',
+'-XX:-UseBiasedLocking']
 ----
 |Additional arguments passed to JVM when executing `Gatling` simulations
 
@@ -141,8 +136,7 @@ The plugin defines the following extension properties in the `gatling` closure
 |Map<String, Object>
 |[source,groovy]
 ----
-['java.net.preferIPv4Stack': true,
-'java.net.preferIPv6Addresses': false]
+['java.net.preferIPv6Addresses': true]
 ----
 |Additional systems properties passed to JVM together with caller JVM system properties
 
