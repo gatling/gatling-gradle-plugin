@@ -337,22 +337,3 @@ dependencyManagement {
 ----
 This options ensures that `4.0.51.Final` will be used only for `gatling` configurations, leaving other dependencies unchanged.
 
-// == Release a new version
-//
-// . NodeJS and Npm must be installed.
-// . Create `GitHub` https://github.com/settings/tokens/new[access token]. Only `repo` scope is required.
-// . Install https://github.com/release-it/release-it[release-it]
-// +
-//   $ npm install -g release-it @release-it/conventional-changelog
-//
-// . Run
-// +
-// [source, bash]
-// ----
-// $ env GITHUB_TOKEN=${....} release-it --ci patch <1> <2>
-// ----
-// <1> paste token value from step *2*
-// <2> can be `patch`, `minor`, `major`
-//
-// . Release script will create and push tag to `GitHub`, create a release with a changelog in `GitHub` and publish plugin to `Gradle` plugin portal.
-

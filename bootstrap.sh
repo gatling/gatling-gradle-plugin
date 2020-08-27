@@ -5,15 +5,15 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
-DEST=$1
+DEST="$1"
 
-if [ -a $DEST ]; then
+if [ -a "$DEST" ]; then
     echo "$DEST already exists"
     exit 2
 fi
 
-mkdir -p $DEST/tmp
-cd $DEST/tmp
+mkdir -p "$DEST/tmp"
+cd "$DEST/tmp"
 
 git init -q
 git remote add origin https://github.com/gatling/gatling-gradle-plugin.git
