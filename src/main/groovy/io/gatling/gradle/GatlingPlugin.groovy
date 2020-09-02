@@ -29,8 +29,6 @@ class GatlingPlugin implements Plugin<Project> {
 
         createGatlingTask(project, GATLING_RUN_TASK_NAME, null)
 
-        project.tasks.getByName("processGatlingResources").doLast(new LogbackConfigTaskAction())
-
         project.tasks.addRule("Pattern: $GATLING_RUN_TASK_NAME-<SimulationClass>: Executes single Gatling simulation.") { String taskName ->
             if (taskName.startsWith(GATLING_TASK_NAME_PREFIX)) {
                 createGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))

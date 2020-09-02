@@ -2,9 +2,7 @@ package unit
 
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
-import io.gatling.gradle.LogbackConfigTaskAction
 import helper.GatlingUnitSpec
-import org.gradle.language.jvm.tasks.ProcessResources
 
 class GatlingPluginTest extends GatlingUnitSpec {
 
@@ -73,15 +71,6 @@ class GatlingPluginTest extends GatlingUnitSpec {
             it.simulations == null
             it.jvmArgs == null
             it.systemProperties == null
-        }
-    }
-
-    def "should create processGatlingResources task"() {
-        expect:
-        with(project.tasks.getByName("processGatlingResources")) {
-            it instanceof ProcessResources
-            it != null
-            it.actions.find { it.action instanceof LogbackConfigTaskAction } != null
         }
     }
 }
