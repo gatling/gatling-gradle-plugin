@@ -1,5 +1,6 @@
 package func
 
+import groovy.util.slurpersupport.GPathResult
 import helper.GatlingFuncSpec
 import org.gradle.testkit.runner.BuildResult
 
@@ -18,7 +19,17 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         logbackConfig = new File(buildDir, "resources/gatling/logback.xml".toString())
     }
 
-    def "should create sample logback using logLevel from extension"() {
+    private def rootLevel(GPathResult gpath) {
+        gpath.root.@level
+    }
+
+    private def httpLevel(GPathResult gpath) {
+        gpath.depthFirst().find { logger ->
+            logger.@name == 'io.gatling.http.engine.response'
+        }.@level
+    }
+
+    def "should create sample logback using extension logLevel"() {
         when:
         BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
         then:
@@ -26,10 +37,13 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        xml.parse(logbackConfig).root.@level == "WARN"
+        def gpath = xml.parse(logbackConfig)
+        rootLevel(gpath) == "WARN"
+        and:
+        httpLevel(gpath) == "WARN"
     }
 
-    def "should override logLevel via extension"() {
+    def "should set root logger level via logLevel extension"() {
         given:
         buildFile << 'gatling { logLevel = "QQQQ" }'
         when:
@@ -39,7 +53,58 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        xml.parse(logbackConfig).root.@level == "QQQQ"
+        def gpath = xml.parse(logbackConfig)
+        rootLevel(gpath) == "QQQQ"
+        and:
+        httpLevel(gpath) == "QQQQ"
+    }
+
+    def "should set HTTP logger level to the same as logLevel extension via logHttp extension when value is NONE"() {
+        given:
+        buildFile << 'gatling { logLevel = "QQQQ" \n logHttp = "NONE" }'
+        when:
+        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        then:
+        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        and:
+        logbackConfig.exists()
+        and:
+        def gpath = xml.parse(logbackConfig)
+        rootLevel(gpath) == "QQQQ"
+        and:
+        httpLevel(gpath) == "QQQQ"
+    }
+
+    def "should set HTTP logger level to TRACE via logHttp extension when value is ALL"() {
+        given:
+        buildFile << 'gatling { logHttp = "ALL" }'
+        when:
+        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        then:
+        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        and:
+        logbackConfig.exists()
+        and:
+        def gpath = xml.parse(logbackConfig)
+        rootLevel(gpath) == "WARN"
+        and:
+        httpLevel(gpath) == "TRACE"
+    }
+
+    def "should set HTTP logger level to DEBUG via logHttp extension when value is FAILURES"() {
+        given:
+        buildFile << 'gatling { logHttp = "FAILURES" }'
+        when:
+        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        then:
+        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        and:
+        logbackConfig.exists()
+        and:
+        def gpath = xml.parse(logbackConfig)
+        rootLevel(gpath) == "WARN"
+        and:
+        httpLevel(gpath) == "DEBUG"
     }
 
     def "should not create sample logback.xml when it exists"() {
