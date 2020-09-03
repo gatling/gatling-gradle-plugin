@@ -25,6 +25,8 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     String logLevel = "WARN"
 
+    LogHttp logHttp = LogHttp.NONE
+
     GatlingPluginExtension() {
         this.jvmArgs = DEFAULT_JVM_ARGS
         this.systemProperties = DEFAULT_SYSTEM_PROPS

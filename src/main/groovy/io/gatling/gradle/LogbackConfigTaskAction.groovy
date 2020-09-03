@@ -4,7 +4,9 @@ import org.gradle.api.Action
 import org.gradle.api.Task
 
 class LogbackConfigTaskAction implements Action<Task> {
-    static def template(String logLevel) {
+    static def template(String logLevel, LogHttp logHttp) {
+        def httpLogger = logHttp == LogHttp.NONE ? "" : """<logger name="io.gatling.http.engine.response" level="${logHttp.logLevel}" />"""
+
         """<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -13,6 +15,7 @@ class LogbackConfigTaskAction implements Action<Task> {
         </encoder>
         <immediateFlush>false</immediateFlush>
     </appender>
+    $httpLogger
     <root level="${logLevel}">
        <appender-ref ref="CONSOLE" />
     </root>
@@ -24,7 +27,7 @@ class LogbackConfigTaskAction implements Action<Task> {
         if (!gatlingRunTask.project.file("${GatlingPluginExtension.RESOURCES_DIR}/logback.xml").exists()) {
             new File(gatlingRunTask.project.buildDir, "resources/gatling/logback.xml").with {
                 parentFile.mkdirs()
-                text = template(gatlingExt.logLevel)
+                text = template(gatlingExt.logLevel, gatlingExt.logHttp)
             }
         }
     }
