@@ -80,8 +80,13 @@ class GatlingPluginTest extends GatlingUnitSpec {
         expect:
         with(project.tasks.getByName("processGatlingResources")) {
             it instanceof ProcessResources
-            it != null
-            it.actions.find { it.action instanceof LogbackConfigTaskAction } != null
+            it.actions.find { action ->
+                try {
+                    action.action instanceof LogbackConfigTaskAction
+                } catch (MissingPropertyException e) {
+                    false
+                }
+            } != null
         }
     }
 }
