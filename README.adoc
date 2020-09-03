@@ -23,12 +23,13 @@ toc::[]
 == Compatibility
 
 Plugin versioning scheme::
-Since version 3.0.0 the plugin strictly follows `Gatling` versioning, where the
-major and minor versions of the plugin are always identical to `Gatling` 's
+Since version 3.0.0 plugin strictly follows `Gatling` versioning scheme,
+where major and minor versions of the plugin are always identical to `Gatling` 's
 major and minor version.
 
-Gradle version::
-Minimal supported `Gradle` version is 4.0.
+Supported Gradle version::
+* Minimal version is 4.0.1
+* Maximum version is 6.6.1
 
 Scala version::
 `Gatling` uses Scala version 2.12 since version 3.0.0, so the plugin does.
@@ -40,48 +41,22 @@ details and original
 https://github.com/gatling/gatling/issues/3398[Gatling issue] explaining the
 scope of changes.
 
-== Quickstart
-
-[TIP]
-====
-For those who are familiar with `Gradle` and `Gatling`, and probably having few
-already developed simulations - the recommended way is to jump right to
-<<Installation>> section and follow configuration guide to create `build.gradle`,
-organize source code and run performance tests.
-====
-
-The plugin provides bootstrap script that creates sample project with:
-
- * minimal `build.gradle` leveraging
-   https://docs.gradle.org/current/userguide/gradle_wrapper.html[Gradle wrapper]
- * latest version of this plugin applied
- * proper source file layout
- * sample
-   https://gatling.io/docs/current/general/simulation_structure/[Simulation class],
-   demonstrating sufficient `Gatling` functionality
-
-For this quickstart: `git` must be installed and available in `$PATH`, and a JDK must be installed and `$JAVA_HOME` configured.
-
-.Clone the demo repository
-[source, bash]
-----
-$ git clone https://github.com/gatling/gatling-gradle-plugin-demo.git
-----
-
-.Navigate to new project folder and run all simulations
-[source, bash]
-----
-cd ./gatling-gradle-plugin-demo
-./gradlew gatlingRun
-----
-
 == Installation
 
- . Install https://gradle.org/install/[Gradle]
- . Create a new project directory, and a file name `build.gradle` within it
- . Follow
-   https://plugins.gradle.org/plugin/io.gatling.gradle[Gradle Plugin Portal]
-   instructions
+[IMPORTANT]
+====
+If you want to take a shortcut that skips all the configuration
+and jump right into writing and running `Gatling` simulations,
+you could check out
+https://github.com/gatling/gatling-gradle-plugin-demo[plugin demo repository]
+and use it as a starting point for creaing your `Gatling` project.
+====
+
+* Install https://gradle.org/install/[Gradle]
+* Create a new project directory, and a file name `build.gradle` within it
+* Follow
+  https://plugins.gradle.org/plugin/io.gatling.gradle[Gradle Plugin Portal]
+  instructions
 
 == Source files layout
 
