@@ -79,17 +79,9 @@ class GatlingPluginTest extends GatlingUnitSpec {
 
     def "should create processGatlingResources task"() {
         expect:
-<<<<<<< HEAD
         with(project.tasks.getByName("processGatlingResources")) { Task task ->
             task instanceof ProcessResources
             task.actions.any { it.hasProperty("action") && it.action instanceof LogbackConfigTaskAction }
-=======
-        with(project.tasks.getByName("processGatlingResources")) {
-            it instanceof ProcessResources
-            it.actions.find { action ->
-                action.action ? action.action instanceof LogbackConfigTaskAction : false
-            } != null
->>>>>>> 4f998f7... tentative to fix test
         }
     }
 }
