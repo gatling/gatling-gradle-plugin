@@ -2,6 +2,7 @@ package func
 
 import groovy.util.slurpersupport.GPathResult
 import helper.GatlingFuncSpec
+import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
@@ -103,5 +104,31 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         logbackConfig.exists()
         and:
         xml.parse(logbackConfig).@attr == "value"
+    }
+
+    def "should generate file even though resources dir is empty"() {
+        given: "the resources directory is empty"
+        if (FileUtils.cleanDirectory(new File(projectDir.root, "src/gatling/resources"))) {
+            throw new Exception("Couldn't clean resources directory")
+        }
+        when:
+        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        then:
+        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        and:
+        logbackConfig.exists()
+    }
+
+    def "should generate file even though resources dir is missing"() {
+        given: "the resources directory is missing"
+        if (!new File(projectDir.root, "src/gatling/resources").deleteDir()) {
+            throw new Exception("Couldn't delete resources directory")
+        }
+        when:
+        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        then:
+        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        and:
+        logbackConfig.exists()
     }
 }
