@@ -37,10 +37,7 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        def gpath = xml.parse(logbackConfig)
-        rootLevel(gpath) == "WARN"
-        and:
-        httpLevel(gpath) == "WARN"
+        rootLevel(xml.parse(logbackConfig)) == "WARN"
     }
 
     def "should set root logger level via logLevel extension"() {
@@ -53,15 +50,12 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        def gpath = xml.parse(logbackConfig)
-        rootLevel(gpath) == "QQQQ"
-        and:
-        httpLevel(gpath) == "QQQQ"
+        rootLevel(xml.parse(logbackConfig)) == "QQQQ"
     }
 
-    def "should set HTTP logger level to the same as logLevel extension via logHttp extension when value is NONE"() {
+    def "should not set HTTP logger level via logHttp extension when value is NONE"() {
         given:
-        buildFile << 'gatling { logLevel = "QQQQ" \n logHttp = "NONE" }'
+        buildFile << 'gatling { logHttp = "NONE" }'
         when:
         BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
         then:
@@ -69,10 +63,7 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        def gpath = xml.parse(logbackConfig)
-        rootLevel(gpath) == "QQQQ"
-        and:
-        httpLevel(gpath) == "QQQQ"
+        xml.parse(logbackConfig).logger.findAll().isEmpty()
     }
 
     def "should set HTTP logger level to TRACE via logHttp extension when value is ALL"() {
@@ -85,10 +76,7 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        def gpath = xml.parse(logbackConfig)
-        rootLevel(gpath) == "WARN"
-        and:
-        httpLevel(gpath) == "TRACE"
+        httpLevel(xml.parse(logbackConfig)) == "TRACE"
     }
 
     def "should set HTTP logger level to DEBUG via logHttp extension when value is FAILURES"() {
@@ -101,10 +89,7 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         and:
         logbackConfig.exists()
         and:
-        def gpath = xml.parse(logbackConfig)
-        rootLevel(gpath) == "WARN"
-        and:
-        httpLevel(gpath) == "DEBUG"
+        httpLevel(xml.parse(logbackConfig)) == "DEBUG"
     }
 
     def "should not create sample logback.xml when it exists"() {
