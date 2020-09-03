@@ -4,6 +4,7 @@ import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
 import io.gatling.gradle.LogbackConfigTaskAction
 import helper.GatlingUnitSpec
+import org.gradle.api.Task
 import org.gradle.language.jvm.tasks.ProcessResources
 
 class GatlingPluginTest extends GatlingUnitSpec {
@@ -78,15 +79,9 @@ class GatlingPluginTest extends GatlingUnitSpec {
 
     def "should create processGatlingResources task"() {
         expect:
-        with(project.tasks.getByName("processGatlingResources")) {
-            it instanceof ProcessResources
-            it.actions.find { action ->
-                try {
-                    action.action instanceof LogbackConfigTaskAction
-                } catch (MissingPropertyException e) {
-                    false
-                }
-            } != null
+        with(project.tasks.getByName("processGatlingResources")) { Task task ->
+            task instanceof ProcessResources
+            task.actions.any { it.hasProperty("action") && it.action instanceof LogbackConfigTaskAction }
         }
     }
 }
