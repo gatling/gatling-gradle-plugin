@@ -2,6 +2,12 @@ name: 'test-only'
 
 on:
   push:
+    paths-ignore:
+      - README.adoc
+      - .gitignore
+      - .editorconfig
+      - LICENSE.txt
+      - LICENSE
     branches:
       - master
   pull_request:
