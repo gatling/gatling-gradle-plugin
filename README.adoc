@@ -49,7 +49,7 @@ If you want to take a shortcut that skips all the configuration
 and jump right into writing and running `Gatling` simulations,
 you could check out
 https://github.com/gatling/gatling-gradle-plugin-demo[plugin demo repository]
-and use it as a starting point for creaing your `Gatling` project.
+and use it as a starting point for creating your `Gatling` project.
 ====
 
 * Install https://gradle.org/install/[Gradle]
