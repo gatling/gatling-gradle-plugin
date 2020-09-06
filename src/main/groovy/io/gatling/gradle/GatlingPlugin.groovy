@@ -11,6 +11,8 @@ class GatlingPlugin implements Plugin<Project> {
 
     public static def GATLING_EXTENSION_NAME = 'gatling'
 
+    public static def GATLING_LOGBACK_TASK_NAME = 'gatlingLogback'
+
     public static def GATLING_RUN_TASK_NAME = 'gatlingRun'
 
     static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
@@ -27,9 +29,11 @@ class GatlingPlugin implements Plugin<Project> {
 
         createConfiguration(project, gatlingExt)
 
-        createGatlingTask(project, GATLING_RUN_TASK_NAME, null)
+        project.tasks.create(name: GATLING_LOGBACK_TASK_NAME,
+            dependsOn: project.tasks.gatlingClasses, type: LogbackConfigTask,
+            description: "Prepare logback config", group: "Gatling")
 
-        project.tasks.getByName("processGatlingResources").doLast(new LogbackConfigTaskAction())
+        createGatlingTask(project, GATLING_RUN_TASK_NAME, null)
 
         project.tasks.addRule("Pattern: $GATLING_RUN_TASK_NAME-<SimulationClass>: Executes single Gatling simulation.") { String taskName ->
             if (taskName.startsWith(GATLING_TASK_NAME_PREFIX)) {
@@ -40,8 +44,8 @@ class GatlingPlugin implements Plugin<Project> {
 
     void createGatlingTask(Project project, String taskName, String simulationFQN = null) {
         def task = project.tasks.create(name: taskName,
-            dependsOn: project.tasks.gatlingClasses, type: GatlingRunTask,
-            description: "Execute Gatling simulation", group: "Gatling")
+            dependsOn: [project.tasks.gatlingClasses, project.tasks.gatlingLogback],
+            type: GatlingRunTask, description: "Execute Gatling simulation", group: "Gatling")
 
         if (simulationFQN) {
             task.configure {

@@ -1,6 +1,7 @@
 package func
 
 import helper.GatlingFuncSpec
+import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
@@ -102,5 +103,37 @@ case class MyClz(str: String) // some fake code to change source file
         then:
         result.task(":compileGatlingScala").outcome == SUCCESS
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
+    }
+
+    def "should create and use logback config when resources are missing"() {
+        setup:
+        prepareTest()
+        and: "remove resources"
+        FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
+        when: 'run single simulation'
+        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        then:
+        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        and:
+        new File(buildDir, "resources/gatling/logback.xml").exists()
+        and: "logs doesn't contain INFO"
+        !result.output.split().any { it.contains("INFO") }
+    }
+
+    def "should create and use logback config configured by extension when resources are missing"() {
+        setup:
+        prepareTest()
+        and: "remove resources"
+        FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
+        and: "configure custom log level"
+        buildFile << "gatling { logLevel = 'INFO' }"
+        when: 'run single simulation'
+        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        then:
+        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        and:
+        new File(buildDir, "resources/gatling/logback.xml").exists()
+        and: "logs contain INFO"
+        result.output.split().any { it.contains("INFO") }
     }
 }

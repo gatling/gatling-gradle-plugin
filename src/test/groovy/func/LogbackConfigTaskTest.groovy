@@ -2,13 +2,14 @@ package func
 
 import groovy.util.slurpersupport.GPathResult
 import helper.GatlingFuncSpec
+import io.gatling.gradle.GatlingPluginExtension
 import org.gradle.testkit.runner.BuildResult
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class LogbackConfigTaskActionTest extends GatlingFuncSpec {
+class LogbackConfigTaskTest extends GatlingFuncSpec {
 
-    static def PROCESS_GATLING_RESOURCES_TASK_NAME = "processGatlingResources"
+    static def LOGBACK_TASK = "gatlingLogback"
 
     File logbackConfig
 
@@ -29,24 +30,24 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         }.@level
     }
 
-    def "should create sample logback using extension logLevel"() {
+    def "should create sample logback using default logLevel"() {
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
-        rootLevel(xml.parse(logbackConfig)) == "WARN"
+        rootLevel(xml.parse(logbackConfig)) == GatlingPluginExtension.DEFAULT_LOG_LEVEL
     }
 
     def "should set root logger level via logLevel extension"() {
         given:
         buildFile << 'gatling { logLevel = "QQQQ" }'
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
@@ -57,9 +58,9 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         given:
         buildFile << 'gatling { logHttp = "NONE" }'
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
@@ -70,9 +71,9 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         given:
         buildFile << 'gatling { logHttp = "ALL" }'
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
@@ -83,9 +84,9 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
         given:
         buildFile << 'gatling { logHttp = "FAILURES" }'
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
@@ -93,15 +94,16 @@ class LogbackConfigTaskActionTest extends GatlingFuncSpec {
     }
 
     def "should not create sample logback.xml when it exists"() {
-        given: ""
-        new File(projectDir.root, "src/gatling/resources/logback.xml") << """<fakeLogback attr="value"/>"""
+        given:
+        def logbackContent = """<fakeLogback attr="value"/>"""
+        new File(projectDir.root, "src/gatling/resources/logback.xml") << logbackContent
         when:
-        BuildResult result = executeGradle(PROCESS_GATLING_RESOURCES_TASK_NAME)
+        BuildResult result = executeGradle(LOGBACK_TASK)
         then:
-        result.task(":$PROCESS_GATLING_RESOURCES_TASK_NAME").outcome == SUCCESS
+        result.task(":$LOGBACK_TASK").outcome == SUCCESS
         and:
         logbackConfig.exists()
         and:
-        xml.parse(logbackConfig).@attr == "value"
+        logbackConfig.text == logbackContent
     }
 }
