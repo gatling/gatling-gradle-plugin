@@ -1,13 +1,12 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 
 class LogbackConfigTask extends DefaultTask {
 
     static def template(GatlingPluginExtension gatlingExt) {
-        def httpLogger = gatlingExt.logHttp == LogHttp.NONE ? "" : "<logger name=\"io.gatling.http.engine.response\" level=\"${gatlingExt.logHttp.logLevel}\"/>"
-
         """<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -16,20 +15,29 @@ class LogbackConfigTask extends DefaultTask {
         </encoder>
         <immediateFlush>false</immediateFlush>
     </appender>
-    $httpLogger
+    ${gatlingExt.logHttp == LogHttp.NONE ? '' : """<logger name="io.gatling.http.engine.response" level="${gatlingExt.logHttp.logLevel}"/>"""}
     <root level="${gatlingExt.logLevel}">
        <appender-ref ref="CONSOLE" />
     </root>
 </configuration>"""
     }
 
+    Iterable<File> getLogbackConfigs() {
+        SourceSet gatlingSourceSet = project.sourceSets.gatling
+        gatlingSourceSet.resources.matching {
+            include 'logback-test.xml'
+            include 'logback.xml'
+            include 'logback.groovy'
+        }.files
+    }
+
     @TaskAction
     void generateLogbackConfig() {
-        def gatlingExt = this.project.extensions.getByType(GatlingPluginExtension)
-        if (!this.project.file("${GatlingPluginExtension.RESOURCES_DIR}/logback.xml").exists()) {
-            new File(this.project.buildDir, "resources/gatling/logback.xml").with {
+        def files = getLogbackConfigs()
+        if (files.isEmpty()) {
+            new File(project.buildDir, "resources/gatling/logback.xml").with {
                 parentFile.mkdirs()
-                text = template(gatlingExt)
+                text = template(project.extensions.getByType(GatlingPluginExtension))
             }
         }
     }

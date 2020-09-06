@@ -1,10 +1,12 @@
 package func
 
 import helper.GatlingFuncSpec
+import io.gatling.gradle.LogHttp
 import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
+import static java.lang.System.lineSeparator
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
@@ -105,35 +107,78 @@ case class MyClz(str: String) // some fake code to change source file
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
     }
 
-    def "should create and use logback config when resources are missing"() {
+    def "should use generated logback config when there is no resources"() {
         setup:
         prepareTest()
-        and: "remove resources"
+        and: "remove resources folder"
         FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
         when: 'run single simulation'
         BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
         then:
         result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
-        and:
+        and: "logback config created"
         new File(buildDir, "resources/gatling/logback.xml").exists()
-        and: "logs doesn't contain INFO"
-        !result.output.split().any { it.contains("INFO") }
+        and: "no INFO DEBUG TRACE logs"
+        result.output.split(lineSeparator()).each { !it.contains("[INFO ]") && !it.contains("[DEBUG]") && it.contains("[TRACE]") }
     }
 
-    def "should create and use logback config configured by extension when resources are missing"() {
+    def "should use extension for generated logback config when there is no resources"() {
         setup:
         prepareTest()
-        and: "remove resources"
+        and: "remove resources folder"
         FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
         and: "configure custom log level"
-        buildFile << "gatling { logLevel = 'INFO' }"
+        buildFile << """
+gatling {
+    logLevel = 'INFO'
+    logHttp = 'ALL'
+}"""
         when: 'run single simulation'
         BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
         then:
         result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
-        and:
+        and: "logback config created"
         new File(buildDir, "resources/gatling/logback.xml").exists()
-        and: "logs contain INFO"
-        result.output.split().any { it.contains("INFO") }
+        and:
+        with(result.output.split(lineSeparator())) { lines ->
+            lines.findAll { it.contains("[TRACE]") }.every { it.contains("i.g.h.e.r.DefaultStatsProcessor") }
+            lines.findAll { it.contains("[INFO ]") }.any { it.contains("i.g.") }
+        }
+    }
+
+    def "should ignore logging settings from extension, if logback config exists in resources"() {
+        setup:
+        prepareTest()
+        and: "put some config to gatling closure"
+        buildFile << """
+gatling {
+    logLevel = 'INFO'
+    logHttp = 'ALL'
+}"""
+        and: "create logback-test.xml"
+        new File(projectDir.root, "src/gatling/resources/logback-test.xml") << """<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>@@@@ %level %logger]</pattern>
+        </encoder>
+        <immediateFlush>false</immediateFlush>
+    </appender>
+    <logger name="io.gatling" level="INFO"/>
+    <root level="ERROR">
+       <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>"""
+
+        when: 'run single simulation'
+        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        then:
+        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        and: "no logback config created"
+        !new File(buildDir, "resources/gatling/logback.xml").exists()
+        and:
+        with(result.output.split(lineSeparator()).findAll { it.startsWith("@@@@") }) { lines ->
+            lines.every { it.contains("INFO") && it.contains("io.gatling") }
+        }
     }
 }
