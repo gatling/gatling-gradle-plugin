@@ -115,6 +115,15 @@ The plugin defines the following extension properties in the `gatling` closure:
 | `'WARN'`
 | The default Gatling console log level if no `logback.xml` present in the configuration folder
 
+
+| `logHttp`
+| one of `'NONE'`, `'ALL'`, `'FAILURES'`
+| `'NONE'`
+| Verbosity of logging HTTP requests performed by Gatling,
+`NONE` - do not log,
+`ALL` - log all requests,
+`FAILURES` - only failed requests
+
 | `includeMainOutput`
 | Boolean
 | `true`
@@ -314,7 +323,7 @@ for details.
 
 === Default tasks
 
-[options="header"]
+[cols="1,1,2", options="header"]
 |===
 | Task name
 | Type
@@ -332,7 +341,6 @@ for details.
 | GatlingRunTask
 | Executes single `Gatling` simulation, +
 _SimulationFQN_ should be replaced by fully qualified simulation class name.
-
 |===
 
 .Run all simulations
