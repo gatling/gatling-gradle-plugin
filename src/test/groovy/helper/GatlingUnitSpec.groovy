@@ -12,8 +12,6 @@ abstract class GatlingUnitSpec extends GatlingSpec {
 
     GatlingPluginExtension gatlingExt
 
-    GatlingRunTask gatlingRunTask
-
     def setup() {
         createBuildFolder("/gradle-layout")
 
@@ -21,7 +19,6 @@ abstract class GatlingUnitSpec extends GatlingSpec {
         project.pluginManager.apply 'io.gatling.gradle'
 
         gatlingExt = project.extensions.getByType(GatlingPluginExtension)
-        gatlingRunTask = project.tasks.getByName(GATLING_RUN_TASK_NAME) as GatlingRunTask
     }
 
 }

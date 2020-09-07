@@ -2,10 +2,13 @@ package unit
 
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
-import io.gatling.gradle.LogbackConfigTaskAction
+import io.gatling.gradle.LogbackConfigTask
 import helper.GatlingUnitSpec
 import org.gradle.api.Task
 import org.gradle.language.jvm.tasks.ProcessResources
+
+import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
+import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 
 class GatlingPluginTest extends GatlingUnitSpec {
 
@@ -67,21 +70,31 @@ class GatlingPluginTest extends GatlingUnitSpec {
         }
     }
 
+    def "should create gatlingLogback task"() {
+        expect:
+        with(project.tasks.getByName(GATLING_LOGBACK_TASK_NAME)) {
+            it instanceof LogbackConfigTask
+            it.dependsOn.size() == 1
+            it.dependsOn.first().name == "gatlingClasses"
+        }
+    }
+
     def "should create gatlingRun task"() {
         expect:
-        with(gatlingRunTask) {
+        with(project.tasks.getByName(GATLING_RUN_TASK_NAME)) {
             it instanceof GatlingRunTask
             it.simulations == null
             it.jvmArgs == null
             it.systemProperties == null
+            it.dependsOn.size() == 1 && it.dependsOn.first() instanceof Collection
+            it.dependsOn.first()*.name.sort() == ["gatlingClasses", "gatlingLogback"]
         }
     }
 
     def "should create processGatlingResources task"() {
         expect:
-        with(project.tasks.getByName("processGatlingResources")) { Task task ->
-            task instanceof ProcessResources
-            task.actions.any { it.hasProperty("action") && it.action instanceof LogbackConfigTaskAction }
+        with(project.tasks.getByName("processGatlingResources")) {
+            it instanceof ProcessResources
         }
     }
 }

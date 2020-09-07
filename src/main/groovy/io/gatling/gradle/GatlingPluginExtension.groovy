@@ -14,6 +14,8 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.scala") }
 
+    static final String DEFAULT_LOG_LEVEL = "WARN"
+
     def toolVersion = GATLING_TOOL_VERSION
 
     def scalaVersion = SCALA_VERSION
@@ -23,7 +25,7 @@ class GatlingPluginExtension implements JvmConfigurable {
     Boolean includeMainOutput = true
     Boolean includeTestOutput = true
 
-    String logLevel = "WARN"
+    String logLevel = DEFAULT_LOG_LEVEL
 
     LogHttp logHttp = LogHttp.NONE
 
