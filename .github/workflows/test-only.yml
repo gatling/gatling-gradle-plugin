@@ -11,6 +11,12 @@ on:
     branches:
       - master
   pull_request:
+    paths-ignore:
+      - README.adoc
+      - .gitignore
+      - .editorconfig
+      - LICENSE.txt
+      - LICENSE
 
 jobs:
   build:
