@@ -415,7 +415,7 @@ configurations, leaving other dependencies unchanged.
 
 This plugin was made possible thanks to the work of:
 
- * https://github.com/eshepelyuk[Ievgenii Shepeliuk],
+ * https://github.com/eshepelyuk[Ievgenii Shepeliuk]
  * https://github.com/lkishalmi[Laszlo Kishalmi]
 
 and the community.
