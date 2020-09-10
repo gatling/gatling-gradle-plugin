@@ -15,7 +15,7 @@ endif::[]
 image:https://gatling.io/wp-content/uploads/2017/02/Gatling-logo.png[Gatling^, link="https://gatling.io/open-source", window="_blank"]
 
 image:https://img.shields.io/github/workflow/status/gatling/gatling-gradle-plugin/test-only/master?logo=github&style=for-the-badge[GitHub Workflow Status (master), window="_blank", link="https://github.com/gatling/gatling-gradle-plugin/actions?query=branch%3Amaster"]
-image:https://img.shields.io/github/license/gatling/gatling-gradle-plugin?style=for-the-badge[GitHub, window="_blank", link="https://opensource.org/licenses/Apache-2.0"]
+image:https://img.shields.io/github/license/gatling/gatling-gradle-plugin?logo=apache&style=for-the-badge[GitHub, window="_blank", link="https://opensource.org/licenses/Apache-2.0"]
 image:https://img.shields.io/badge/Google%20Group-Gatling-blue?style=for-the-badge&logo=google[Gatling User Group, window="_blank", link="https://groups.google.com/forum/#!forum/gatling"]
 
 toc::[]
