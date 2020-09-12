@@ -5,6 +5,7 @@ import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.LogHttp
 import io.gatling.gradle.LogbackConfigTask
+import org.apache.commons.io.FileUtils
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
@@ -126,5 +127,23 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
         logbackConfig.exists()
         where:
         logbackFile << ["logback.xml", "logback-test.xml", "logback.groovy"]
+    }
+
+    def "should create logback.xml when resources directory is empty"() {
+        given:
+        FileUtils.cleanDirectory(new File(projectDir.root, "src/gatling/resources"))
+        when:
+        theTask.generateLogbackConfig()
+        then:
+        logbackConfig.exists()
+    }
+
+    def "should create logback.xml when resources directory is missing"() {
+        given:
+        FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
+        when:
+        theTask.generateLogbackConfig()
+        then:
+        logbackConfig.exists()
     }
 }
