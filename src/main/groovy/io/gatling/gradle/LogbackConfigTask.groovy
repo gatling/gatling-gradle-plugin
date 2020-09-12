@@ -1,10 +1,19 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.Project
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
 
 class LogbackConfigTask extends DefaultTask {
+
+    public static File logbackFile(File buildDir) {
+        new File(buildDir, "generated/gatlingLogback/logback.xml")
+    }
+
+    @OutputFile
+    File logbackFile = logbackFile(this.project.buildDir)
 
     static def template(GatlingPluginExtension gatlingExt) {
         """<?xml version="1.0" encoding="UTF-8"?>
@@ -35,10 +44,12 @@ class LogbackConfigTask extends DefaultTask {
     void generateLogbackConfig() {
         def files = getLogbackConfigs()
         if (files.isEmpty()) {
-            new File(project.buildDir, "resources/gatling/logback.xml").with {
+            logbackFile.with {
                 parentFile.mkdirs()
                 text = template(project.extensions.getByType(GatlingPluginExtension))
             }
+        } else if (logbackFile.exists()) {
+            logbackFile.delete()
         }
     }
 }
