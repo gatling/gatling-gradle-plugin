@@ -26,7 +26,6 @@ class GatlingPluginTest extends GatlingUnitSpec {
             it.simulations == DEFAULT_SIMULATIONS
             it.jvmArgs == DEFAULT_JVM_ARGS
             it.systemProperties == DEFAULT_SYSTEM_PROPS
-            it.logLevel == "WARN"
         }
     }
 
