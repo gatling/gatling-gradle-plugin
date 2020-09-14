@@ -7,10 +7,7 @@ import io.gatling.gradle.LogHttp
 import io.gatling.gradle.LogbackConfigTask
 import org.apache.commons.io.FileUtils
 import org.gradle.api.logging.Logger
-import org.junit.Rule
-import org.junit.contrib.java.lang.system.SystemOutRule
 import spock.lang.Unroll
-import spock.util.concurrent.PollingConditions
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
 
@@ -160,7 +157,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
         when:
         theTask.generateLogbackConfig()
         then:
-        1 * theTask.logger.warn( { it.endsWith("will override logLevel and logHttp from gatling configuration in build.gradle.") } )
+        1 * theTask.logger.warn({ it.endsWith("will override logLevel and logHttp from gatling configuration in build.gradle.") })
     }
 
     def "should log WARN message if has logback config and logHttp"() {
@@ -171,7 +168,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
         when:
         theTask.generateLogbackConfig()
         then:
-        1 * theTask.logger.warn( { it.endsWith("will override logLevel and logHttp from gatling configuration in build.gradle.") } )
+        1 * theTask.logger.warn({ it.endsWith("will override logLevel and logHttp from gatling configuration in build.gradle.") })
     }
 
     def "should not log WARN message if has logback config but no explcit gatling closure"() {
