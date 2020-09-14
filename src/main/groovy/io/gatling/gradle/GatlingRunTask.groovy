@@ -60,6 +60,11 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
                 exec.systemProperties System.properties
                 exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
 
+                def logbackFile = LogbackConfigTask.logbackFile(project.buildDir)
+                if (logbackFile.exists()) {
+                    exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
+                }
+
                 exec.args this.createGatlingArgs()
                 exec.args "-s", simulationClzName
 

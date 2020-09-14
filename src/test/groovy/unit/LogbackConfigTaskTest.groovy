@@ -30,7 +30,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
 
     def setup() {
         theTask = project.tasks.getByName(GATLING_LOGBACK_TASK_NAME) as LogbackConfigTask
-        logbackConfig = new File(buildDir, "resources/gatling/logback.xml".toString())
+        logbackConfig = LogbackConfigTask.logbackFile(this.project.buildDir)
     }
 
     def "should create sample logback using default logLevel"() {
