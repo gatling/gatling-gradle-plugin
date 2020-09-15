@@ -1,10 +1,12 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.Project
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
+
+import static io.gatling.gradle.GatlingPluginExtension.DEFAULT_LOG_HTTP
+import static io.gatling.gradle.GatlingPluginExtension.DEFAULT_LOG_LEVEL
 
 class LogbackConfigTask extends DefaultTask {
 
@@ -43,13 +45,26 @@ class LogbackConfigTask extends DefaultTask {
     @TaskAction
     void generateLogbackConfig() {
         def files = getLogbackConfigs()
+        def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
+
         if (files.isEmpty()) {
             logbackFile.with {
                 parentFile.mkdirs()
-                text = template(project.extensions.getByType(GatlingPluginExtension))
+                if (!gatlingExt.logLevel) {
+                    gatlingExt.logLevel = DEFAULT_LOG_LEVEL
+                }
+                if (!gatlingExt.logHttp) {
+                    gatlingExt.logHttp = DEFAULT_LOG_HTTP
+                }
+                text = template(gatlingExt)
             }
-        } else if (logbackFile.exists()) {
-            logbackFile.delete()
+        } else {
+            if (logbackFile.exists()) {
+                logbackFile.delete()
+            }
+            if (gatlingExt.logLevel || gatlingExt.logHttp) {
+                logger.warn("Existing ${files.first().name} will override logLevel and logHttp from gatling configuration in build.gradle.")
+            }
         }
     }
 }
