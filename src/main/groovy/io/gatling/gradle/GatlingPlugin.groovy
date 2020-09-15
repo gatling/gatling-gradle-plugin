@@ -3,6 +3,7 @@ package io.gatling.gradle
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.util.GradleVersion
 import org.gradle.util.VersionNumber
@@ -80,12 +81,52 @@ class GatlingPlugin implements Plugin<Project> {
                 gatling "io.gatling.highcharts:gatling-charts-highcharts:${p.extensions.getByType(GatlingPluginExtension).toolVersion}"
 
                 if (gatlingExt.includeMainOutput) {
-                    gatlingImplementation project.sourceSets.main.output
+                    gatlingImplementation p.sourceSets.main.output
                 }
                 if (gatlingExt.includeTestOutput) {
-                    gatlingImplementation project.sourceSets.test.output
+                    gatlingImplementation p.sourceSets.test.output
                 }
             }
+
+            if (shouldAddMavenCentral(p)) {
+                p.repositories {
+                    mavenCentral(name: "gatlingMavenCentral")
+                }
+            }
+        }
+    }
+
+    private static boolean shouldAddMavenCentral(Project project) {
+
+        if (!project.repositories.isEmpty()) {
+// repo adding should be attempted only of there's no explicitly declared repositories in build.gradle
+            def resolutionRes = project.configurations.gatling.copyRecursive().incoming.resolutionResult
+            def deps = resolutionRes.allDependencies
+
+            if (deps.any { it instanceof UnresolvedDependencyResult }) {
+// new maven repo should be added only if some dependencies from gatling configuration were not resolved using declared repositories
+
+                if (deps.size() > 1) {
+/*
+some dependencies from gatling configuration were resolved and some were not
+it means that declared repositories either has content filter with gatling exclusion or only contains some of gatling dependencies
+resolution is - add new mavenCentral() that will resolve all from gatling and its transitive dependencies
+ */
+                    return true
+                } else if (deps.size() == 1 && project.repositories.every { it.url.toString() != "https://repo.maven.apache.org/maven2/" }) {
+/*
+none of dependencies from gatling configuration were resolved
+it could mean
+- incorrect gatling version used
+- maven repo is inaccessible (incorrect URL, temporary network issue or corporate policy)
+so, we should add mavenCentral() only if there's no already declared mavenCentral()
+ */
+                    return true
+                }
+            }
+            return false
+        } else {
+            return true
         }
     }
 }

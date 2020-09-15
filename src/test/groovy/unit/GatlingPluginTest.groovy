@@ -1,10 +1,10 @@
 package unit
 
+import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
 import io.gatling.gradle.LogbackConfigTask
-import helper.GatlingUnitSpec
-import org.gradle.api.Task
+import org.gradle.api.artifacts.repositories.MavenArtifactRepository
 import org.gradle.language.jvm.tasks.ProcessResources
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
@@ -94,6 +94,82 @@ class GatlingPluginTest extends GatlingUnitSpec {
         expect:
         with(project.tasks.getByName("processGatlingResources")) {
             it instanceof ProcessResources
+        }
+    }
+
+    def "should add mavenCentral if no repositories declared"() {
+        when:
+        project.evaluate()
+        then:
+        project.repositories.size() == 1
+        with(project.repositories.first()) {
+            it instanceof MavenArtifactRepository
+            it.name == "gatlingMavenCentral"
+            it.url.toString() == "https://repo.maven.apache.org/maven2/"
+        }
+    }
+
+    def "should add mavenCentral if repo with gatling not declared"() {
+        given: "maven repo without gatling"
+        project.repositories {
+            maven {
+                url "https://packages.confluent.io/maven/"
+            }
+        }
+        when:
+        project.evaluate()
+        then:
+        project.repositories.size() == 2
+        project.repositories.any {
+            it instanceof MavenArtifactRepository && it.url.toString() == "https://repo.maven.apache.org/maven2/" && it.name == "gatlingMavenCentral"
+        }
+    }
+
+    def "should not add mavenCentral if repo with gatling declared"() {
+        given: "maven repo with gatling"
+        project.repositories {
+            jcenter()
+        }
+        when:
+        project.evaluate()
+        then:
+        project.repositories.size() == 1
+        with(project.repositories.first()) {
+            it instanceof MavenArtifactRepository
+            it.url.toString() == "https://jcenter.bintray.com/"
+        }
+    }
+
+    def "should not add mavenCentral if already declared but gatling not resolved because of user error"() {
+        given: "maven central declared"
+        project.repositories {
+            mavenCentral(name: "myMaven")
+        }
+        and: "incorrect gatling config"
+        project.gatling {
+            toolVersion = "000.000.000"
+        }
+        when:
+        project.evaluate()
+        then:
+        project.repositories.size() == 1
+        project.repositories.first().name == "myMaven"
+    }
+
+    def "should add 2nd mavenCentral if 1st one has content filtering preventing gatling resolution"() {
+        given: "maven central with gatling exclusion"
+        project.repositories {
+            mavenCentral {
+                name = "myMaven"
+                content { excludeGroup "io.gatling" }
+            }
+        }
+        when:
+        project.evaluate()
+        then:
+        project.repositories.size() == 2
+        project.repositories.any {
+            it instanceof MavenArtifactRepository && it.url.toString() == "https://repo.maven.apache.org/maven2/" && it.name == "gatlingMavenCentral"
         }
     }
 }

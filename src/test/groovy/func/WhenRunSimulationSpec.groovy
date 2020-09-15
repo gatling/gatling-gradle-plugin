@@ -1,7 +1,6 @@
 package func
 
 import helper.GatlingFuncSpec
-import io.gatling.gradle.LogHttp
 import io.gatling.gradle.LogbackConfigTask
 import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
