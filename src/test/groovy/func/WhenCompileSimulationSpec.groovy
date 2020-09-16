@@ -55,7 +55,6 @@ class WhenCompileSimulationSpec extends GatlingFuncSpec {
         given:
         buildFile.text = """
 plugins { id 'io.gatling.gradle' }
-repositories { jcenter() }
 """
         when:
         executeGradle(GATLING_CLASSES_TASK_NAME)

@@ -28,7 +28,6 @@ abstract class GatlingSpec extends Specification {
         buildFile = projectDir.newFile("build.gradle")
         buildFile.text = """
 plugins { id 'io.gatling.gradle' }
-repositories { jcenter() }
 dependencies { gatling group: 'commons-lang', name: 'commons-lang', version: '2.6' }
 """
     }
