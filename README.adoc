@@ -163,7 +163,7 @@ The plugin defines the following extension properties in the `gatling` closure:
 |
 [source, groovy]
 ----
-['java.net.preferIPv6Addresses': true]
+['java.net.preferIPv6Addresses': false]
 ----
 | Additional systems properties passed to JVM together with caller JVM system
 properties
