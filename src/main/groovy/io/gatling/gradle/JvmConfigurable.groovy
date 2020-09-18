@@ -13,7 +13,7 @@ trait JvmConfigurable {
         '-XX:-UseBiasedLocking'
     ]
 
-    static final Map DEFAULT_SYSTEM_PROPS = ["java.net.preferIPv6Addresses": true]
+    static final Map DEFAULT_SYSTEM_PROPS = [:]
 
     List<String> jvmArgs
 
