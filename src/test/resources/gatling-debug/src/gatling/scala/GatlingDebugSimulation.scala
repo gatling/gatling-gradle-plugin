@@ -42,5 +42,5 @@ class GatlingDebugSimulation extends Simulation {
 
   println(s"@@@@.sys ${write(System.getProperties.asScala)}}")
 
-  setUp(scenario("Scenario Name").pause(1).inject(atOnceUsers(0)))
+  setUp(scenario("Scenario Name").pause(1).inject(atOnceUsers(1)))
 }
