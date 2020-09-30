@@ -82,7 +82,7 @@ class GatlingPlugin implements Plugin<Project> {
                 gatlingImplementation "org.scala-lang:scala-library:${evaluatedExt.scalaVersion}"
                 gatling "io.gatling.highcharts:gatling-charts-highcharts:${evaluatedExt.toolVersion}"
 
-                if (gevaluatedExt.includeMainOutput) {
+                if (evaluatedExt.includeMainOutput) {
                     gatlingImplementation evaluatedProject.sourceSets.main.output
                 }
                 if (evaluatedExt.includeTestOutput) {
