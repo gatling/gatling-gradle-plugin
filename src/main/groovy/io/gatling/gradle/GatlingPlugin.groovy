@@ -76,14 +76,16 @@ class GatlingPlugin implements Plugin<Project> {
 
         project.afterEvaluate { Project evaluatedProject ->
             evaluatedProject.dependencies {
-                implementation "org.scala-lang:scala-library:${evaluatedProject.extensions.getByType(GatlingPluginExtension).scalaVersion}"
-                gatlingImplementation "org.scala-lang:scala-library:${evaluatedProject.extensions.getByType(GatlingPluginExtension).scalaVersion}"
-                gatling "io.gatling.highcharts:gatling-charts-highcharts:${evaluatedProject.extensions.getByType(GatlingPluginExtension).toolVersion}"
+                def evaluatedExt = evaluatedProject.extensions.getByType(GatlingPluginExtension)
 
-                if (gatlingExt.includeMainOutput) {
+                implementation "org.scala-lang:scala-library:${evaluatedExt.scalaVersion}"
+                gatlingImplementation "org.scala-lang:scala-library:${evaluatedExt.scalaVersion}"
+                gatling "io.gatling.highcharts:gatling-charts-highcharts:${evaluatedExt.toolVersion}"
+
+                if (gevaluatedExt.includeMainOutput) {
                     gatlingImplementation evaluatedProject.sourceSets.main.output
                 }
-                if (gatlingExt.includeTestOutput) {
+                if (evaluatedExt.includeTestOutput) {
                     gatlingImplementation evaluatedProject.sourceSets.test.output
                 }
             }
