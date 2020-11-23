@@ -8,7 +8,7 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_TOOL_VERSION = '3.4.1'
+    static final String GATLING_TOOL_VERSION = '3.4.2'
 
     static final String SCALA_VERSION = '2.12.12'
 
