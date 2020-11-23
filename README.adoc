@@ -1,5 +1,5 @@
 = Gatling Plugin for Gradle
-:gatlingToolVersion: 3.4.0
+:gatlingToolVersion: 3.4.2
 :scalaVersion: 2.12.12
 :toc: macro
 :icons: font
