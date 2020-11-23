@@ -13,14 +13,14 @@ jobs:
         with:
           java-version: 8
       - name: Retrieve tag name
-        uses: olegtarasov/get-tag@v2
+        uses: little-core-labs/get-git-tag@v3.0.1
         id: tagName
         with:
           tagRegex: "v(.*)"
       - name: gradle publishPlugins
         uses: eskatos/gradle-command-action@v1
         with:
-          arguments: publishPlugins -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pversion=${{ env.GIT_TAG_NAME }}
+          arguments: publishPlugins -Pgradle.publish.key=${{ secrets.GRADLE_PUBLISH_KEY }} -Pgradle.publish.secret=${{ secrets.GRADLE_PUBLISH_SECRET }} -Pversion=${{ steps.tagName.outputs.tag }}
           wrapper-cache-enabled: true
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
