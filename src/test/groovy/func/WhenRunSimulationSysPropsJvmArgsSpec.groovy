@@ -86,7 +86,7 @@ gatlingRun {
     }
 
     def "should configure system properties from extension"() {
-        when: "defalts from extension"
+        when: "defaults from extension"
         def result = executeGradle(GATLING_RUN_TASK_NAME)
         then:
         with(new GatlingDebug(result)) {
