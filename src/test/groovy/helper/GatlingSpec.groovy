@@ -34,4 +34,17 @@ dependencies {
 }
 """
     }
+
+    def generateKotlinBuildScripts() {
+        buildFile = projectDir.newFile("build.gradle.kts")
+        buildFile.text = """
+plugins {
+  id("io.gatling.gradle")
+}
+dependencies {
+  gatling("commons-lang:commons-lang:2.6")
+  gatling("org.json4s:json4s-jackson_2.13:3.6.10")
+}
+"""
+    }
 }

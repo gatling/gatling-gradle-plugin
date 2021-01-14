@@ -12,6 +12,11 @@ abstract class GatlingFuncSpec extends GatlingSpec {
         generateBuildScripts()
     }
 
+    void prepareKotlinTest(String fixtureDir = "/gradle-layout") {
+        createBuildFolder(fixtureDir)
+        generateKotlinBuildScripts()
+    }
+
     BuildResult executeGradle(String... gradleArgs) {
         GradleRunner.create().forwardOutput()
             .withProjectDir(projectDir.getRoot())
