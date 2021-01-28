@@ -33,5 +33,6 @@ class GatlingPluginExtension implements JvmConfigurable {
     GatlingPluginExtension() {
         this.jvmArgs = DEFAULT_JVM_ARGS
         this.systemProperties = DEFAULT_SYSTEM_PROPS
+        this.environment = DEFAULT_ENVIRONMENT
     }
 }
