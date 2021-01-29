@@ -74,6 +74,19 @@ class GatlingPlugin implements Plugin<Project> {
             gatlingRuntimeOnly project.sourceSets.gatling.output
         }
 
+        project.tasks.getByName("compileGatlingScala").configure {
+            scalaCompileOptions.with {
+                additionalParameters = [
+                    "-target:jvm-1.8",
+                    "-deprecation",
+                    "-feature",
+                    "-unchecked",
+                    "-language:implicitConversions",
+                    "-language:postfixOps"
+                ]
+            }
+        }
+
         project.afterEvaluate { Project evaluatedProject ->
             evaluatedProject.dependencies {
                 def evaluatedExt = evaluatedProject.extensions.getByType(GatlingPluginExtension)
