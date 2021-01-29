@@ -15,11 +15,9 @@ trait JvmConfigurable {
 
     static final Map DEFAULT_SYSTEM_PROPS = [:]
 
-    static final Map DEFAULT_ENVIRONMENT = [:]
-
     List<String> jvmArgs
 
     Map systemProperties
 
-    Map environment
+    Map environment = [:]
 }
