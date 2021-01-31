@@ -32,9 +32,9 @@ class BasicSimulation extends Simulation {
 
   val scn = scenario("Scenario Name") // A scenario is a chain of requests and pauses
     .exec(http("request_1").get("/"))
-    .pause(1) // Note that Gatling has recorded real time pauses
+    .pause(1 second) // Note that Gatling has recorded real time pauses
     .exec(http("request_2").get("/computers?f=macbook"))
-    .pause(1)
+    .pause(1 second)
     .exec(http("request_3").get("/computers/6"))
 
   setUp(scn.inject(atOnceUsers(1)).protocols(httpConf)).assertions(
