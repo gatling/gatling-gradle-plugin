@@ -59,6 +59,8 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
                 exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
                 exec.systemProperties System.properties
                 exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
+                exec.environment += gatlingExt.environment
+                exec.environment += this.environment
 
                 def logbackFile = LogbackConfigTask.logbackFile(project.buildDir)
                 if (logbackFile.exists()) {

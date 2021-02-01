@@ -18,4 +18,6 @@ trait JvmConfigurable {
     List<String> jvmArgs
 
     Map systemProperties
+
+    Map environment = [:]
 }

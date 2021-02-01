@@ -133,6 +133,41 @@ gatlingRun {
         }
     }
 
+    def "should set additional env vars from extension"() {
+        given: "set via extension"
+        buildFile << """
+gatling {
+    environment['env1'] = 'env1_value'
+}
+"""
+        when:
+        def result = executeGradle(GATLING_RUN_TASK_NAME)
+        then:
+        with(new GatlingDebug(result)) {
+            env["env1"] == "env1_value"
+        }
+    }
+
+    def "should override gatling env vars with gatlingRun"() {
+        given: "override via gatlingRun"
+        buildFile << """
+gatling {
+    environment = ['env1': 'aaa', 'env2': 'bbb']
+}
+gatlingRun {
+    environment = ['env2': 'ddd', 'env3': 'ccc']
+}
+"""
+        when:
+        def result = executeGradle(GATLING_RUN_TASK_NAME)
+        then:
+        with(new GatlingDebug(result)) {
+            env["env1"] == "aaa"
+            env["env2"] == "ddd"
+            env["env3"] == "ccc"
+        }
+    }
+
     def "should pass env vars upstream"() {
         given:
         environmentVariables.set("GRADLE_GATLING_ENV_UPSTREAM", "env_upstream_value")
