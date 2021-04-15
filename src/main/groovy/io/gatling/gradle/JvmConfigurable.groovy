@@ -39,8 +39,8 @@ trait JvmConfigurable {
 
     @Input
     @Optional
-    List<String> getSystemProperties() {
-        return jvmArgs
+    Map getSystemProperties() {
+        return systemProperties
     }
 
     void setSystemProperties(Map systemProperties) {
