@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
@@ -33,6 +34,7 @@ class LogbackConfigTask extends DefaultTask {
 </configuration>"""
     }
 
+    @InputFiles
     Iterable<File> getLogbackConfigs() {
         SourceSet gatlingSourceSet = project.sourceSets.gatling
         gatlingSourceSet.resources.matching {
