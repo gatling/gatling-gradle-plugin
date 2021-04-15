@@ -4,6 +4,7 @@ import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
@@ -15,6 +16,7 @@ import java.nio.file.Paths
 
 class GatlingRunTask extends DefaultTask implements JvmConfigurable {
 
+    @Internal
     Closure simulations
 
     @OutputDirectory
