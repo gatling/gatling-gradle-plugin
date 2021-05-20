@@ -8,9 +8,9 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_TOOL_VERSION = '3.5.1'
+    static final String GATLING_TOOL_VERSION = '3.6.0'
 
-    static final String SCALA_VERSION = '2.13.4'
+    static final String SCALA_VERSION = '2.13.6'
 
     static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.scala") }
 
