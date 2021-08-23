@@ -9,7 +9,7 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-class FrontLineShadowJar extends ShadowJar {
+class GatlingEnterprisePackageTask extends ShadowJar {
 
     private ResolvedConfiguration getResolvedConfiguration() {
         project.configurations.gatlingRuntimeClasspath.resolvedConfiguration

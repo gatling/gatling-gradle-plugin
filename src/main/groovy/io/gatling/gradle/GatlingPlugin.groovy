@@ -18,6 +18,11 @@ class GatlingPlugin implements Plugin<Project> {
 
     static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
 
+    public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
+
+    /**
+     * @deprecated Please use {@link io.gatling.gradle.GatlingPlugin#ENTERPRISE_PACKAGE_TASK_NAME} instead
+     */
     public static def FRONTLINE_JAR_TASK_NAME = "frontLineJar"
 
     void apply(Project project) {
@@ -27,13 +32,6 @@ class GatlingPlugin implements Plugin<Project> {
         }
 
         project.pluginManager.apply ScalaPlugin
-
-        if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
-            project.getLogger().warn(
-                "io.gatling.frontline.gradle is no longer required, its functionality is now included in io.gatling.gradle. " +
-                    "Please remove io.gatling.frontline.gradle from your build.gradle configuration file." +
-                    "See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.")
-        }
 
         GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
 
@@ -51,7 +49,26 @@ class GatlingPlugin implements Plugin<Project> {
             }
         }
 
-        createFrontlineJarTask(project)
+        def gatlingEnterprisePackage = createEnterprisePackageTask(project)
+
+        project.afterEvaluate {
+            if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
+                project.getLogger().warn("""\
+                    Plugin io.gatling.frontline.gradle is no longer required, its functionality is now included in io.gatling.gradle.
+                    Please remove io.gatling.frontline.gradle from your build.gradle configuration file, and use the $ENTERPRISE_PACKAGE_TASK_NAME task instead of $FRONTLINE_JAR_TASK_NAME
+                    See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
+            } else {
+                def legacyFrontlineTask = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME) {
+                    doFirst {
+                        getLogger().warn("""\
+                            Task $FRONTLINE_JAR_TASK_NAME is deprecated and will be removed in a future version.
+                            Please use $ENTERPRISE_PACKAGE_TASK_NAME instead.
+                            See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
+                    }
+                }
+                legacyFrontlineTask.finalizedBy(gatlingEnterprisePackage)
+            }
+        }
     }
 
     void createGatlingTask(Project project, String taskName, String simulationFQN = null) {
@@ -68,16 +85,16 @@ class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void createFrontlineJarTask(Project project) {
-        FrontLineShadowJar frontLineJar = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME, type: FrontLineShadowJar)
+    GatlingEnterprisePackageTask createEnterprisePackageTask(Project project) {
+        GatlingEnterprisePackageTask gatlingEnterprisePackage = project.tasks.create(name: ENTERPRISE_PACKAGE_TASK_NAME, type: GatlingEnterprisePackageTask)
 
-        frontLineJar.conventionMapping.with {
+        gatlingEnterprisePackage.conventionMapping.with {
             map("classifier") {
                 "tests"
             }
         }
 
-        frontLineJar.exclude(
+        gatlingEnterprisePackage.exclude(
             "META-INF/LICENSE",
             "META-INF/MANIFEST.MF",
             "META-INF/versions/**",
@@ -87,12 +104,12 @@ class GatlingPlugin implements Plugin<Project> {
             "**/*.RSA"
         )
 
-        frontLineJar.from(project.sourceSets.gatling.output)
-        frontLineJar.configurations = [
+        gatlingEnterprisePackage.from(project.sourceSets.gatling.output)
+        gatlingEnterprisePackage.configurations = [
             project.configurations.gatlingRuntimeClasspath
         ]
-        frontLineJar.metaInf {
-            def tempDir = new File(frontLineJar.getTemporaryDir(), "META-INF")
+        gatlingEnterprisePackage.metaInf {
+            def tempDir = new File(gatlingEnterprisePackage.getTemporaryDir(), "META-INF")
             def maven = new File(tempDir, "maven")
             maven.mkdirs()
             new File(maven,"pom.properties").text =
@@ -112,6 +129,8 @@ class GatlingPlugin implements Plugin<Project> {
                 |""".stripMargin()
             from (tempDir)
         }
+
+        gatlingEnterprisePackage
     }
 
     void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
