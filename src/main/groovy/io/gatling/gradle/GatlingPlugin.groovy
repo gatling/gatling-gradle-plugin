@@ -18,13 +18,22 @@ class GatlingPlugin implements Plugin<Project> {
 
     static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
 
+    public static def FRONTLINE_JAR_TASK_NAME = "frontLineJar"
+
     void apply(Project project) {
 
-        if (VersionNumber.parse(GradleVersion.current().version).major < 4) {
-            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 4.0")
+        if (VersionNumber.parse(GradleVersion.current().version).major < 5) {
+            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 5.0")
         }
 
         project.pluginManager.apply ScalaPlugin
+
+        if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
+            project.getLogger().warn(
+                "io.gatling.frontline.gradle is no longer required, its functionality is now included in io.gatling.gradle. " +
+                    "Please remove io.gatling.frontline.gradle from your build.gradle configuration file." +
+                    "See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.")
+        }
 
         GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
 
@@ -41,6 +50,8 @@ class GatlingPlugin implements Plugin<Project> {
                 createGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))
             }
         }
+
+        createFrontlineJarTask(project)
     }
 
     void createGatlingTask(Project project, String taskName, String simulationFQN = null) {
@@ -54,6 +65,52 @@ class GatlingPlugin implements Plugin<Project> {
                     include "${simulationFQN.replace('.', '/')}.scala"
                 }
             }
+        }
+    }
+
+    void createFrontlineJarTask(Project project) {
+        FrontLineShadowJar frontLineJar = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME, type: FrontLineShadowJar)
+
+        frontLineJar.conventionMapping.with {
+            map("classifier") {
+                "tests"
+            }
+        }
+
+        frontLineJar.exclude(
+            "META-INF/LICENSE",
+            "META-INF/MANIFEST.MF",
+            "META-INF/versions/**",
+            "META-INF/maven/**",
+            "**/*.SF",
+            "**/*.DSA",
+            "**/*.RSA"
+        )
+
+        frontLineJar.from(project.sourceSets.gatling.output)
+        frontLineJar.configurations = [
+            project.configurations.gatlingRuntimeClasspath
+        ]
+        frontLineJar.metaInf {
+            def tempDir = new File(frontLineJar.getTemporaryDir(), "META-INF")
+            def maven = new File(tempDir, "maven")
+            maven.mkdirs()
+            new File(maven,"pom.properties").text =
+                """groupId=${project.group}
+                |artifactId=${project.name}
+                |version=${project.version}
+                |""".stripMargin()
+            new File(maven, "pom.xml").text =
+                """<?xml version="1.0" encoding="UTF-8"?>
+                |<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                |xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                |  <modelVersion>4.0.0</modelVersion>
+                |  <groupId>${project.group}</groupId>
+                |  <artifactId>${project.name}</artifactId>
+                |  <version>${project.version}</version>
+                |</project>
+                |""".stripMargin()
+            from (tempDir)
         }
     }
 
