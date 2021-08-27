@@ -25,7 +25,7 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
     }
 
     @Unroll
-    void 'should succeed for version #gradleVersion that greater than 4.0'() {
+    void 'should succeed for version #gradleVersion that is greater than 5.0'() {
         given:
         prepareTest()
         when:
@@ -33,18 +33,18 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
         then:
         result.task(":tasks").outcome == SUCCESS
         where:
-        gradleVersion << ["4.0.1", "4.10.2", "5.0", "5.6.4", "6.0", "6.3", "6.4.1", "7.0", "7.1.1"]
+        gradleVersion << ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.1.1"]
     }
 
     @Unroll
-    void 'should fail for version #gradleVersion that less than 4.0'() {
+    void 'should fail for version #gradleVersion that is less than 5.0'() {
         given:
         prepareTest()
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, true)
         then:
-        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 4.0")
+        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 5.0")
         where:
-        gradleVersion << ["3.5", "3.0", "2.9"]
+        gradleVersion << ["4.0.1", "4.10.2", "3.5", "3.0", "2.9"]
     }
 }
