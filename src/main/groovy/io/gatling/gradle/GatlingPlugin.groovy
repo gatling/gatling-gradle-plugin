@@ -3,6 +3,7 @@ package io.gatling.gradle
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.util.GradleVersion
@@ -53,10 +54,11 @@ class GatlingPlugin implements Plugin<Project> {
 
         project.afterEvaluate {
             if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
-                project.getLogger().warn("""\
-                    Plugin io.gatling.frontline.gradle is no longer required, its functionality is now included in io.gatling.gradle.
-                    Please remove io.gatling.frontline.gradle from your build.gradle configuration file, and use the $ENTERPRISE_PACKAGE_TASK_NAME task instead of $FRONTLINE_JAR_TASK_NAME
-                    See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
+                def errorMessage = """\
+                    Plugin io.gatling.frontline.gradle is no longer needed, its functionality is now included in the io.gatling.gradle plugin.
+                    Please remove io.gatling.frontline.gradle from your build.gradle configuration file, and use the $ENTERPRISE_PACKAGE_TASK_NAME task instead of $FRONTLINE_JAR_TASK_NAME.
+                    See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent()
+                throw new ProjectConfigurationException(errorMessage, [])
             } else {
                 def legacyFrontlineTask = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME) {
                     doFirst {
