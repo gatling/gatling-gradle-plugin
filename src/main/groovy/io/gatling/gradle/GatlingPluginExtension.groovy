@@ -2,6 +2,51 @@ package io.gatling.gradle
 
 class GatlingPluginExtension implements JvmConfigurable {
 
+    private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
+    private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
+
+    final static class Enterprise {
+        private String apiToken
+        private UUID packageId
+        private URL url = new URL("https://cloud.gatling.io/api/public")
+
+        def url(String url) {
+            this.url = new URL(url)
+        }
+
+        def packageId(String packageId) {
+            this.packageId = UUID.fromString(packageId)
+        }
+
+        def apiToken(String apiToken) {
+            this.apiToken = apiToken
+        }
+
+        String getApiToken() {
+            if (apiToken == null) {
+                return System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
+            } else {
+                return apiToken
+            }
+        }
+
+        UUID getPackageId() {
+            return packageId
+        }
+
+        URL getUrl() {
+            return url
+        }
+    }
+
+    Enterprise enterprise = new Enterprise()
+
+    def enterprise(Closure c) {
+        c.resolveStrategy = Closure.DELEGATE_FIRST
+        c.delegate = enterprise
+        c()
+    }
+
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
     static final String SIMULATIONS_DIR = "src/gatling/scala"

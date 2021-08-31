@@ -21,6 +21,8 @@ class GatlingPlugin implements Plugin<Project> {
 
     public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
 
+    public static def ENTERPRISE_PUBLISH_TASK_NAME = "gatlingEnterprisePublish"
+
     /**
      * @deprecated Please use {@link io.gatling.gradle.GatlingPlugin#ENTERPRISE_PACKAGE_TASK_NAME} instead
      */
@@ -51,6 +53,7 @@ class GatlingPlugin implements Plugin<Project> {
         }
 
         def gatlingEnterprisePackage = createEnterprisePackageTask(project)
+        createEnterprisePublishTask(project, gatlingEnterprisePackage)
 
         project.afterEvaluate {
             if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
@@ -84,6 +87,16 @@ class GatlingPlugin implements Plugin<Project> {
                     include "${simulationFQN.replace('.', '/')}.scala"
                 }
             }
+        }
+    }
+
+    void createEnterprisePublishTask(Project project, GatlingEnterprisePackageTask gatlingEnterprisePackageTask) {
+        project.tasks.create(
+            name: ENTERPRISE_PUBLISH_TASK_NAME,
+            type: GatlingEnterprisePublishTask
+        ) {
+            inputs.files gatlingEnterprisePackageTask
+            dependsOn(gatlingEnterprisePackageTask)
         }
     }
 
