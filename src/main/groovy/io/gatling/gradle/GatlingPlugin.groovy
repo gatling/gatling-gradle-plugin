@@ -21,7 +21,7 @@ class GatlingPlugin implements Plugin<Project> {
 
     public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
 
-    public static def ENTERPRISE_PUBLISH_TASK_NAME = "gatlingEnterprisePublish"
+    public static def ENTERPRISE_UPLOAD_TASK_NAME = "gatlingEnterpriseUpload"
 
     /**
      * @deprecated Please use {@link io.gatling.gradle.GatlingPlugin#ENTERPRISE_PACKAGE_TASK_NAME} instead
@@ -53,7 +53,7 @@ class GatlingPlugin implements Plugin<Project> {
         }
 
         def gatlingEnterprisePackage = createEnterprisePackageTask(project)
-        createEnterprisePublishTask(project, gatlingEnterprisePackage)
+        createEnterpriseUploadTask(project, gatlingEnterprisePackage)
 
         project.afterEvaluate {
             if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
@@ -90,10 +90,10 @@ class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void createEnterprisePublishTask(Project project, GatlingEnterprisePackageTask gatlingEnterprisePackageTask) {
+    void createEnterpriseUploadTask(Project project, GatlingEnterprisePackageTask gatlingEnterprisePackageTask) {
         project.tasks.create(
-            name: ENTERPRISE_PUBLISH_TASK_NAME,
-            type: GatlingEnterprisePublishTask
+            name: ENTERPRISE_UPLOAD_TASK_NAME,
+            type: GatlingEnterpriseUploadTask
         ) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
