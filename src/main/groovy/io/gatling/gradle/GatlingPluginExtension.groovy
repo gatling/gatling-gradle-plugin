@@ -49,15 +49,17 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
-    static final String SIMULATIONS_DIR = "src/gatling/scala"
+    static final String JAVA_SIMULATIONS_DIR = "src/gatling/java"
+
+    static final String SCALA_SIMULATIONS_DIR = "src/gatling/scala"
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_TOOL_VERSION = '3.6.1'
+    static final String GATLING_TOOL_VERSION = '3.7.0.FL-SNAPSHOT'
 
     static final String SCALA_VERSION = '2.13.6'
 
-    static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.scala") }
+    static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.java", "**/*Simulation*.scala") }
 
     static final String DEFAULT_LOG_LEVEL = "WARN"
     static final LogHttp DEFAULT_LOG_HTTP = LogHttp.NONE

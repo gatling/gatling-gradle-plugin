@@ -76,7 +76,7 @@ class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void createGatlingTask(Project project, String taskName, String simulationFQN = null) {
+    void createGatlingTask(Project project, String taskName, String simulationFQN) {
         def task = project.tasks.create(name: taskName,
             dependsOn: [project.tasks.gatlingClasses, project.tasks.gatlingLogback],
             type: GatlingRunTask, description: "Execute Gatling simulation", group: "Gatling")
@@ -84,7 +84,7 @@ class GatlingPlugin implements Plugin<Project> {
         if (simulationFQN) {
             task.configure {
                 simulations = {
-                    include "${simulationFQN.replace('.', '/')}.scala"
+                    include("${simulationFQN.replace('.', '/')}.java", "${simulationFQN.replace('.', '/')}.scala")
                 }
             }
         }
@@ -151,7 +151,8 @@ class GatlingPlugin implements Plugin<Project> {
     void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
         project.sourceSets {
             gatling {
-                scala.srcDirs = [gatlingExt.SIMULATIONS_DIR]
+                java.srcDirs = [gatlingExt.JAVA_SIMULATIONS_DIR]
+                scala.srcDirs = [gatlingExt.SCALA_SIMULATIONS_DIR]
                 resources.srcDirs = [gatlingExt.RESOURCES_DIR]
             }
         }
