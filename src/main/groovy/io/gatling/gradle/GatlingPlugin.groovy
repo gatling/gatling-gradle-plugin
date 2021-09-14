@@ -84,7 +84,11 @@ class GatlingPlugin implements Plugin<Project> {
         if (simulationFQN) {
             task.configure {
                 simulations = {
-                    include("${simulationFQN.replace('.', '/')}.java", "${simulationFQN.replace('.', '/')}.scala")
+                    include(
+                        "${simulationFQN.replace('.', '/')}.java",
+                        "${simulationFQN.replace('.', '/')}.scala",
+                        "${simulationFQN.replace('.', '/')}.kt"
+                    )
                 }
             }
         }
@@ -154,6 +158,11 @@ class GatlingPlugin implements Plugin<Project> {
                 java.srcDirs = [gatlingExt.JAVA_SIMULATIONS_DIR]
                 scala.srcDirs = [gatlingExt.SCALA_SIMULATIONS_DIR]
                 resources.srcDirs = [gatlingExt.RESOURCES_DIR]
+            }
+            if (gatling.hasProperty("kotlin")) {
+                gatling {
+                    kotlin.srcDirs = [gatlingExt.KOTLIN_SIMULATIONS_DIR]
+                }
             }
         }
 
@@ -238,4 +247,3 @@ class GatlingPlugin implements Plugin<Project> {
         }
     }
 }
-
