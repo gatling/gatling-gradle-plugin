@@ -8,7 +8,6 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 repositories {
-  jcenter()
   mavenCentral()
   gradlePluginPortal()
 }
@@ -45,7 +44,7 @@ gradlePlugin {
 pluginBundle {
   website = 'https://github.com/gatling/gatling-gradle-plugin'
   vcsUrl = 'https://github.com/gatling/gatling-gradle-plugin'
-  tags = ['gatling', 'load test', 'stress test', 'performance test', 'scala']
+  tags = ['gatling', 'load test', 'stress test', 'performance test', 'java', 'scala', 'kotlin']
 }
 
 validatePlugins.failOnWarning = false
