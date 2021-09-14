@@ -23,30 +23,46 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
 
     @InputFiles
-    FileTree getSimulationSources() {
+    FileTree getJavaSimulationSources() {
+        def simulationFilter = this.simulations ?: project.gatling.simulations
+        return project.sourceSets.gatling.java.matching(simulationFilter)
+    }
+
+    @InputFiles
+    FileTree getScalaSimulationSources() {
         def simulationFilter = this.simulations ?: project.gatling.simulations
         return project.sourceSets.gatling.scala.matching(simulationFilter)
     }
 
     List<String> createGatlingArgs() {
 
-        File scalaClasses = project.sourceSets.gatling.output.classesDirs.filter {
-            it.parentFile.name == 'scala'
-        }.singleFile
+        def classesDirs = project.sourceSets.gatling.output.classesDirs
 
-        return ['-bf', scalaClasses.absolutePath,
+        File javaClasses = classesDirs.filter { it.parentFile.name == 'java' }.singleFile
+        File scalaClasses = classesDirs.filter { it.parentFile.name == 'scala' }.singleFile
+        File binariesFolder = (scalaClasses.isDirectory() && scalaClasses.toPath().isEmpty()) ? scalaClasses : javaClasses
+
+        return ['-bf', binariesFolder.absolutePath,
                 "-rsf", "${project.sourceSets.gatling.output.resourcesDir}",
                 "-rf", gatlingReportDir.absolutePath]
     }
 
     Iterable<String> simulationFilesToFQN() {
+        def javaSrcDirs = project.sourceSets.gatling.java.srcDirs.collect { Paths.get(it.absolutePath) }
+        def javaFiles = getJavaSimulationSources().collect { Paths.get(it.absolutePath) }
+
+        def javaFQNs = javaFiles.collect { Path srcFile ->
+            javaSrcDirs.find { srcFile.startsWith(it) }.relativize(srcFile).join(".") - ".java"
+        }
 
         def scalaSrcDirs = project.sourceSets.gatling.scala.srcDirs.collect { Paths.get(it.absolutePath) }
-        def scalaFiles = getSimulationSources().collect { Paths.get(it.absolutePath) }
+        def scalaFiles = getScalaSimulationSources().collect { Paths.get(it.absolutePath) }
 
-        return scalaFiles.collect { Path srcFile ->
+        def scalaFQNs = scalaFiles.collect { Path srcFile ->
             scalaSrcDirs.find { srcFile.startsWith(it) }.relativize(srcFile).join(".") - ".scala"
         }
+
+        return javaFQNs + scalaFQNs
     }
 
     @TaskAction
@@ -83,6 +99,5 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
         if (!failed.isEmpty()) {
             throw new TaskExecutionException(this, new RuntimeException("There're failed simulations: ${failed.keySet().sort().join(", ")}"))
         }
-
     }
 }
