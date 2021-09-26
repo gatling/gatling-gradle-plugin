@@ -2,6 +2,7 @@ package io.gatling.gradle
 
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
@@ -30,8 +31,12 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
 
     @InputFiles
     FileTree getKotlinSimulationSources() {
-        def simulationFilter = this.simulations ?: project.gatling.simulations
-        return project.sourceSets.gatling.kotlin.matching(simulationFilter)
+        if (project.sourceSets.gatling.hasProperty("kotlin")) {
+            def simulationFilter = this.simulations ?: project.gatling.simulations
+            return project.sourceSets.gatling.kotlin.matching(simulationFilter)
+        } else {
+            return project.files().asFileTree
+        }
     }
 
     @InputFiles
@@ -40,16 +45,25 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
         return project.sourceSets.gatling.scala.matching(simulationFilter)
     }
 
+    private static File classesDirForLanguage(FileCollection classesDirs, String language) {
+        def classesDirsOfType = classesDirs.filter { it.parentFile.name == language }
+        if (classesDirsOfType.isEmpty()) {
+            return null
+        } else {
+            File dir = classesDirsOfType.singleFile
+            return dir.isDirectory() && !dir.toPath().isEmpty() ? dir : null
+        }
+    }
+
     List<String> createGatlingArgs() {
 
-        def classesDirs = project.sourceSets.gatling.output.classesDirs
+        FileCollection classesDirs = project.sourceSets.gatling.output.classesDirs
 
-        File javaClasses = classesDirs.filter { it.parentFile.name == 'java' }.singleFile
-        File scalaClasses = classesDirs.filter { it.parentFile.name == 'scala' }.singleFile
-        File kotlinClasses = classesDirs.filter { it.parentFile.name == 'kotlin' }.singleFile
-        File binariesFolder = (scalaClasses.isDirectory() && scalaClasses.toPath().isEmpty()) ? scalaClasses :
-            (kotlinClasses.isDirectory() && kotlinClasses.toPath().isEmpty()) ? kotlinClasses :
-                javaClasses
+        File javaClasses = classesDirForLanguage(classesDirs, 'java')
+        File scalaClasses = classesDirForLanguage(classesDirs, 'scala')
+        File kotlinClasses = classesDirForLanguage(classesDirs, 'kotlin')
+        File binariesFolder = scalaClasses != null ? scalaClasses :
+            kotlinClasses != null ? kotlinClasses : javaClasses
 
         return ['-bf', binariesFolder.absolutePath,
                 "-rsf", "${project.sourceSets.gatling.output.resourcesDir}",
@@ -64,11 +78,16 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
             javaSrcDirs.find { srcFile.startsWith(it) }.relativize(srcFile).join(".") - ".java"
         }
 
-        def kotlinSrcDirs = project.sourceSets.gatling.kotlin.srcDirs.collect { Paths.get(it.absolutePath) }
-        def kotlinFiles = getKotlinSimulationSources().collect { Paths.get(it.absolutePath) }
+        List<String> kotlinFQNs
+        if (project.sourceSets.gatling.hasProperty("kotlin")) {
+            def kotlinSrcDirs = project.sourceSets.gatling.kotlin.srcDirs.collect { Paths.get(it.absolutePath) }
+            def kotlinFiles = getKotlinSimulationSources().collect { Paths.get(it.absolutePath) }
 
-        def kotlinFQNs = kotlinFiles.collect { Path srcFile ->
-            kotlinSrcDirs.find { srcFile.startsWith(it) }.relativize(srcFile).join(".") - ".kt"
+            kotlinFQNs = kotlinFiles.collect { Path srcFile ->
+                kotlinSrcDirs.find { srcFile.startsWith(it) }.relativize(srcFile).join(".") - ".kt"
+            }
+        } else {
+            kotlinFQNs = []
         }
 
         def scalaSrcDirs = project.sourceSets.gatling.scala.srcDirs.collect { Paths.get(it.absolutePath) }

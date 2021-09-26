@@ -16,7 +16,7 @@
 
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.lang.management.ManagementFactory
 import java.lang.management.RuntimeMXBean
 import java.util
@@ -34,7 +34,7 @@ class GatlingDebugSimulation extends Simulation {
 
   println(s"""@@@@.heap {"min": ${heapMemory.getInit}, "max": ${heapMemory.getMax}}""")
 
-  private val jvmArgs  = ManagementFactory.getRuntimeMXBean.getInputArguments
+  private val jvmArgs = ManagementFactory.getRuntimeMXBean.getInputArguments
 
   println(s"@@@@.jvm ${write(jvmArgs.asScala.filterNot(_.startsWith("-D")))}}")
 
