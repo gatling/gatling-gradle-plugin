@@ -7,7 +7,7 @@ import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
-import static io.gatling.gradle.GatlingPluginExtension.SIMULATIONS_DIR
+import static io.gatling.gradle.GatlingPluginExtension.SCALA_SIMULATIONS_DIR
 import static org.apache.commons.io.FileUtils.copyFileToDirectory
 import static org.apache.commons.io.FileUtils.moveFileToDirectory
 
@@ -84,7 +84,7 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
         theTask.simulationFilesToFQN().size() == 0
 
         when: 'put simulations into overridden source dir'
-        copyFileToDirectory(new File(projectDir.root, "${SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
+        copyFileToDirectory(new File(projectDir.root, "${SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
             new File(projectDir.root, "$overridenSrc/computerdatabase"))
         then:
         theTask.simulationFilesToFQN() == ["computerdatabase.BasicSimulation"]
@@ -102,7 +102,7 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
         theTask.simulationFilesToFQN().size() == 2
 
         when: "hide one simulation"
-        moveFileToDirectory(new File(projectDir.root, "${SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
+        moveFileToDirectory(new File(projectDir.root, "${SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
             projectDir.root, true)
         then:
         theTask.simulationFilesToFQN() == ["computerdatabase.advanced.AdvancedSimulationStep03"]
