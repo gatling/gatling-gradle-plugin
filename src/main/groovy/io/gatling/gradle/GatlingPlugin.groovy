@@ -107,11 +107,7 @@ class GatlingPlugin implements Plugin<Project> {
     GatlingEnterprisePackageTask createEnterprisePackageTask(Project project) {
         GatlingEnterprisePackageTask gatlingEnterprisePackage = project.tasks.create(name: ENTERPRISE_PACKAGE_TASK_NAME, type: GatlingEnterprisePackageTask)
 
-        gatlingEnterprisePackage.conventionMapping.with {
-            map("classifier") {
-                "tests"
-            }
-        }
+        gatlingEnterprisePackage.classifier = "tests"
 
         gatlingEnterprisePackage.exclude(
             "META-INF/LICENSE",
