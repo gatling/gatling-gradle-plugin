@@ -18,7 +18,7 @@ class WhenPackageSpec extends GatlingFuncSpec {
         result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
         result.task(":gatlingClasses").outcome == SUCCESS
         def artifactId = projectDir.root.getName()
-        def artifact = new File(buildDir, "libs/${artifactId}.jar")
+        def artifact = new File(buildDir, "libs/${artifactId}-tests.jar")
         and: "artifact was created"
         artifact.isFile()
     }
@@ -33,7 +33,7 @@ class WhenPackageSpec extends GatlingFuncSpec {
         result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
         result.task(":gatlingClasses").outcome == SUCCESS
         def artifactId = projectDir.root.getName()
-        def artifact = new File(buildDir, "libs/${artifactId}.jar")
+        def artifact = new File(buildDir, "libs/${artifactId}-tests.jar")
         and: "artifact was created"
         artifact.isFile()
     }
