@@ -33,7 +33,7 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
         then:
         result.task(":tasks").outcome == SUCCESS
         where:
-        gradleVersion << ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.1.1"]
+        gradleVersion << ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.3"]
     }
 
     @Unroll
