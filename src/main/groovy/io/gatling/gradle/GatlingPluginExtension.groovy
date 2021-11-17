@@ -57,7 +57,7 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_TOOL_VERSION = '3.7.0-M4'
+    static final String GATLING_VERSION = '3.7.0-M4'
 
     static final String SCALA_VERSION = '2.13.7'
 
@@ -66,9 +66,18 @@ class GatlingPluginExtension implements JvmConfigurable {
     static final String DEFAULT_LOG_LEVEL = "WARN"
     static final LogHttp DEFAULT_LOG_HTTP = LogHttp.NONE
 
-    def toolVersion = GATLING_TOOL_VERSION
+    String gatlingVersion = GATLING_VERSION
 
-    def scalaVersion = SCALA_VERSION
+    String scalaVersion = SCALA_VERSION
+
+    /**
+     * Use gatlingVersion instead
+     * @param toolVersion the Gatling version
+     */
+    @Deprecated
+    void setToolVersion(String toolVersion) {
+        gatlingVersion = toolVersion
+    }
 
     Closure simulations = DEFAULT_SIMULATIONS
 

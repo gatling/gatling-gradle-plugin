@@ -34,7 +34,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         project.evaluate()
         then:
         project.configurations.getByName("gatling").allDependencies.find {
-            it.name == "gatling-charts-highcharts" && it.version == GatlingPluginExtension.GATLING_TOOL_VERSION
+            it.name == "gatling-charts-highcharts" && it.version == GatlingPluginExtension.GATLING_VERSION
         }
         project.configurations.getByName("gatlingImplementation").allDependencies.find {
             it.name == "scala-library" && it.version == GatlingPluginExtension.SCALA_VERSION
@@ -46,12 +46,23 @@ class GatlingPluginTest extends GatlingUnitSpec {
 
     def "should allow overriding gatling version via extension"() {
         when:
-        project.gatling { toolVersion = '3.0.0-RC1' }
+        project.gatling { gatlingVersion = '3.5.1' }
         and:
         project.evaluate()
         then:
         project.configurations.getByName("gatling").allDependencies.find {
-            it.name == "gatling-charts-highcharts" && it.version == "3.0.0-RC1"
+            it.name == "gatling-charts-highcharts" && it.version == "3.5.1"
+        }
+    }
+
+    def "should allow overriding gatling version via extension with deprecated property"() {
+        when:
+        project.gatling { toolVersion = '3.5.1' }
+        and:
+        project.evaluate()
+        then:
+        project.configurations.getByName("gatling").allDependencies.find {
+            it.name == "gatling-charts-highcharts" && it.version == "3.5.1"
         }
     }
 
@@ -147,7 +158,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         }
         and: "incorrect gatling config"
         project.gatling {
-            toolVersion = "000.000.000"
+            gatlingVersion = "000.000.000"
         }
         when:
         project.evaluate()
