@@ -73,6 +73,8 @@ class GatlingPluginExtension implements JvmConfigurable {
     /**
      * Use gatlingVersion instead
      * @param toolVersion the Gatling version
+     *
+     * @deprecated  As of release 3.7.0, replaced by {@link #gatlingVersion}
      */
     @Deprecated
     void setToolVersion(String toolVersion) {
