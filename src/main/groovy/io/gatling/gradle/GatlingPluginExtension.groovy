@@ -1,27 +1,92 @@
 package io.gatling.gradle
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+
 class GatlingPluginExtension implements JvmConfigurable {
 
     private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
+    private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
+    private static final String SIMULATION_ID_ENV = "GATLING_ENTERPRISE_SIMULATION_ID"
+    private static final String PUBLIC_API_PATH = "/api/public"
+
 
     final static class Enterprise {
         private String apiToken
+        private UUID simulationId
         private UUID packageId
+        private Map<String, String> systemProps
         private URL url = new URL("https://cloud.gatling.io/api/public")
+        private String simulationClass
 
-        def url(String url) {
-            this.url = new URL(url)
+        def setUrl(String url) {
+            this.url = new URL(url + PUBLIC_API_PATH)
         }
 
-        def packageId(String packageId) {
+        def url(String url) {
+            setUrl(url)
+        }
+
+        def setSimulationId(String simulationId) {
+            this.simulationId = UUID.fromString(simulationId)
+        }
+
+        def simulationId(String simulationId) {
+            setSimulationId(simulationId)
+        }
+
+        def setSystemProps(Map<String, String> systemProps) {
+            this.systemProps = systemProps
+        }
+
+        def systemProps(Map<String, String> systemProps) {
+            setSystemProps(systemProps)
+        }
+
+        def setPackageId(String packageId) {
             this.packageId = UUID.fromString(packageId)
         }
 
-        def apiToken(String apiToken) {
+        def packageId(String packageId) {
+            setPackageId(packageId)
+        }
+
+        def setApiToken(String apiToken) {
             this.apiToken = apiToken
         }
 
+        def apiToken(String apiToken) {
+            setApiToken(apiToken)
+        }
+
+        def setSimulationClass(String simulationClass) {
+            this.simulationClass = simulationClass
+        }
+
+        def simulationClass(String simulationClass) {
+            setSimulationClass(simulationClass)
+        }
+
+        @Input
+        @Optional
+        UUID getSimulationId() {
+            if (simulationId == null) {
+                def systemSimulationId = System.getProperty(SIMULATION_ID_PROPERTY, System.getenv(SIMULATION_ID_ENV))
+                return systemSimulationId ? UUID.fromString(systemSimulationId) : null
+            } else {
+                return simulationId
+            }
+        }
+
+        @Input
+        @Optional
+        Map<String, String> getSystemProps() {
+            return systemProps
+        }
+
+        @Input
+        @Optional
         String getApiToken() {
             if (apiToken == null) {
                 return System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
@@ -30,12 +95,22 @@ class GatlingPluginExtension implements JvmConfigurable {
             }
         }
 
+        @Input
+        @Optional
         UUID getPackageId() {
             return packageId
         }
 
+        @Input
+        @Optional
         URL getUrl() {
             return url
+        }
+
+        @Input
+        @Optional
+        String getSimulationClass() {
+            return simulationClass
         }
     }
 

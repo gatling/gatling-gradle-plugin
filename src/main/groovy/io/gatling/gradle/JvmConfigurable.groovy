@@ -35,6 +35,10 @@ trait JvmConfigurable {
         this.jvmArgs = jvmArgs
     }
 
+    void jvmArgs(List<String> jvmArgs) {
+        setJvmArgs(jvmArgs)
+    }
+
     private Map systemProperties
 
     @Input
@@ -47,6 +51,10 @@ trait JvmConfigurable {
         this.systemProperties = systemProperties
     }
 
+    void systemProperties(Map systemProperties) {
+        setSystemProperties(systemProperties)
+    }
+
     private Map environment = [:]
 
     @Input
@@ -56,5 +64,9 @@ trait JvmConfigurable {
 
     void setEnvironment(Map environment) {
         this.environment = environment
+    }
+
+    void environment(Map environment) {
+        setEnvironment(environment)
     }
 }
