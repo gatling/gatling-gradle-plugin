@@ -1,5 +1,8 @@
 package io.gatling.gradle
 
+import io.gatling.plugin.util.EnterpriseClient
+import io.gatling.plugin.util.OkHttpEnterpriseClient
+import io.gatling.plugin.util.exceptions.UnsupportedClientException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
@@ -10,7 +13,7 @@ class GatlingPluginExtension implements JvmConfigurable {
     private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
     private static final String SIMULATION_ID_ENV = "GATLING_ENTERPRISE_SIMULATION_ID"
     private static final String PUBLIC_API_PATH = "/api/public"
-
+    private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
         private String apiToken
@@ -111,6 +114,23 @@ class GatlingPluginExtension implements JvmConfigurable {
         @Optional
         String getSimulationClass() {
             return simulationClass
+        }
+
+        EnterpriseClient getEnterpriseClient(String version) {
+            try {
+                def apiToken = getApiToken()
+                if (!apiToken) {
+                    throw new IllegalArgumentException("The setting gatling.enterprise.apiToken needs to be set, please see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ to create an API token")
+                }
+                def client = new OkHttpEnterpriseClient(getUrl(), getApiToken())
+                client.checkVersionSupport(PLUGIN_NAME, version)
+                return client
+            } catch (UnsupportedClientException e) {
+                throw new IllegalArgumentException(
+                    "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
+                    e)
+            }
+
         }
     }
 
