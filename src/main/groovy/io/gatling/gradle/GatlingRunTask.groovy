@@ -16,12 +16,15 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 class GatlingRunTask extends DefaultTask implements JvmConfigurable {
-
     @Internal
     Closure simulations
 
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
+
+    GatlingRunTask() {
+        outputs.upToDateWhen { false }
+    }
 
     @InputFiles
     FileTree getJavaSimulationSources() {
