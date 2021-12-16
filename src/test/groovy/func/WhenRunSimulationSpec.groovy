@@ -79,7 +79,7 @@ gatling.charting.noReports = true
         }
     }
 
-    def "should not run gatling if no changes to source code"() {
+    def "should run gatling twice even if no changes to source code"() {
         given:
         prepareTest()
         buildFile << """
@@ -95,7 +95,7 @@ gatling { simulations = { include 'computerdatabase/BasicSimulation.scala' } }
         result = executeGradle("$GATLING_RUN_TASK_NAME")
         then:
         result.task(":compileGatlingScala").outcome == UP_TO_DATE
-        result.task(":$GATLING_RUN_TASK_NAME").outcome == UP_TO_DATE
+        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
 
         when: '3r time with changes'
         new File(new File(srcDir, "computerdatabase"), "BasicSimulation.scala") << """
