@@ -18,6 +18,7 @@ class GatlingPluginExtension implements JvmConfigurable {
     final static class Enterprise {
         private String apiToken
         private UUID simulationId
+        private UUID teamId
         private UUID packageId
         private Map<String, String> systemProps
         private URL url = new URL("https://cloud.gatling.io/api/public")
@@ -37,6 +38,14 @@ class GatlingPluginExtension implements JvmConfigurable {
 
         def simulationId(String simulationId) {
             setSimulationId(simulationId)
+        }
+
+        def setTeamId(String teamId) {
+            this.teamId = UUID.fromString(teamId)
+        }
+
+        def teamId(String teamId) {
+            setTeamId(teamId)
         }
 
         def setSystemProps(Map<String, String> systemProps) {

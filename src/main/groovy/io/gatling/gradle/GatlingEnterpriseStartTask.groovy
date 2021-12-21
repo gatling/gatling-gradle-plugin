@@ -31,7 +31,12 @@ class GatlingEnterpriseStartTask extends DefaultTask {
         if (gatling.enterprise.simulationId) {
             simulationAndRunSummary = enterpriseClient.startSimulation(gatling.enterprise.simulationId, systemProps, inputs.files.singleFile)
         } else {
-            simulationAndRunSummary = enterpriseClient.createAndStartSimulation(project.group.toString(), project.name, gatling.enterprise.simulationClass, systemProps, inputs.files.singleFile)
+            simulationAndRunSummary = enterpriseClient.createAndStartSimulation(
+                gatling.enterprise.teamId,
+                project.group.toString(),
+                project.name,
+                gatling.enterprise.simulationClass,
+                systemProps, inputs.files.singleFile)
             def simulation = simulationAndRunSummary.simulation
             getLogger().info("""
                          |Created simulation ${simulation.name} with ID ${simulation.id}
