@@ -3,6 +3,7 @@ package unit
 import io.gatling.gradle.GatlingPluginExtension
 import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingRunTask
+import io.gatling.gradle.SimulationFilesUtils
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
 import spock.lang.Unroll
 

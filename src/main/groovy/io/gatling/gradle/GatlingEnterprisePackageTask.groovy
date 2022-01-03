@@ -19,7 +19,7 @@ class GatlingEnterprisePackageTask extends ShadowJar {
         for (artifact in getResolvedConfiguration().resolvedArtifacts.flatten()) {
             def id = artifact.moduleVersion.id
             if (id.group == "io.gatling" && id.name == "gatling-app") {
-                getLogger().debug("Detected Gatling compile version: {}", id.version)
+                logger.debug("Detected Gatling compile version: {}", id.version)
                 return id.version
             }
         }
