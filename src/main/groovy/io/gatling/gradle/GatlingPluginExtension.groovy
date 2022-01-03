@@ -1,8 +1,15 @@
 package io.gatling.gradle
 
-import io.gatling.plugin.util.EnterpriseClient
-import io.gatling.plugin.util.OkHttpEnterpriseClient
-import io.gatling.plugin.util.exceptions.UnsupportedClientException
+import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.EnterprisePluginClient
+import io.gatling.plugin.InteractiveEnterprisePlugin
+import io.gatling.plugin.InteractiveEnterprisePluginClient
+import io.gatling.plugin.client.EnterpriseClient
+import io.gatling.plugin.client.http.OkHttpEnterpriseClient
+import io.gatling.plugin.exceptions.UnsupportedClientException
+import io.gatling.plugin.io.PluginIO
+import org.gradle.api.InvalidUserDataException
+import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
@@ -11,7 +18,10 @@ class GatlingPluginExtension implements JvmConfigurable {
     private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
     private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
-    private static final String SIMULATION_ID_ENV = "GATLING_ENTERPRISE_SIMULATION_ID"
+    private static final String TEAM_ID_PROPERTY = "gatling.enterprise.teamId"
+    private static final String PACKAGE_ID_PROPERTY = "gatling.enterprise.packageId"
+    private static final String SIMULATION_CLASS_PROPERTY = "gatling.enterprise.simulationClass"
+    private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
     private static final String PUBLIC_API_PATH = "/api/public"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
@@ -21,11 +31,20 @@ class GatlingPluginExtension implements JvmConfigurable {
         private UUID teamId
         private UUID packageId
         private Map<String, String> systemProps
-        private URL url = new URL("https://cloud.gatling.io/api/public")
+        private URL url = new URL("https://cloud.gatling.io")
         private String simulationClass
+        private boolean batchMode
+
+        def setBatchMode(boolean batchMode) {
+            this.batchMode = batchMode
+        }
+
+        def batchMode(boolean batchMode) {
+            setBatchMode(batchMode)
+        }
 
         def setUrl(String url) {
-            this.url = new URL(url + PUBLIC_API_PATH)
+            this.url = new URL(url)
         }
 
         def url(String url) {
@@ -84,7 +103,7 @@ class GatlingPluginExtension implements JvmConfigurable {
         @Optional
         UUID getSimulationId() {
             if (simulationId == null) {
-                def systemSimulationId = System.getProperty(SIMULATION_ID_PROPERTY, System.getenv(SIMULATION_ID_ENV))
+                def systemSimulationId = System.getProperty(SIMULATION_ID_PROPERTY)
                 return systemSimulationId ? UUID.fromString(systemSimulationId) : null
             } else {
                 return simulationId
@@ -100,17 +119,29 @@ class GatlingPluginExtension implements JvmConfigurable {
         @Input
         @Optional
         String getApiToken() {
-            if (apiToken == null) {
-                return System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
-            } else {
-                return apiToken
-            }
+            return apiToken ?: System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
         }
 
         @Input
         @Optional
         UUID getPackageId() {
-            return packageId
+            if (packageId == null) {
+                def systemPackageId = System.getProperty(PACKAGE_ID_PROPERTY)
+                return systemPackageId ? UUID.fromString(systemPackageId) : null
+            } else {
+                return packageId
+            }
+        }
+
+        @Input
+        @Optional
+        UUID getTeamId() {
+            if (teamId == null) {
+                def systemTeamId = System.getProperty(TEAM_ID_PROPERTY)
+                return systemTeamId ? UUID.fromString(systemTeamId) : null
+            } else {
+                return teamId
+            }
         }
 
         @Input
@@ -119,27 +150,56 @@ class GatlingPluginExtension implements JvmConfigurable {
             return url
         }
 
+        URL getApiUrl() {
+            return new URL(url.toExternalForm() + PUBLIC_API_PATH)
+        }
+
         @Input
         @Optional
         String getSimulationClass() {
-            return simulationClass
+            return simulationClass ?: System.getProperty(SIMULATION_CLASS_PROPERTY)
         }
 
-        EnterpriseClient getEnterpriseClient(String version) {
+        @Input
+        @Optional
+        boolean getBatchMode() {
+            if (batchMode) {
+                return batchMode
+            } else {
+                def systemBatchMode = System.getProperty(BATCH_MODE_PROPERTY)
+                return systemBatchMode ? Boolean.parseBoolean(systemBatchMode) : false
+            }
+        }
+
+        EnterpriseClient initEnterpriseClient(String version) {
+            def apiToken = getApiToken()
+            if (!apiToken) {
+                throw new InvalidUserDataException("""
+                    |An API token is required to call the Gatling Enterprise server.
+                    |See https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ and create a token wil the role 'Configure'.
+                    |You can then set your API token's value in the environment variable 'GATLING_ENTERPRISE_API_TOKEN', pass it with '-Dgatling.enterprise.apiToken=,' or add the configuration to your Gradle settings, e.g.:
+                    |gatling.enterprise.apiToken \"MY_API_TOKEN_VALUE\"
+                    """.stripMargin()
+                )
+            }
+
             try {
-                def apiToken = getApiToken()
-                if (!apiToken) {
-                    throw new IllegalArgumentException("The setting gatling.enterprise.apiToken needs to be set, please see https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ to create an API token")
-                }
-                def client = new OkHttpEnterpriseClient(getUrl(), getApiToken())
-                client.checkVersionSupport(PLUGIN_NAME, version)
-                return client
+                return OkHttpEnterpriseClient.getInstance(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
             } catch (UnsupportedClientException e) {
-                throw new IllegalArgumentException(
+                throw new InvalidUserDataException(
                     "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
                     e)
             }
+        }
 
+        EnterprisePlugin initEnterprisePlugin(String version, Logger logger) {
+            return new EnterprisePluginClient(initEnterpriseClient(version), new GradlePluginIO(logger).logger)
+        }
+
+        InteractiveEnterprisePlugin initInteractiveEnterprisePlugin(String version, Logger logger) {
+            PluginIO pluginIO = new GradlePluginIO(logger)
+
+            return new InteractiveEnterprisePluginClient(initEnterpriseClient(version), pluginIO)
         }
     }
 

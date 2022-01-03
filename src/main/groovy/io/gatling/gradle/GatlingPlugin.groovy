@@ -68,7 +68,7 @@ class GatlingPlugin implements Plugin<Project> {
             } else {
                 def legacyFrontlineTask = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME) {
                     doFirst {
-                        getLogger().warn("""\
+                        logger.warn("""\
                             Task $FRONTLINE_JAR_TASK_NAME is deprecated and will be removed in a future version.
                             Please use $ENTERPRISE_PACKAGE_TASK_NAME instead.
                             See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
