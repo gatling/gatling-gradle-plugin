@@ -7,6 +7,7 @@ import io.gatling.plugin.exceptions.SimulationStartException
 import io.gatling.plugin.model.Simulation
 import io.gatling.plugin.model.SimulationStartResult
 import org.gradle.api.DefaultTask
+import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
@@ -30,12 +31,12 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                 ? createNonInteractive(gatling, systemProps)
                 : createOrStartInteractive(gatling, systemProps)
 
-            logger.info("""
+            logger.lifecycle("""
                          |Simulation ${simulationStartResult.simulation.name} successfully started.
                          |Once running, reports will be available at: ${gatling.enterprise.url.toExternalForm() + simulationStartResult.runSummary.reportsPath}
                          |""".stripMargin())
         } catch (SimulationStartException e) {
-            logger.info(getLogCreatedSimulation(e.simulation))
+            logger.lifecycle(getLogCreatedSimulation(e.simulation, true))
             throw e
         }
     }
@@ -59,11 +60,11 @@ class GatlingEnterpriseStartTask extends DefaultTask {
             ))
         }
         EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger)
-        logger.info("No simulationId configured, creating a new simulation in batch mode")
+        logger.lifecycle("No simulationId configured, creating a new simulation in batch mode")
         try {
             def simulationStartResult = enterprisePlugin.createAndStartSimulation(gatling.enterprise.teamId, project.group.toString(), project.name,
                 chosenSimulation, gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
-            logger.info(getLogCreatedSimulation(simulationStartResult.simulation, true))
+            logger.lifecycle(getLogCreatedSimulation(simulationStartResult.simulation, true))
             return simulationStartResult
         } catch (SeveralTeamsFoundException e) {
             final String teams = e.getAvailableTeams().collect {String.format("- %s (%s)\n", it.id, it.name)}.join()
@@ -83,13 +84,17 @@ class GatlingEnterpriseStartTask extends DefaultTask {
     }
 
     private SimulationStartResult createOrStartInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
+        if (!logger.isEnabled(LogLevel.LIFECYCLE)) {
+            logger.error("Please activate the LIFECYCLE log level if you want to interact with the gatlingEnterpriseStart task.")
+        }
+
         InteractiveEnterprisePlugin enterprisePlugin = gatling.enterprise.initInteractiveEnterprisePlugin(project.version.toString(), logger)
         Iterable<String> classes = SimulationFilesUtils.resolveSimulations(project, null)
         def simulationStartResult = enterprisePlugin.createOrStartSimulation(
             gatling.enterprise.teamId, project.group.toString(), project.name, gatling.enterprise.simulationClass,
             classes.toList(), gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
         def simulation = simulationStartResult.simulation
-        logger.info(getLogCreatedSimulation(simulation, simulationStartResult.createdSimulation))
+        logger.lifecycle(getLogCreatedSimulation(simulation, simulationStartResult.createdSimulation))
         return simulationStartResult
     }
 
