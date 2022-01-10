@@ -139,7 +139,9 @@ class GatlingPluginTest extends GatlingUnitSpec {
     def "should not add mavenCentral if repo with gatling declared"() {
         given: "maven repo with gatling"
         project.repositories {
-            jcenter()
+            maven {
+                url "https://repo1.maven.org/maven2/"
+            }
         }
         when:
         project.evaluate()
@@ -147,7 +149,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         project.repositories.size() == 1
         with(project.repositories.first()) {
             it instanceof MavenArtifactRepository
-            it.url.toString() == "https://jcenter.bintray.com/"
+            it.url.toString() == "https://repo1.maven.org/maven2/"
         }
     }
 
