@@ -19,7 +19,7 @@ class GradlePluginIO implements PluginIO {
         return new PluginLogger() {
             @Override
             void info(String message) {
-                gradleLogger.info(message)
+                gradleLogger.lifecycle(message)
             }
 
 

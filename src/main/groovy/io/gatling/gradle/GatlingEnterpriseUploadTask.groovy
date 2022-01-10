@@ -14,10 +14,10 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
         def gatling = project.extensions.getByType(GatlingPluginExtension)
         EnterprisePlugin enterpriseClient = gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger)
         if (gatling.enterprise.packageId) {
-            logger.info("Uploading package with packageId " + gatling.enterprise.packageId)
+            logger.lifecycle("Uploading package with packageId " + gatling.enterprise.packageId)
             enterpriseClient.uploadPackage(gatling.enterprise.packageId, inputs.files.singleFile)
         } else if (gatling.enterprise.simulationId) {
-            logger.info("Uploading package belonging to the simulation " + gatling.enterprise.simulationId)
+            logger.lifecycle("Uploading package belonging to the simulation " + gatling.enterprise.simulationId)
             enterpriseClient.uploadPackageWithSimulationId(gatling.enterprise.simulationId, inputs.files.singleFile)
         } else {
             throw new InvalidUserDataException("You need to either configure gatling.enterprise.packageId (or pass it with '-Dgatling.enterprise.packageId=,') " +
