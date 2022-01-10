@@ -58,6 +58,17 @@ class GatlingPlugin implements Plugin<Project> {
         createEnterpriseUploadTask(project, gatlingEnterprisePackage)
         createEnterpriseStartTask(project, gatlingEnterprisePackage)
 
+        project.dependencies {
+            constraints {
+                zinc("org.apache.logging.log4j:log4j-core") {
+                    version {
+                        require "2.17.1"
+                    }
+                    because 'log4shell'
+                }
+            }
+        }
+
         project.afterEvaluate {
             if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
                 def errorMessage = """\
