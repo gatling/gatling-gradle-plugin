@@ -177,7 +177,7 @@ class GatlingPluginExtension implements JvmConfigurable {
                 throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
                     |See https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ and create a token wil the role 'Configure'.
-                    |You can then set your API token's value in the environment variable 'GATLING_ENTERPRISE_API_TOKEN', pass it with '-Dgatling.enterprise.apiToken=,' or add the configuration to your Gradle settings, e.g.:
+                    |You can then set your API token's value in the environment variable 'GATLING_ENTERPRISE_API_TOKEN', pass it with '-Dgatling.enterprise.apiToken=<API_TOKEN>' or add the configuration to your Gradle settings, e.g.:
                     |gatling.enterprise.apiToken \"MY_API_TOKEN_VALUE\"
                     """.stripMargin()
                 )
