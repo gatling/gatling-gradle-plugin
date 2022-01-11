@@ -106,7 +106,7 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                |To start directly the same simulation, add the following Gradle configuration:
                |gatling.enterprise.simulationId "${simulation.id}"
                |gatling.enterprise.packageId "${simulation.pkgId}"
-               |Or specify -Dgatling.enterprise.simulationId=${simulation.id} -Dgatling.enterprise.packageId "${simulation.pkgId}"
+               |Or specify -Dgatling.enterprise.simulationId=${simulation.id} -Dgatling.enterprise.packageId=${simulation.pkgId}
                |
                |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
                |""".stripMargin()

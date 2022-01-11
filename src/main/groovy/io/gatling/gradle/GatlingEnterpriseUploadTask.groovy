@@ -20,8 +20,8 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
             logger.lifecycle("Uploading package belonging to the simulation " + gatling.enterprise.simulationId)
             enterpriseClient.uploadPackageWithSimulationId(gatling.enterprise.simulationId, inputs.files.singleFile)
         } else {
-            throw new InvalidUserDataException("You need to either configure gatling.enterprise.packageId (or pass it with '-Dgatling.enterprise.packageId=,') " +
-                "or gatling.enterprise.simulation (or pass it with '-Dgatling.enterprise.simulationId=,') to upload a package." +
+            throw new InvalidUserDataException("You need to either configure gatling.enterprise.packageId (or pass it with '-Dgatling.enterprise.packageId=<PACKAGE_ID>') " +
+                "or gatling.enterprise.simulation (or pass it with '-Dgatling.enterprise.simulationId=<SIMULATION_ID>') to upload a package." +
                 "Please see https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.")
         }
     }
