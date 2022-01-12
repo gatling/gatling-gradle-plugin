@@ -28,4 +28,6 @@ abstract class GatlingFuncSpec extends GatlingSpec {
     BuildResult executeGradle(String... gradleArgs) {
         createRunner(gradleArgs).build()
     }
+
+    protected static final List<String> SUPPORTED_GRADLE_VERSIONS = ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.3.3"]
 }
