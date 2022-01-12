@@ -17,12 +17,15 @@ abstract class GatlingFuncSpec extends GatlingSpec {
         generateKotlinBuildScripts()
     }
 
-    BuildResult executeGradle(String... gradleArgs) {
+    protected GradleRunner createRunner(String... gradleArgs) {
         GradleRunner.create().forwardOutput()
             .withProjectDir(projectDir.getRoot())
             .withArguments(["--stacktrace", GATLING_HOST_NAME_SYS_PROP] + (gradleArgs as List))
             .withPluginClasspath()
             .withDebug(true)
-            .build()
+    }
+
+    BuildResult executeGradle(String... gradleArgs) {
+        createRunner(gradleArgs).build()
     }
 }

@@ -2,7 +2,6 @@ package func
 
 import helper.GatlingFuncSpec
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import spock.lang.Unroll
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
@@ -10,13 +9,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 class GradleCompatibilitySpec extends GatlingFuncSpec {
 
     BuildResult executeGradleTaskWithVersion(String task, String gradleVersion, boolean shouldFail) {
-        def runner = GradleRunner.create().forwardOutput()
-            .withProjectDir(projectDir.root)
-            .withArguments("--stacktrace", task)
-            .withPluginClasspath()
-            .withDebug(true)
-            .withGradleVersion(gradleVersion)
-
+        def runner = createRunner(task).withGradleVersion(gradleVersion)
         if (shouldFail) {
             return runner.buildAndFail()
         } else {
@@ -33,7 +26,7 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
         then:
         result.task(":tasks").outcome == SUCCESS
         where:
-        gradleVersion << ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.3"]
+        gradleVersion << ["5.0", "5.6.4", "6.0", "6.3", "6.4.1", "6.9.1", "7.0", "7.3.3"]
     }
 
     @Unroll
