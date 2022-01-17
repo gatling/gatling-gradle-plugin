@@ -4,8 +4,10 @@ import io.gatling.plugin.EnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.exceptions.SeveralTeamsFoundException
 import io.gatling.plugin.exceptions.SimulationStartException
+import io.gatling.plugin.exceptions.UserQuitException
 import io.gatling.plugin.model.Simulation
 import io.gatling.plugin.model.SimulationStartResult
+import org.gradle.api.BuildCancelledException
 import org.gradle.api.DefaultTask
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.CacheableTask
@@ -35,6 +37,8 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                          |Simulation ${simulationStartResult.simulation.name} successfully started.
                          |Once running, reports will be available at: ${gatling.enterprise.url.toExternalForm() + simulationStartResult.runSummary.reportsPath}
                          |""".stripMargin())
+        } catch (UserQuitException e) {
+            throw new BuildCancelledException(e.getMessage(), e)
         } catch (SimulationStartException e) {
             logger.lifecycle(getLogCreatedSimulation(e.simulation, true))
             throw e
