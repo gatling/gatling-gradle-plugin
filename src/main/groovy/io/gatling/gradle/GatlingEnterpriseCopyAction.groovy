@@ -126,7 +126,7 @@ class GatlingEnterpriseCopyAction implements CopyAction {
         private void visitFile(FileCopyDetails fileDetails) {
             if (!isArchive(fileDetails)) {
                 try {
-                    String entryName = dirDetails.relativePath.pathString
+                    String entryName = fileDetails.relativePath.pathString
                     ZipEntry entry = new ZipEntry(entryName)
                     entry.setTime(getArchiveTimeFor(fileDetails.lastModified))
                     entry.unixMode = (UnixStat.FILE_FLAG | fileDetails.mode)
