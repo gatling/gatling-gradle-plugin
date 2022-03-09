@@ -46,8 +46,9 @@ class GatlingEnterpriseStartTask extends DefaultTask {
     }
 
     private SimulationStartResult startNonInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
-        EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger)
-        return enterprisePlugin.uploadPackageAndStartSimulation(gatling.enterprise.simulationId, systemProps, inputs.files.singleFile)
+        gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger).withCloseable {
+            return it.uploadPackageAndStartSimulation(gatling.enterprise.simulationId, systemProps, inputs.files.singleFile)
+        }
     }
 
     private SimulationStartResult createNonInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
@@ -63,17 +64,17 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                     """.stripMargin()
             ))
         }
-        EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger)
-        logger.lifecycle("No simulationId configured, creating a new simulation in batch mode")
-        try {
-            def simulationStartResult = enterprisePlugin.createAndStartSimulation(gatling.enterprise.teamId, project.group.toString(), project.name,
-                chosenSimulation, gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
-            logger.lifecycle(getLogCreatedSimulation(simulationStartResult.simulation, true))
-            return simulationStartResult
-        } catch (SeveralTeamsFoundException e) {
-            final String teams = e.getAvailableTeams().collect {String.format("- %s (%s)\n", it.id, it.name)}.join()
-            final String teamExample = e.getAvailableTeams().get(0).id.toString()
-            final String msg ="""
+        gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger).withCloseable {
+            logger.lifecycle("No simulationId configured, creating a new simulation in batch mode")
+            try {
+                def simulationStartResult = it.createAndStartSimulation(gatling.enterprise.teamId, project.group.toString(), project.name,
+                    chosenSimulation, gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
+                logger.lifecycle(getLogCreatedSimulation(simulationStartResult.simulation, true))
+                return simulationStartResult
+            } catch (SeveralTeamsFoundException e) {
+                final String teams = e.getAvailableTeams().collect { String.format("- %s (%s)\n", it.id, it.name) }.join()
+                final String teamExample = e.getAvailableTeams().get(0).id.toString()
+                final String msg = """
                 |More than 1 team were found while creating a simulation.
                 |Available teams:
                 |${teams}
@@ -83,7 +84,8 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                 |
                 |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
                 """.stripMargin()
-            throw new TaskExecutionException(this, new IllegalArgumentException(msg))
+                throw new TaskExecutionException(this, new IllegalArgumentException(msg))
+            }
         }
     }
 
