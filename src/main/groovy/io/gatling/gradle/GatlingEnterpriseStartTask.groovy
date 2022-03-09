@@ -1,6 +1,5 @@
 package io.gatling.gradle
 
-import io.gatling.plugin.EnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.exceptions.SeveralTeamsFoundException
 import io.gatling.plugin.exceptions.SimulationStartException

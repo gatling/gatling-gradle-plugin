@@ -16,7 +16,7 @@ import org.gradle.api.tasks.bundling.Jar
 class GatlingEnterprisePackageTask extends Jar {
 
     @Classpath @Optional
-    List<Configuration> configurations;
+    List<Configuration> configurations
 
     GatlingEnterprisePackageTask() {
         super()
