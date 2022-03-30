@@ -1,36 +1,49 @@
 package io.gatling.gradle
 
-import io.gatling.plugin.InteractiveEnterprisePlugin
+import io.gatling.plugin.exceptions.SeveralSimulationClassNamesFoundException
 import io.gatling.plugin.exceptions.SeveralTeamsFoundException
 import io.gatling.plugin.exceptions.SimulationStartException
 import io.gatling.plugin.exceptions.UserQuitException
 import io.gatling.plugin.model.Simulation
-import io.gatling.plugin.model.SimulationStartResult
 import org.gradle.api.BuildCancelledException
 import org.gradle.api.DefaultTask
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
 
 @CacheableTask
 class GatlingEnterpriseStartTask extends DefaultTask {
-    @Internal
-    Closure simulations
 
     @TaskAction
     void publish() {
-        def gatling = project.extensions.getByType(GatlingPluginExtension)
-
-        def systemProps = gatling.enterprise.systemProps ?: [:]
+        final GatlingPluginExtension gatling = project.extensions.getByType(GatlingPluginExtension)
+        final Map<String, String> systemProperties = gatling.enterprise.systemProps ?: [:]
+        final String version = project.version.toString()
+        final UUID simulationId = gatling.enterprise.simulationId
+        final String simulationClass = gatling.enterprise.simulationClass
+        final File file = inputs.files.singleFile
+        final UUID teamId = gatling.enterprise.teamId
+        final String groupId = project.group.toString()
+        final String artifactId = project.name
+        final UUID packageId = gatling.enterprise.packageId
 
         try {
-            def simulationStartResult = gatling.enterprise.simulationId
-                ? startNonInteractive(gatling, systemProps)
-                : gatling.enterprise.batchMode
-                ? createNonInteractive(gatling, systemProps)
-                : createOrStartInteractive(gatling, systemProps)
+            def enterprisePlugin =
+                gatling.enterprise.batchMode ?
+                    gatling.enterprise.initBatchEnterprisePlugin(version, logger) :
+                    gatling.enterprise.initInteractiveEnterprisePlugin(version, logger)
+
+            def simulationStartResult = gatling.enterprise.simulationId ?
+                enterprisePlugin.uploadPackageAndStartSimulation(simulationId, systemProperties, simulationClass, file) :
+                enterprisePlugin.createAndStartSimulation(teamId, groupId, artifactId, simulationClass, packageId, systemProperties, file)
+
+            if (simulationStartResult.createdSimulation) {
+                logCreatedSimulation(simulationStartResult.simulation)
+            }
+
+            if (simulationId == null) {
+                logSimulationConfiguration(simulationStartResult.simulation)
+            }
 
             logger.lifecycle("""
                          |Simulation ${simulationStartResult.simulation.name} successfully started.
@@ -38,42 +51,10 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                          |""".stripMargin())
         } catch (UserQuitException e) {
             throw new BuildCancelledException(e.getMessage(), e)
-        } catch (SimulationStartException e) {
-            logger.lifecycle(getLogCreatedSimulation(e.simulation, true))
-            throw e
-        }
-    }
-
-    private SimulationStartResult startNonInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
-        gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger).withCloseable {
-            return it.uploadPackageAndStartSimulation(gatling.enterprise.simulationId, systemProps, inputs.files.singleFile)
-        }
-    }
-
-    private SimulationStartResult createNonInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
-        List<String> classes = SimulationFilesUtils.resolveSimulations(project, null).toList()
-        def chosenSimulation = gatling.enterprise.simulationClass ?: classes.size() == 1 ? classes.get(0) : null
-        if (!gatling.enterprise.simulationId && !chosenSimulation) {
-            throw new TaskExecutionException(this,
-                new IllegalArgumentException("""
-                    |Specify gatling.enterprise.simulationId in your build.gradle if you want to start a simulation,
-                    |or gatling.enterprise.simulationClass if you want to create a new simulation.
-                    |You can also use -Dgatling.enterprise.simulationId= and -Dgatling.enterprise.simulationClass=
-                    |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
-                    """.stripMargin()
-            ))
-        }
-        gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger).withCloseable {
-            logger.lifecycle("No simulationId configured, creating a new simulation in batch mode")
-            try {
-                def simulationStartResult = it.createAndStartSimulation(gatling.enterprise.teamId, project.group.toString(), project.name,
-                    chosenSimulation, gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
-                logger.lifecycle(getLogCreatedSimulation(simulationStartResult.simulation, true))
-                return simulationStartResult
-            } catch (SeveralTeamsFoundException e) {
-                final String teams = e.getAvailableTeams().collect { String.format("- %s (%s)\n", it.id, it.name) }.join()
-                final String teamExample = e.getAvailableTeams().get(0).id.toString()
-                final String msg = """
+        } catch (SeveralTeamsFoundException e) {
+            final String teams = e.getAvailableTeams().collect { String.format("- %s (%s)\n", it.id, it.name) }.join()
+            final String teamExample = e.getAvailableTeams().head().id.toString()
+            throwTaskExecutionException("""
                 |More than 1 team were found while creating a simulation.
                 |Available teams:
                 |${teams}
@@ -82,39 +63,39 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                 |Or specify -Dgatling.enterprise.teamId= on the command
                 |
                 |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
-                """.stripMargin()
-                throw new TaskExecutionException(this, new IllegalArgumentException(msg))
+                """.stripMargin())
+        } catch (SeveralSimulationClassNamesFoundException e) {
+            throwTaskExecutionException("""Several simulation classes were found
+             |${e.availableSimulationClassNames.map { name -> "- " + name }.mkString("\n")}
+             |Specify the simulation you want to use by adding this configuration to your build.gradle, e.g.:
+             |gatling.enterprise.teamId ${e.availableSimulationClassNames.head()}
+             |Or specify -Dgatling.enterprise.simulationClass=<className> on the command
+             |""".stripMargin())
+        } catch (SimulationStartException e) {
+            if (e.created) {
+                logCreatedSimulation(e.simulation)
             }
+            logSimulationConfiguration(e.simulation)
+            throw e.getCause()
         }
     }
 
-    private SimulationStartResult createOrStartInteractive(GatlingPluginExtension gatling, Map<String, String> systemProps) {
-        if (!logger.isEnabled(LogLevel.LIFECYCLE)) {
-            logger.error("Please activate the LIFECYCLE log level if you want to interact with the gatlingEnterpriseStart task.")
-        }
-
-        InteractiveEnterprisePlugin enterprisePlugin = gatling.enterprise.initInteractiveEnterprisePlugin(project.version.toString(), logger)
-        Iterable<String> classes = SimulationFilesUtils.resolveSimulations(project, null)
-        def simulationStartResult = enterprisePlugin.createOrStartSimulation(
-            gatling.enterprise.teamId, project.group.toString(), project.name, gatling.enterprise.simulationClass,
-            classes.toList(), gatling.enterprise.packageId, systemProps, inputs.files.singleFile)
-        def simulation = simulationStartResult.simulation
-        logger.lifecycle(getLogCreatedSimulation(simulation, simulationStartResult.createdSimulation))
-        return simulationStartResult
+    private void throwTaskExecutionException(String message) {
+        throw new TaskExecutionException(this, new IllegalArgumentException(message))
     }
 
-    private static String getLogCreatedSimulation(Simulation simulation, boolean create) {
-        def verb = create ? "Created" : "Started"
-        return """
-               |$verb simulation ${simulation.name} with ID ${simulation.id}
-               |
-               |To start directly the same simulation, add the following Gradle configuration:
-               |gatling.enterprise.simulationId "${simulation.id}"
-               |gatling.enterprise.packageId "${simulation.pkgId}"
-               |Or specify -Dgatling.enterprise.simulationId=${simulation.id} -Dgatling.enterprise.packageId=${simulation.pkgId}
-               |
-               |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
-               |""".stripMargin()
+    private void logCreatedSimulation(Simulation simulation) {
+        logger.lifecycle("Created simulation named ${simulation.name} with ID '${simulation.id}'")
     }
 
+    private void logSimulationConfiguration(Simulation simulation) {
+        logger.lifecycle("""
+           |To start directly the same simulation, add the following Gradle configuration:
+           |gatling.enterprise.simulationId "${simulation.id}"
+           |gatling.enterprispackageId "${simulation.pkgId}"
+           |Or specify -Dgatling.enterprissimulationId=${simulation.id} -Dgatling.enterprispackageId=${simulation.pkgId}
+           |
+           |See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.
+           |""".stripMargin())
+    }
 }
