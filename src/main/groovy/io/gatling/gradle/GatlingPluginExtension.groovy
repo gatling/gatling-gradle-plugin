@@ -1,7 +1,7 @@
 package io.gatling.gradle
 
-import io.gatling.plugin.EnterprisePlugin
-import io.gatling.plugin.EnterprisePluginClient
+import io.gatling.plugin.BatchEnterprisePlugin
+import io.gatling.plugin.BatchEnterprisePluginClient
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePluginClient
 import io.gatling.plugin.client.EnterpriseClient
@@ -184,7 +184,7 @@ class GatlingPluginExtension implements JvmConfigurable {
             }
 
             try {
-                return OkHttpEnterpriseClient.getInstance(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
+                return new OkHttpEnterpriseClient(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
             } catch (UnsupportedClientException e) {
                 throw new InvalidUserDataException(
                     "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
@@ -192,8 +192,8 @@ class GatlingPluginExtension implements JvmConfigurable {
             }
         }
 
-        EnterprisePlugin initEnterprisePlugin(String version, Logger logger) {
-            return new EnterprisePluginClient(initEnterpriseClient(version), new GradlePluginIO(logger).logger)
+        BatchEnterprisePlugin initBatchEnterprisePlugin(String version, Logger logger) {
+            return new BatchEnterprisePluginClient(initEnterpriseClient(version), new GradlePluginIO(logger).logger)
         }
 
         InteractiveEnterprisePlugin initInteractiveEnterprisePlugin(String version, Logger logger) {

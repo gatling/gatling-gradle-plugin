@@ -11,7 +11,7 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
     @TaskAction
     void publish() {
         def gatling = project.extensions.getByType(GatlingPluginExtension)
-        gatling.enterprise.initEnterprisePlugin(project.version.toString(), logger).withCloseable {
+        gatling.enterprise.initBatchEnterprisePlugin(project.version.toString(), logger).withCloseable {
             if (gatling.enterprise.packageId) {
                 logger.lifecycle("Uploading package with packageId " + gatling.enterprise.packageId)
                 it.uploadPackage(gatling.enterprise.packageId, inputs.files.singleFile)
