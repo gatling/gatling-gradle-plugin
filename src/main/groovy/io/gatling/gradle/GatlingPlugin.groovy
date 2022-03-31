@@ -134,6 +134,7 @@ class GatlingPlugin implements Plugin<Project> {
         gatlingEnterprisePackage.classifier = "tests"
 
         gatlingEnterprisePackage.exclude(
+            "module-info.class",
             "META-INF/LICENSE",
             "META-INF/MANIFEST.MF",
             "META-INF/versions/**",
