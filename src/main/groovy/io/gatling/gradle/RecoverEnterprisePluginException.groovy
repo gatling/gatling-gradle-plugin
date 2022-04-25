@@ -19,6 +19,12 @@ class RecoverEnterprisePluginException {
             return f.doCall()
         }  catch (UserQuitException e) {
             throw new BuildCancelledException(e.getMessage(), e)
+        } catch (UnsupportedJavaVersionException e) {
+            throwTaskExecutionException(f.getThisObject(), """
+                |${e.getMessage()}
+                |In order to target the supported Java bytecode version, please configure targetCompatibility to Java ${e.supportedVersion} in your build configuration. (see https://docs.gradle.org/current/userguide/java_plugin.html#sec:java-extension)
+                |Or, reported class may come from your project dependencies, published targeting Java ${e.version}.
+                """.stripMargin())
         } catch (SeveralTeamsFoundException e) {
             final String teams = e.getAvailableTeams().collect { String.format("- %s (%s)\n", it.id, it.name) }.join()
             final String teamExample = e.getAvailableTeams().head().id.toString()
