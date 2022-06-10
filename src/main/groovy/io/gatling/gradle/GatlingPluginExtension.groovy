@@ -22,6 +22,8 @@ class GatlingPluginExtension implements JvmConfigurable {
     private static final String PACKAGE_ID_PROPERTY = "gatling.enterprise.packageId"
     private static final String SIMULATION_CLASS_PROPERTY = "gatling.enterprise.simulationClass"
     private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
+    private static final String SYSTEM_PROPS_PROPERTY = "gatling.enterprise.systemProps"
+    private static final String ENVIRONMENT_VARIABLES_PROPERTY = "gatling.enterprise.environmentVariables"
     private static final String PUBLIC_API_PATH = "/api/public"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
@@ -31,6 +33,9 @@ class GatlingPluginExtension implements JvmConfigurable {
         private UUID teamId
         private UUID packageId
         private Map<String, String> systemProps
+        private String systemPropsString
+        private Map<String, String> environmentVariables
+        private String environmentVariablesString
         private URL url = new URL("https://cloud.gatling.io")
         private String simulationClass
         private boolean batchMode
@@ -75,6 +80,30 @@ class GatlingPluginExtension implements JvmConfigurable {
             setSystemProps(systemProps)
         }
 
+        def setSystemPropsString(String systemPropsString) {
+            this.systemPropsString = systemPropsString
+        }
+
+        def systemPropsString(String systemPropsString) {
+            setSystemPropsString(systemPropsString)
+        }
+
+        def setEnvironmentVariables(Map<String, String> environmentVariables) {
+            this.environmentVariables = environmentVariables
+        }
+
+        def environmentVariables(Map<String, String> environmentVariables) {
+            setEnvironmentVariables(environmentVariables)
+        }
+
+        def setEnvironmentVariablesString(String environmentVariablesString) {
+            this.environmentVariablesString = environmentVariablesString
+        }
+
+        def environmentVariablesString(String environmentVariablesString) {
+            setEnvironmentVariablesString(environmentVariablesString)
+        }
+
         def setPackageId(String packageId) {
             this.packageId = UUID.fromString(packageId)
         }
@@ -114,6 +143,24 @@ class GatlingPluginExtension implements JvmConfigurable {
         @Optional
         Map<String, String> getSystemProps() {
             return systemProps
+        }
+
+        @Input
+        @Optional
+        String getSystemPropsString() {
+            return systemPropsString ?: System.getProperty(SYSTEM_PROPS_PROPERTY)
+        }
+
+        @Input
+        @Optional
+        Map<String, String> getEnvironmentVariables() {
+            return environmentVariables
+        }
+
+        @Input
+        @Optional
+        String getEnvironmentVariablesString() {
+            return environmentVariablesString ?: System.getProperty(ENVIRONMENT_VARIABLES_PROPERTY)
         }
 
         @Input

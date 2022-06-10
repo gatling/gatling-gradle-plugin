@@ -2,6 +2,7 @@ package io.gatling.gradle
 
 import io.gatling.plugin.EnterprisePlugin
 import io.gatling.plugin.model.SimulationStartResult
+import io.gatling.plugin.util.PropertiesParserUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.TaskAction
@@ -9,10 +10,18 @@ import org.gradle.api.tasks.TaskAction
 @CacheableTask
 class GatlingEnterpriseStartTask extends DefaultTask {
 
+    private static Map<String, String> selectProperties(
+        Map<String, String> propertiesMap, String propertiesString) {
+        return (propertiesMap == null || propertiesMap.isEmpty()) ? PropertiesParserUtil.parseProperties(propertiesString) :propertiesMap
+    }
+
     @TaskAction
     void publish() {
         final GatlingPluginExtension gatling = project.extensions.getByType(GatlingPluginExtension)
         final Map<String, String> systemProperties = gatling.enterprise.systemProps ?: [:]
+        final String systemPropertiesString = gatling.enterprise.systemPropsString
+        final Map<String, String> environmentVariables = gatling.enterprise.environmentVariables ?: [:]
+        final String environmentVariablesString = gatling.enterprise.environmentVariablesString
         final String version = project.version.toString()
         final UUID simulationId = gatling.enterprise.simulationId
         final String simulationClass = gatling.enterprise.simulationClass
@@ -29,8 +38,8 @@ class GatlingEnterpriseStartTask extends DefaultTask {
 
         final SimulationStartResult simulationStartResult = RecoverEnterprisePluginException.handle(logger) {
             gatling.enterprise.simulationId ?
-                    enterprisePlugin.uploadPackageAndStartSimulation(simulationId, systemProperties, simulationClass, file) :
-                    enterprisePlugin.createAndStartSimulation(teamId, groupId, artifactId, simulationClass, packageId, systemProperties, file)
+                    enterprisePlugin.uploadPackageAndStartSimulation(simulationId, selectProperties(systemProperties, systemPropertiesString), selectProperties(environmentVariables, environmentVariablesString), simulationClass, file) :
+                    enterprisePlugin.createAndStartSimulation(teamId, groupId, artifactId, simulationClass, packageId, selectProperties(systemProperties, systemPropertiesString), selectProperties(environmentVariables, environmentVariablesString), file)
         }
 
         if (simulationStartResult.createdSimulation) {
