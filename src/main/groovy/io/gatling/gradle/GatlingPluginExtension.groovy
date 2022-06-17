@@ -5,7 +5,7 @@ import io.gatling.plugin.BatchEnterprisePluginClient
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePluginClient
 import io.gatling.plugin.client.EnterpriseClient
-import io.gatling.plugin.client.http.OkHttpEnterpriseClient
+import io.gatling.plugin.client.http.HttpEnterpriseClient
 import io.gatling.plugin.exceptions.UnsupportedClientException
 import io.gatling.plugin.io.PluginIO
 import org.gradle.api.InvalidUserDataException
@@ -231,7 +231,7 @@ class GatlingPluginExtension implements JvmConfigurable {
             }
 
             try {
-                return new OkHttpEnterpriseClient(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
+                return new HttpEnterpriseClient(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
             } catch (UnsupportedClientException e) {
                 throw new InvalidUserDataException(
                     "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
