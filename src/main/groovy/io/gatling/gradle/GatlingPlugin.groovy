@@ -225,15 +225,13 @@ class GatlingPlugin implements Plugin<Project> {
                 }
             }
 
-            if (shouldAddMavenCentral(evaluatedProject)) {
-                evaluatedProject.repositories {
-                    mavenCentral(name: "gatlingMavenCentral")
-                }
+            if (isMissGatlingDependency(evaluatedProject)) {
+                throw new GradleException("""Gatling dependencies cannot be found with your current configuration. Please add a repository (ex: mavenCentral : https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:maven_central )""")
             }
         }
     }
 
-    private static boolean shouldAddMavenCentral(Project project) {
+    private static boolean isMissGatlingDependency(Project project) {
 
         if (!project.repositories.isEmpty()) {
             // there are declared repositories, let's try to resolve gatling configuration

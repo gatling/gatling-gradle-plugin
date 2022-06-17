@@ -17,6 +17,7 @@ abstract class GatlingUnitSpec extends GatlingSpec {
 
         project = ProjectBuilder.builder().withProjectDir(projectDir.root).build()
         project.pluginManager.apply 'io.gatling.gradle'
+        project.repositories { mavenCentral(name: "gatlingMavenCentral") }
 
         gatlingExt = project.extensions.getByType(GatlingPluginExtension)
     }
