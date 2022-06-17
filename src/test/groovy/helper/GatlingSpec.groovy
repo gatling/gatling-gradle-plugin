@@ -27,7 +27,14 @@ abstract class GatlingSpec extends Specification {
     def generateBuildScripts() {
         buildFile = projectDir.newFile("build.gradle")
         buildFile.text = """
-plugins { id 'io.gatling.gradle' }
+plugins {
+  id 'io.gatling.gradle'
+}
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
   gatling group: 'commons-lang', name: 'commons-lang', version: '2.6'
   gatling group: 'org.json4s', name: 'json4s-jackson_2.13', version: '3.6.10'
@@ -41,6 +48,11 @@ dependencies {
 plugins {
   id("io.gatling.gradle")
 }
+
+repositories {
+    mavenCentral()
+}
+
 dependencies {
   gatling("commons-lang:commons-lang:2.6")
   gatling("org.json4s:json4s-jackson_2.13:3.6.10")
