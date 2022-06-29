@@ -11,7 +11,7 @@ import static io.gatling.gradle.GatlingPluginExtension.DEFAULT_LOG_LEVEL
 
 class LogbackConfigTask extends DefaultTask {
 
-    public static File logbackFile(File buildDir) {
+    static File logbackFile(File buildDir) {
         new File(buildDir, "generated/gatlingLogback/logback.xml")
     }
 
