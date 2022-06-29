@@ -31,7 +31,7 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
         }
     }
 
-    List<String> createGatlingArgs() {
+    List<String> createGatlingArgs(String gatlingVersion) {
 
         FileCollection classesDirs = project.sourceSets.gatling.output.classesDirs
 
@@ -41,9 +41,18 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
         File binariesFolder = scalaClasses != null ? scalaClasses :
             kotlinClasses != null ? kotlinClasses : javaClasses
 
-        return ['-bf', binariesFolder.absolutePath,
-                "-rsf", "${project.sourceSets.gatling.output.resourcesDir}",
-                "-rf", gatlingReportDir.absolutePath]
+        def gatlingVersionComponents = gatlingVersion.split("\\.")
+        int gatlingMajorVersion = Integer.valueOf(gatlingVersionComponents[0])
+        int gatlingMinorVersion = Integer.valueOf(gatlingVersionComponents[1])
+
+        def baseArgs = [
+            '-bf', binariesFolder.absolutePath,
+            "-rsf", "${project.sourceSets.gatling.output.resourcesDir}",
+            "-rf", gatlingReportDir.absolutePath]
+
+        return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
+            baseArgs + ["-l", "gradle"] :
+            baseArgs
     }
 
     @TaskAction
@@ -66,7 +75,7 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
                     exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
                 }
 
-                exec.args this.createGatlingArgs()
+                exec.args this.createGatlingArgs(gatlingExt.gatlingVersion)
                 exec.args "-s", simulationClass
 
                 exec.standardInput = System.in
