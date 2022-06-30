@@ -9,6 +9,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
+import org.gradle.util.GradleVersion
 
 class GatlingRunTask extends DefaultTask implements JvmConfigurable {
     @Internal
@@ -51,7 +52,7 @@ class GatlingRunTask extends DefaultTask implements JvmConfigurable {
             "-rf", gatlingReportDir.absolutePath]
 
         return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
-            baseArgs + ["-l", "gradle"] :
+            baseArgs + ["-l", "gradle", "-btv", GradleVersion.current().version] :
             baseArgs
     }
 
