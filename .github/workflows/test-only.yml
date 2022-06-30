@@ -32,6 +32,5 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: check
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
+          # Disable cache because of corruption
+          cache-disabled: true
