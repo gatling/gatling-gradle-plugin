@@ -4,9 +4,7 @@ import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
 import io.gatling.gradle.LogbackConfigTask
-import org.gradle.api.GradleException
-import org.gradle.api.ProjectConfigurationException
-import org.gradle.api.artifacts.repositories.MavenArtifactRepository
+import io.gatling.plugin.GatlingConstants
 import org.gradle.language.jvm.tasks.ProcessResources
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
@@ -26,7 +24,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         with(gatlingExt) {
             it instanceof GatlingPluginExtension
             it.simulations == DEFAULT_SIMULATIONS
-            it.jvmArgs == DEFAULT_JVM_ARGS
+            it.jvmArgs == GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING
             it.systemProperties == DEFAULT_SYSTEM_PROPS
         }
     }

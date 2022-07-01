@@ -2,6 +2,7 @@ package io.gatling.gradle
 
 import io.gatling.plugin.BatchEnterprisePlugin
 import io.gatling.plugin.BatchEnterprisePluginClient
+import io.gatling.plugin.GatlingConstants
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePluginClient
 import io.gatling.plugin.client.EnterpriseClient
@@ -302,7 +303,7 @@ class GatlingPluginExtension implements JvmConfigurable {
     LogHttp logHttp
 
     GatlingPluginExtension() {
-        this.jvmArgs = DEFAULT_JVM_ARGS
+        this.jvmArgs = GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING
         this.systemProperties = DEFAULT_SYSTEM_PROPS
     }
 }

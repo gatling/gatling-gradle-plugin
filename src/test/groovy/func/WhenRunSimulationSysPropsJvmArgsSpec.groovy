@@ -3,6 +3,7 @@ package func
 import io.gatling.gradle.GatlingPluginExtension
 import helper.GatlingDebug
 import helper.GatlingFuncSpec
+import io.gatling.plugin.GatlingConstants
 import org.gradle.testkit.runner.BuildResult
 import org.junit.Rule
 import org.junit.contrib.java.lang.system.EnvironmentVariables
@@ -50,7 +51,7 @@ gatling {
         BuildResult result = executeGradle(GATLING_RUN_TASK_NAME)
         then:
         with(new GatlingDebug(result)) {
-            jvmArgs.sort() == GatlingPluginExtension.DEFAULT_JVM_ARGS.findAll { it.startsWith("-X") }.sort()
+            jvmArgs.sort() == GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING.findAll { it.startsWith("-X") }.sort()
         }
 
         when: "override via gatling extension"
