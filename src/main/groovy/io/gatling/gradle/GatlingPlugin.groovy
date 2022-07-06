@@ -4,7 +4,6 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
-import org.gradle.api.artifacts.result.UnresolvedDependencyResult
 import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.util.GradleVersion
 import org.gradle.util.VersionNumber
@@ -224,45 +223,6 @@ class GatlingPlugin implements Plugin<Project> {
                     gatlingImplementation evaluatedProject.sourceSets.test.output
                 }
             }
-
-            if (isMissGatlingDependency(evaluatedProject)) {
-                throw new GradleException("""Gatling dependencies cannot be found with your current configuration. Please add a repository (ex: mavenCentral : https://docs.gradle.org/current/userguide/declaring_repositories.html#sub:maven_central )""")
-            }
-        }
-    }
-
-    private static boolean isMissGatlingDependency(Project project) {
-
-        if (!project.repositories.isEmpty()) {
-            // there are declared repositories, let's try to resolve gatling configuration
-            def resolutionRes = project.configurations.gatling.copyRecursive().incoming.resolutionResult
-            def deps = resolutionRes.allDependencies
-
-            if (deps.any { it instanceof UnresolvedDependencyResult }) {
-                // mavenCentral should be added only if dependencies from gatling configuration were not resolved
-                if (deps.size() > 1) {
-                    /**
-                     some dependencies were resolved and some were not
-                     it means that declared repositories either has content filter with gatling exclusion
-                     or contains only few of gatling dependencies
-                     adding mavenCentral that could resolve all of gatling and its transitive dependencies
-                     */
-                    return true
-                } else if (deps.size() == 1 && project.repositories.every { it.url.toString() != "https://repo.maven.apache.org/maven2/" }) {
-                    /**
-                     none of dependencies were resolved
-                     it could mean
-                     - incorrect gatling version used
-                     - maven repo is inaccessible (incorrect URL, temporary network issue or corporate policy)
-                     adding mavenCentral only if there's no already declared mavenCentral()
-                     */
-                    return true
-                }
-            }
-            return false
-        } else {
-            // there's no declared repositories, adding mavenCentral
-            return true
         }
     }
 }
