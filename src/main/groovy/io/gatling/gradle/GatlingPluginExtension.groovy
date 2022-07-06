@@ -25,7 +25,6 @@ class GatlingPluginExtension implements JvmConfigurable {
     private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
     private static final String SYSTEM_PROPS_PROPERTY = "gatling.enterprise.systemProps"
     private static final String ENVIRONMENT_VARIABLES_PROPERTY = "gatling.enterprise.environmentVariables"
-    private static final String PUBLIC_API_PATH = "/api/public"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
@@ -198,10 +197,6 @@ class GatlingPluginExtension implements JvmConfigurable {
             return url
         }
 
-        URL getApiUrl() {
-            return new URL(url.toExternalForm() + PUBLIC_API_PATH)
-        }
-
         @Input
         @Optional
         String getSimulationClass() {
@@ -232,7 +227,7 @@ class GatlingPluginExtension implements JvmConfigurable {
             }
 
             try {
-                return new HttpEnterpriseClient(getApiUrl(), getApiToken(), PLUGIN_NAME, version)
+                return new HttpEnterpriseClient(getUrl(), getApiToken(), PLUGIN_NAME, version)
             } catch (UnsupportedClientException e) {
                 throw new InvalidUserDataException(
                     "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
