@@ -7,7 +7,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-class GatlingEnterpriseUploadTask extends DefaultTask {
+final class GatlingEnterpriseUploadTask extends DefaultTask {
 
     @TaskAction
     void publish() {

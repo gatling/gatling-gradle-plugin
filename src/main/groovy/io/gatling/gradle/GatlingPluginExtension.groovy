@@ -14,7 +14,7 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
-class GatlingPluginExtension implements JvmConfigurable {
+final class GatlingPluginExtension implements JvmConfigurable {
 
     private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"

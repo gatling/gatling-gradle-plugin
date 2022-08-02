@@ -6,7 +6,7 @@ import io.gatling.plugin.io.PluginLogger
 import io.gatling.plugin.io.PluginScanner
 import org.gradle.api.logging.Logger
 
-class GradlePluginIO implements PluginIO {
+final class GradlePluginIO implements PluginIO {
     Logger gradleLogger
     Scanner scannerIn = new Scanner(System.in)
 

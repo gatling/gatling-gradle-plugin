@@ -7,7 +7,7 @@ import org.gradle.api.Task
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.TaskExecutionException
 
-class RecoverEnterprisePluginException {
+final class RecoverEnterprisePluginException {
 
     /**
      * @param f Closure defined inside a Task

@@ -25,7 +25,7 @@ import java.time.Month
 import java.time.ZoneId
 
 
-class GatlingEnterpriseCopyAction implements CopyAction {
+final class GatlingEnterpriseCopyAction implements CopyAction {
     /**
      * DOS epoch used as the default time for ZIP entries when file timestamps are not preserved (for reproducible ZIP
      * files). Uses the system default time zone because that's what {@link ZipEntry#setTime(long)} expects.

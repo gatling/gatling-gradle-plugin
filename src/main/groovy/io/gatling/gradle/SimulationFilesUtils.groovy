@@ -7,7 +7,7 @@ import org.gradle.api.tasks.InputFiles
 import java.nio.file.Path
 import java.nio.file.Paths
 
-class SimulationFilesUtils {
+final class SimulationFilesUtils {
 
     static Iterable<String> resolveSimulations(Project project, Closure simulations) {
         def javaSrcDirs = project.sourceSets.gatling.java.srcDirs.collect { Paths.get(it.absolutePath) }

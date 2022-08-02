@@ -8,7 +8,7 @@ import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.util.GradleVersion
 import org.gradle.util.VersionNumber
 
-class GatlingPlugin implements Plugin<Project> {
+final class GatlingPlugin implements Plugin<Project> {
 
     public static def GATLING_EXTENSION_NAME = 'gatling'
 

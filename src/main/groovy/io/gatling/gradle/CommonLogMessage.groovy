@@ -4,7 +4,7 @@ import io.gatling.plugin.model.Simulation
 import org.gradle.api.logging.Logger
 
 
-class CommonLogMessage {
+final class CommonLogMessage {
 
     static void logSimulationCreated(Simulation simulation, Logger logger) {
         logger.lifecycle("Created simulation named ${simulation.name} with ID '${simulation.id}'")

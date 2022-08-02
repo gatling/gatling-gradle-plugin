@@ -11,7 +11,7 @@ import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.util.GradleVersion
 
-class GatlingRunTask extends DefaultTask implements JvmConfigurable {
+final class GatlingRunTask extends DefaultTask implements JvmConfigurable {
     @Internal
     Closure simulations
 
