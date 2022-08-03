@@ -13,7 +13,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 
 @CacheableTask
-final class GatlingEnterprisePackageTask extends Jar {
+class GatlingEnterprisePackageTask extends Jar {
 
     @Classpath @Optional
     List<Configuration> configurations

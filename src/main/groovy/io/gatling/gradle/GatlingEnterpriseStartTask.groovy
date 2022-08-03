@@ -8,7 +8,7 @@ import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.TaskAction
 
 @CacheableTask
-final class GatlingEnterpriseStartTask extends DefaultTask {
+class GatlingEnterpriseStartTask extends DefaultTask {
 
     private static Map<String, String> selectProperties(
         Map<String, String> propertiesMap, String propertiesString) {

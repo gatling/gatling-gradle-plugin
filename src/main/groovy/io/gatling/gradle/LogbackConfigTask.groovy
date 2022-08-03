@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskAction
 import static io.gatling.gradle.GatlingPluginExtension.DEFAULT_LOG_HTTP
 import static io.gatling.gradle.GatlingPluginExtension.DEFAULT_LOG_LEVEL
 
-final class LogbackConfigTask extends DefaultTask {
+class LogbackConfigTask extends DefaultTask {
 
     static File logbackFile(File buildDir) {
         new File(buildDir, "generated/gatlingLogback/logback.xml")
