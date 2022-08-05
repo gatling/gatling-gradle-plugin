@@ -15,6 +15,8 @@ import org.gradle.api.tasks.bundling.Jar
 @CacheableTask
 class GatlingEnterprisePackageTask extends Jar {
 
+    private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = [ "netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos" ].asUnmodifiable()
+
     @Classpath @Optional
     List<Configuration> configurations
 
@@ -81,7 +83,7 @@ class GatlingEnterprisePackageTask extends Jar {
         for (dep in deps) {
             if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts", "io.gatling.frontline"]) {
                 collectDepAndChildren(dep, acc)
-            } else if (dep?.module?.id?.group == "io.netty" && dep?.module?.id?.name == "netty-all") {
+            } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
                 acc.add(dep)
             } else {
                 collectGatlingDepsRec(dep.children, acc)
