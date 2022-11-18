@@ -266,7 +266,7 @@ class GatlingPluginExtension implements JvmConfigurable {
 
     static final String GATLING_VERSION = '3.8.4'
 
-    static final String SCALA_VERSION = '2.13.8'
+    static final String SCALA_VERSION = '2.13.10'
 
     static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.java", "**/*Simulation*.kt", "**/*Simulation*.scala") }
 
