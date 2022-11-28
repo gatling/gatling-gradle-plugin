@@ -5,8 +5,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.plugins.scala.ScalaPlugin
-import org.gradle.util.GradleVersion
-import org.gradle.util.VersionNumber
+import org.gradle.util.GradleVersion;
 
 final class GatlingPlugin implements Plugin<Project> {
 
@@ -31,7 +30,7 @@ final class GatlingPlugin implements Plugin<Project> {
 
     void apply(Project project) {
 
-        if (VersionNumber.parse(GradleVersion.current().version).major < 5) {
+        if (GradleVersion.current() < GradleVersion.version("5.0")) {
             throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 5.0")
         }
 
