@@ -34,7 +34,8 @@ class GatlingEnterprisePackageTask extends Jar {
                 "Implementation-Version": project.version,
                 "Implementation-Vendor": project.group,
                 "Specification-Vendor": "GatlingCorp",
-                "Gatling-Version": gatlingVersion)
+                "Gatling-Version": gatlingVersion,
+                "Gatling-Packager": "gradle")
         }
         from(getIncludedDependencies())
         super.copy()
