@@ -3,7 +3,9 @@ package io.gatling.gradle
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
@@ -11,7 +13,20 @@ import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.util.GradleVersion
 
-class GatlingRunTask extends DefaultTask implements JvmConfigurable {
+class GatlingRunTask extends DefaultTask {
+
+    @Input
+    @Optional
+    List<String> jvmArgs
+
+    @Input
+    @Optional
+    Map systemProperties
+
+    @Input
+    @Optional
+    Map environment = [:]
+
     @Internal
     Closure simulations
 

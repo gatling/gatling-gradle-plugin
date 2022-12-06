@@ -14,8 +14,9 @@ import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
-class GatlingPluginExtension implements JvmConfigurable {
+class GatlingPluginExtension {
 
+    static final Map DEFAULT_SYSTEM_PROPS = [:]
     private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
     private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
@@ -276,6 +277,10 @@ class GatlingPluginExtension implements JvmConfigurable {
     String gatlingVersion = GATLING_VERSION
 
     String scalaVersion = SCALA_VERSION
+
+    List<String> jvmArgs
+    Map systemProperties
+    Map environment = [:]
 
     /**
      * Use gatlingVersion instead
