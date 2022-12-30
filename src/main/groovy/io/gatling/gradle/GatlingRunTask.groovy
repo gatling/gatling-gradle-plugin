@@ -75,7 +75,12 @@ class GatlingRunTask extends DefaultTask {
     void gatlingRun() {
         def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
 
-        Map<String, ExecResult> results = simulationFilesToFQN().collectEntries { String simulationClass ->
+        def resolvedSimulations = simulationFilesToFQN()
+        if (resolvedSimulations.isEmpty()) {
+            throw new IllegalArgumentException("No simulation matching 'simulations' closure found")
+        }
+
+        Map<String, ExecResult> results = resolvedSimulations.collectEntries { String simulationClass ->
             [(simulationClass): project.javaexec({ JavaExecSpec exec ->
                 exec.main = GatlingPluginExtension.GATLING_MAIN_CLASS
                 exec.classpath = project.configurations.gatlingRuntimeClasspath
