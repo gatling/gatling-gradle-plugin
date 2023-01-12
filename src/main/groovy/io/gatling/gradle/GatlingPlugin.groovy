@@ -129,7 +129,11 @@ final class GatlingPlugin implements Plugin<Project> {
     GatlingEnterprisePackageTask createEnterprisePackageTask(Project project) {
         GatlingEnterprisePackageTask gatlingEnterprisePackage = project.tasks.create(name: ENTERPRISE_PACKAGE_TASK_NAME, type: GatlingEnterprisePackageTask)
 
-        gatlingEnterprisePackage.classifier = "tests"
+        if(GradleUtils.isGradleFiveTwoOrNewer(project.gradle)) {
+            gatlingEnterprisePackage.archiveClassifier.set("tests")
+        } else {
+            gatlingEnterprisePackage.classifier = "tests"
+        }
 
         gatlingEnterprisePackage.exclude(
             "module-info.class",
