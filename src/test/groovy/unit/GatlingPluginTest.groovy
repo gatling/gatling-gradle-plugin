@@ -5,6 +5,7 @@ import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
 import io.gatling.gradle.LogbackConfigTask
 import io.gatling.plugin.GatlingConstants
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.jvm.tasks.ProcessResources
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
@@ -90,8 +91,10 @@ class GatlingPluginTest extends GatlingUnitSpec {
             it.simulations == null
             it.jvmArgs == null
             it.systemProperties == null
-            it.dependsOn.size() == 1 && it.dependsOn.first() instanceof Collection
-            it.dependsOn.first()*.name.sort() == ["gatlingClasses", "gatlingLogback"]
+            it.dependsOn.size() == 2
+            def taskNames = it.dependsOn.collect {TaskProvider element -> return element.name}
+            taskNames.contains("gatlingClasses")
+            taskNames.contains("gatlingLogback")
         }
     }
 
