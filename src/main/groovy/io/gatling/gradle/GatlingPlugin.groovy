@@ -5,6 +5,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.plugins.scala.ScalaPlugin
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.GradleVersion;
 
 final class GatlingPlugin implements Plugin<Project> {
@@ -40,21 +41,23 @@ final class GatlingPlugin implements Plugin<Project> {
 
         createConfiguration(project, gatlingExt)
 
-        project.tasks.create(name: GATLING_LOGBACK_TASK_NAME,
-            dependsOn: project.tasks.gatlingClasses, type: LogbackConfigTask,
-            description: "Prepare logback config", group: "Gatling")
+        project.tasks.register(GATLING_LOGBACK_TASK_NAME, LogbackConfigTask.class) {
+            dependsOn(project.tasks.named("gatlingClasses"))
+            description = "Prepare logback config"
+            group = "Gatling"
+        }
 
-        createGatlingTask(project, GATLING_RUN_TASK_NAME, null)
+        registerGatlingTask(project, GATLING_RUN_TASK_NAME, null)
 
         project.tasks.addRule("Pattern: $GATLING_RUN_TASK_NAME-<SimulationClass>: Executes single Gatling simulation.") { String taskName ->
             if (taskName.startsWith(GATLING_TASK_NAME_PREFIX)) {
-                createGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))
+                registerGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))
             }
         }
 
-        def gatlingEnterprisePackage = createEnterprisePackageTask(project)
-        createEnterpriseUploadTask(project, gatlingEnterprisePackage)
-        createEnterpriseStartTask(project, gatlingEnterprisePackage)
+        def gatlingEnterprisePackage = registerEnterprisePackageTask(project)
+        registerEnterpriseUploadTask(project, gatlingEnterprisePackage)
+        registerEnterpriseStartTask(project, gatlingEnterprisePackage)
 
         project.dependencies {
             constraints {
@@ -75,26 +78,26 @@ final class GatlingPlugin implements Plugin<Project> {
                     See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent()
                 throw new ProjectConfigurationException(errorMessage, [])
             } else {
-                def legacyFrontlineTask = project.tasks.create(name: FRONTLINE_JAR_TASK_NAME) {
+                project.tasks.register(FRONTLINE_JAR_TASK_NAME) {
                     doFirst {
                         logger.warn("""\
                             Task $FRONTLINE_JAR_TASK_NAME is deprecated and will be removed in a future version.
                             Please use $ENTERPRISE_PACKAGE_TASK_NAME instead.
                             See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
                     }
+                    finalizedBy(gatlingEnterprisePackage)
                 }
-                legacyFrontlineTask.finalizedBy(gatlingEnterprisePackage)
             }
         }
     }
 
-    void createGatlingTask(Project project, String taskName, String simulationFQN) {
-        def task = project.tasks.create(name: taskName,
-            dependsOn: [project.tasks.gatlingClasses, project.tasks.gatlingLogback],
-            type: GatlingRunTask, description: "Execute Gatling simulation", group: "Gatling")
+    void registerGatlingTask(Project project, String taskName, String simulationFQN) {
+        project.tasks.register(taskName, GatlingRunTask.class) {
+            dependsOn(project.tasks.named("gatlingClasses"), project.tasks.named("gatlingLogback"))
+            description = "Execute Gatling simulation"
+            group = "Gatling"
 
-        if (simulationFQN) {
-            task.configure {
+            if (simulationFQN) {
                 simulations = {
                     include(
                         "${simulationFQN.replace('.', '/')}.java",
@@ -106,66 +109,62 @@ final class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void createEnterpriseUploadTask(Project project, GatlingEnterprisePackageTask gatlingEnterprisePackageTask) {
-        project.tasks.create(
-            name: ENTERPRISE_UPLOAD_TASK_NAME,
-            type: GatlingEnterpriseUploadTask
-        ) {
+    void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+        project.tasks.register(ENTERPRISE_UPLOAD_TASK_NAME, GatlingEnterpriseUploadTask.class) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
         }
     }
 
-    void createEnterpriseStartTask(Project project, GatlingEnterprisePackageTask gatlingEnterprisePackageTask) {
-        project.tasks.create(
-            name: ENTERPRISE_START_TASK_NAME,
-            type: GatlingEnterpriseStartTask
-        ) {
+    void registerEnterpriseStartTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+        project.tasks.register(ENTERPRISE_START_TASK_NAME, GatlingEnterpriseStartTask.class) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
         }
     }
 
-    GatlingEnterprisePackageTask createEnterprisePackageTask(Project project) {
-        GatlingEnterprisePackageTask gatlingEnterprisePackage = project.tasks.create(name: ENTERPRISE_PACKAGE_TASK_NAME, type: GatlingEnterprisePackageTask)
+    TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
+        TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackage = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
+            packageTask.classifier = "tests"
 
-        gatlingEnterprisePackage.classifier = "tests"
+            packageTask.exclude(
+                "module-info.class",
+                "META-INF/LICENSE",
+                "META-INF/MANIFEST.MF",
+                "META-INF/versions/**",
+                "META-INF/maven/**",
+                "**/*.SF",
+                "**/*.DSA",
+                "**/*.RSA"
+            )
 
-        gatlingEnterprisePackage.exclude(
-            "module-info.class",
-            "META-INF/LICENSE",
-            "META-INF/MANIFEST.MF",
-            "META-INF/versions/**",
-            "META-INF/maven/**",
-            "**/*.SF",
-            "**/*.DSA",
-            "**/*.RSA"
-        )
+            packageTask.from(project.sourceSets.gatling.output)
 
-        gatlingEnterprisePackage.from(project.sourceSets.gatling.output)
-        gatlingEnterprisePackage.configurations = [
-            project.configurations.gatlingRuntimeClasspath
-        ]
-        gatlingEnterprisePackage.metaInf {
-            def tempDir = new File(gatlingEnterprisePackage.getTemporaryDir(), "META-INF")
-            def maven = new File(tempDir, "maven")
-            maven.mkdirs()
-            new File(maven,"pom.properties").text =
-                """groupId=${project.group}
-                |artifactId=${project.name}
-                |version=${project.version}
-                |""".stripMargin()
-            new File(maven, "pom.xml").text =
-                """<?xml version="1.0" encoding="UTF-8"?>
-                |<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                |xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-                |  <modelVersion>4.0.0</modelVersion>
-                |  <groupId>${project.group}</groupId>
-                |  <artifactId>${project.name}</artifactId>
-                |  <version>${project.version}</version>
-                |</project>
-                |""".stripMargin()
-            from (tempDir)
+            packageTask.configurations = [
+                project.configurations.gatlingRuntimeClasspath
+            ]
+
+            packageTask.metaInf {
+                def tempDir = new File(packageTask.getTemporaryDir(), "META-INF")
+                def maven = new File(tempDir, "maven")
+                maven.mkdirs()
+                new File(maven,"pom.properties").text =
+                    """groupId=${project.group}
+                      |artifactId=${project.name}
+                      |version=${project.version}
+                      |""".stripMargin()
+                new File(maven, "pom.xml").text =
+                    """<?xml version="1.0" encoding="UTF-8"?>
+                      |<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                      |xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+                      |  <modelVersion>4.0.0</modelVersion>
+                      |  <groupId>${project.group}</groupId>
+                      |  <artifactId>${project.name}</artifactId>
+                      |  <version>${project.version}</version>
+                      |</project>
+                      |""".stripMargin()
+                from (tempDir)
+            }
         }
 
         gatlingEnterprisePackage
@@ -194,7 +193,7 @@ final class GatlingPlugin implements Plugin<Project> {
             gatlingRuntimeOnly project.sourceSets.gatling.output
         }
 
-        project.tasks.getByName("compileGatlingScala").configure {
+        project.tasks.named("compileGatlingScala").configure {
             scalaCompileOptions.with {
                 additionalParameters = [
                     "-target:jvm-1.8",
