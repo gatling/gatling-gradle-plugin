@@ -26,6 +26,7 @@ class GatlingPluginExtension {
     private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
     private static final String SYSTEM_PROPS_PROPERTY = "gatling.enterprise.systemProps"
     private static final String ENVIRONMENT_VARIABLES_PROPERTY = "gatling.enterprise.environmentVariables"
+    private static final String WAIT_FOR_RUN_END_PROPERTY = "gatling.enterprise.waitForRunEnd"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
@@ -40,6 +41,7 @@ class GatlingPluginExtension {
         private URL url = new URL("https://cloud.gatling.io")
         private String simulationClass
         private boolean batchMode
+        private boolean waitForRunEnd
 
         def setBatchMode(boolean batchMode) {
             this.batchMode = batchMode
@@ -129,6 +131,14 @@ class GatlingPluginExtension {
             setSimulationClass(simulationClass)
         }
 
+        def setWaitForRunEnd(boolean waitForRunEnd) {
+            this.waitForRunEnd = waitForRunEnd
+        }
+
+        def waitForRunEnd(boolean waitForRunEnd) {
+            setWaitForRunEnd(waitForRunEnd)
+        }
+
         @Input
         @Optional
         UUID getSimulationId() {
@@ -207,12 +217,13 @@ class GatlingPluginExtension {
         @Input
         @Optional
         boolean getBatchMode() {
-            if (batchMode) {
-                return batchMode
-            } else {
-                def systemBatchMode = System.getProperty(BATCH_MODE_PROPERTY)
-                return systemBatchMode ? Boolean.parseBoolean(systemBatchMode) : false
-            }
+            return batchMode || Boolean.getBoolean(BATCH_MODE_PROPERTY)
+        }
+
+        @Input
+        @Optional
+        boolean getWaitForRunEnd() {
+            return waitForRunEnd || Boolean.getBoolean(WAIT_FOR_RUN_END_PROPERTY)
         }
 
         EnterpriseClient initEnterpriseClient(String version) {
