@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
@@ -34,6 +35,18 @@ class LogbackConfigTask extends DefaultTask {
 </configuration>"""
     }
 
+    private Logger logger
+
+    /** Used for testing purposes. Was available on the DefaultTask up to Gradle 6.6. */
+    void replaceLogger(Logger logger) {
+        this.logger = logger
+    }
+
+    @Override
+    Logger getLogger() {
+        return this.logger ?: super.getLogger()
+    }
+
     @InputFiles
     Iterable<File> getLogbackConfigs() {
         SourceSet gatlingSourceSet = project.sourceSets.gatling
@@ -65,7 +78,7 @@ class LogbackConfigTask extends DefaultTask {
                 logbackFile.delete()
             }
             if (gatlingExt.logLevel || gatlingExt.logHttp) {
-                logger.warn("Existing ${files.first().name} will override logLevel and logHttp from gatling configuration in build.gradle.")
+                getLogger().warn("Existing ${files.first().name} will override logLevel and logHttp from gatling configuration in build.gradle.")
             }
         }
     }
