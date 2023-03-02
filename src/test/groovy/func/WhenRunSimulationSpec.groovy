@@ -30,8 +30,7 @@ class WhenRunSimulationSpec extends GatlingFuncSpec {
         and: "logs doesn't contain INFO"
         !result.output.split().any { it.contains("INFO") }
         where:
-        // TODO fix stack overflow error on Gradle 5.6.4/6.0/6.3/6.4.1; then replace versions list with SUPPORTED_GRADLE_VERSIONS constant
-        gradleVersion << ["5.0", "6.9.1", "7.0", "7.6", "8.0"]
+        gradleVersion << SUPPORTED_GRADLE_VERSIONS
     }
 
     def "should execute only #simulation when initiated by rule"() {

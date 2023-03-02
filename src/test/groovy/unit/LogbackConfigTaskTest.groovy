@@ -6,7 +6,7 @@ import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.LogHttp
 import io.gatling.gradle.LogbackConfigTask
 import org.apache.commons.io.FileUtils
-import org.gradle.api.logging.Logger
+import org.gradle.internal.logging.slf4j.ContextAwareTaskLogger
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
@@ -31,7 +31,9 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
 
     def setup() {
         theTask = project.tasks.getByName(GATLING_LOGBACK_TASK_NAME) as LogbackConfigTask
-        theTask.replaceLogger(Mock(Logger))
+        def loggerField = org.gradle.api.internal.AbstractTask.class.getDeclaredField("logger")
+        loggerField.accessible = true
+        loggerField.set(theTask, Mock(ContextAwareTaskLogger))
         logbackConfig = LogbackConfigTask.logbackFile(this.project.buildDir)
     }
 
