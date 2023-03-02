@@ -1,9 +1,7 @@
 package io.gatling.gradle
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.TaskAction
@@ -34,19 +32,6 @@ class LogbackConfigTask extends DefaultTask {
        <appender-ref ref="CONSOLE" />
     </root>
 </configuration>"""
-    }
-
-    @Internal
-    private Logger logger
-
-    /** Used for testing purposes. Was available on the DefaultTask up to Gradle 6.6. */
-    void replaceLogger(Logger logger) {
-        this.logger = logger
-    }
-
-    @Override
-    Logger getLogger() {
-        return this.logger ?: super.getLogger()
     }
 
     @InputFiles
