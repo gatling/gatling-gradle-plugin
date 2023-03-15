@@ -56,7 +56,7 @@ class GatlingEnterprisePackageTask extends Jar {
     @Override
     protected CopyAction createCopyAction() {
         return new GatlingEnterpriseCopyAction(
-            getArchivePath(), // Deprecated starting with Gradle 5.2, but used for compatibility with Gradle 5.0+
+            GradleCompatUtils.getArchiveFile(this),
             getMetadataCharset(),
             getMainSpec().buildRootResolver().getPatternSet(),
             isPreserveFileTimestamps(),
