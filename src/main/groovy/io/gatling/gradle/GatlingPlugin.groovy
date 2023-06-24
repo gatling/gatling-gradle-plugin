@@ -196,7 +196,6 @@ final class GatlingPlugin implements Plugin<Project> {
         project.tasks.named("compileGatlingScala").configure {
             scalaCompileOptions.with {
                 additionalParameters = [
-                    "-release:8",
                     "-deprecation",
                     "-feature",
                     "-unchecked",
