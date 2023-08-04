@@ -27,6 +27,7 @@ class GatlingPluginExtension {
     private static final String SYSTEM_PROPS_PROPERTY = "gatling.enterprise.systemProps"
     private static final String ENVIRONMENT_VARIABLES_PROPERTY = "gatling.enterprise.environmentVariables"
     private static final String WAIT_FOR_RUN_END_PROPERTY = "gatling.enterprise.waitForRunEnd"
+    private static final String PRIVATE_CONTROL_PLANE_URL = "gatling.enterprise.privateControlPlaneUrl"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
@@ -42,6 +43,7 @@ class GatlingPluginExtension {
         private String simulationClass
         private boolean batchMode
         private boolean waitForRunEnd
+        private URL privateControlPlaneUrl
 
         def setBatchMode(boolean batchMode) {
             this.batchMode = batchMode
@@ -139,6 +141,14 @@ class GatlingPluginExtension {
             setWaitForRunEnd(waitForRunEnd)
         }
 
+        def setPrivateControlPlaneUrl(String privateControlPlaneUrl) {
+            this.privateControlPlaneUrl = new URL(privateControlPlaneUrl)
+        }
+
+        def privateControlPlaneUrl(String privateControlPlaneUrl) {
+            setPrivateControlPlaneUrl(privateControlPlaneUrl)
+        }
+
         @Input
         @Optional
         UUID getSimulationId() {
@@ -226,6 +236,12 @@ class GatlingPluginExtension {
             return waitForRunEnd || Boolean.getBoolean(WAIT_FOR_RUN_END_PROPERTY)
         }
 
+        @Input
+        @Optional
+        URL getprivateControlPlaneUrl() {
+            return privateControlPlaneUrl ?: new URL(System.getProperty(PRIVATE_CONTROL_PLANE_URL))
+        }
+
         EnterpriseClient initEnterpriseClient(String version) {
             def apiToken = getApiToken()
             if (!apiToken) {
@@ -239,7 +255,7 @@ class GatlingPluginExtension {
             }
 
             try {
-                return new HttpEnterpriseClient(getUrl(), getApiToken(), PLUGIN_NAME, version)
+                return new HttpEnterpriseClient(getUrl(), getApiToken(), PLUGIN_NAME, version, getprivateControlPlaneUrl())
             } catch (UnsupportedClientException e) {
                 throw new InvalidUserDataException(
                     "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
