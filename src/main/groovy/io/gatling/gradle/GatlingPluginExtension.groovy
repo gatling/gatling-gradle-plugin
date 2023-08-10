@@ -239,7 +239,14 @@ class GatlingPluginExtension {
         @Input
         @Optional
         URL getControlPlaneUrl() {
-            return controlPlaneUrl ?: new URL(System.getProperty(CONTROL_PLANE_URL))
+            def sysProp = System.getProperty(CONTROL_PLANE_URL)
+            if (controlPlaneUrl != null) {
+                return controlPlaneUrl
+            } else if (sysProp != null && sysProp != ""){
+                return new URL(sysProp)
+            } else {
+                return null
+            }
         }
 
         EnterpriseClient initEnterpriseClient(String version) {
