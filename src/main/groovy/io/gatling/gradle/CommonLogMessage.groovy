@@ -17,7 +17,7 @@ final class CommonLogMessage {
                 builder.append(
                     """To start directly the same simulation, add the following Gradle configuration:
                       |gatling.enterprise.simulationId "${simulation.id}"
-                      |gatling.enterprispackageId "${simulation.pkgId}"
+                      |gatling.enterprise.packageId "${simulation.pkgId}"
                       |Or specify -Dgatling.enterprissimulationId=${simulation.id} -Dgatling.enterprispackageId=${simulation.pkgId}
                       |
                       |""".stripMargin()
