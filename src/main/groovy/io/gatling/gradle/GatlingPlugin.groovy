@@ -218,6 +218,9 @@ final class GatlingPlugin implements Plugin<Project> {
                 if (evaluatedExt.includeTestOutput) {
                     gatlingImplementation evaluatedProject.sourceSets.test.output
                 }
+                evaluatedExt.includeSourceSetsOutput.forEach { sourceSet ->
+                    gatlingImplementation sourceSets.named(sourceSet).get().output
+                }
             }
         }
     }

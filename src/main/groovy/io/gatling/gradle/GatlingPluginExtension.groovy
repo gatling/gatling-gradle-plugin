@@ -332,6 +332,8 @@ class GatlingPluginExtension {
     Boolean includeMainOutput = true
     Boolean includeTestOutput = true
 
+    Set<String> includeSourceSetsOutput = new HashSet<>();
+
     String logLevel
 
     LogHttp logHttp
