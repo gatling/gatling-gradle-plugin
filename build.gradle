@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-  implementation "io.gatling:gatling-enterprise-plugin-commons:1.6.1"
+  implementation "io.gatling:gatling-enterprise-plugin-commons:1.7.0"
   implementation "org.apache.ant:ant:1.10.11"
   constraints {
     implementation('com.fasterxml.jackson.core:jackson-databind') {
