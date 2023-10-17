@@ -9,7 +9,7 @@ on:
       - LICENSE.txt
       - LICENSE
     branches:
-      - master
+      - main
   pull_request:
     paths-ignore:
       - README.adoc
