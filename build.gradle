@@ -28,6 +28,7 @@ dependencies {
   testImplementation('org.spockframework:spock-core:2.3-groovy-3.0') {
     exclude module: 'groovy-all'
   }
+  testImplementation 'org.spockframework:spock-junit4:2.3-groovy-3.0'
   testImplementation('com.github.stefanbirkner:system-rules:1.19.0') {
     exclude module: 'junit-dep'
   }
@@ -41,6 +42,7 @@ test {
     exceptionFormat "full"
     showStandardStreams = false
   }
+  useJUnitPlatform()
 }
 
 gradlePlugin {
