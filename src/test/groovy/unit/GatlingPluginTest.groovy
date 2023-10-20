@@ -15,7 +15,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
 
     def "should create gatling configurations"() {
         expect:
-        ['gatling', 'gatlingCompile', 'gatlingRuntime', 'gatlingImplementation', 'gatlingRuntimeOnly'].every {
+        ['gatling', 'gatlingCompileOnly', 'gatlingImplementation', 'gatlingRuntimeOnly'].every {
             project.configurations.getByName(it) != null
         }
     }

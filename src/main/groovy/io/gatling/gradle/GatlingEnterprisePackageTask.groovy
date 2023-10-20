@@ -56,7 +56,7 @@ class GatlingEnterprisePackageTask extends Jar {
     @Override
     protected CopyAction createCopyAction() {
         return new GatlingEnterpriseCopyAction(
-            GradleCompatUtils.getArchiveFile(this),
+            this.archiveFile.get().asFile,
             getMetadataCharset(),
             getMainSpec().buildRootResolver().getPatternSet(),
             isPreserveFileTimestamps(),

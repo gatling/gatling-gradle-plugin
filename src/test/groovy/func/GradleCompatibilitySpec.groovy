@@ -18,7 +18,7 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
     }
 
     @Unroll
-    void 'should succeed for version #gradleVersion that is greater than 5.0'() {
+    void 'should succeed for version #gradleVersion that is greater than 7.0'() {
         given:
         prepareTest()
         when:
@@ -30,26 +30,14 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
     }
 
     @Unroll
-    void 'should fail with friendly message for version #gradleVersion that is less than 5.0'() {
+    void 'should fail with friendly message for version #gradleVersion that is less than 7.0'() {
         given:
         prepareTest()
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, true)
         then:
-        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 5.0")
+        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 7.0")
         where:
-        gradleVersion << ["4.10.2"]
-    }
-
-    @Unroll
-    void 'should fail with exception for version #gradleVersion that is less than 4.10'() {
-        given:
-        prepareTest()
-        when:
-        BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, true)
-        then:
-        result.output.contains("java.lang.ClassNotFoundException: org.gradle.api.tasks.TaskProvider")
-        where:
-        gradleVersion << ["4.0.1", "3.5", "3.0", "2.9"]
+        gradleVersion << ["6.9.4"]
     }
 }

@@ -50,7 +50,7 @@ plugins {
 }
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {

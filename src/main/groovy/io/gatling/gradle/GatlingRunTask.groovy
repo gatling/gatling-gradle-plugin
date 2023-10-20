@@ -77,7 +77,7 @@ class GatlingRunTask extends DefaultTask {
 
         Map<String, ExecResult> results = simulationFilesToFQN().collectEntries { String simulationClass ->
             [(simulationClass): project.javaexec({ JavaExecSpec exec ->
-                GradleCompatUtils.setMainClass(exec, GatlingPluginExtension.GATLING_MAIN_CLASS)
+                exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
                 exec.classpath = project.configurations.gatlingRuntimeClasspath
 
                 exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs

@@ -31,8 +31,8 @@ final class GatlingPlugin implements Plugin<Project> {
 
     void apply(Project project) {
 
-        if (GradleVersion.current() < GradleVersion.version("5.0")) {
-            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 5.0")
+        if (GradleVersion.current() < GradleVersion.version("7.0")) {
+            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.0")
         }
 
         project.pluginManager.apply ScalaPlugin
@@ -125,7 +125,7 @@ final class GatlingPlugin implements Plugin<Project> {
 
     TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
         TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackage = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
-            GradleCompatUtils.setClassifier(packageTask, "tests")
+            packageTask.archiveClassifier.set("tests")
 
             packageTask.exclude(
                 "module-info.class",
