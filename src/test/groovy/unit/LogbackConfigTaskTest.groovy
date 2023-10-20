@@ -91,7 +91,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
     }
 
     @Unroll
-    def "should not create logback.xml when logback config exists at #file"() {
+    def "should not create logback.xml when logback config exists at #logbackFile"() {
         given:
         new File(projectDir.root, "src/gatling/resources/$logbackFile") << "arbitrary logback config file"
         when:
@@ -103,7 +103,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
     }
 
     @Unroll
-    def "should not create logback.xml when logback config exists at custom resources, #file"() {
+    def "should not create logback.xml when logback config exists at custom resources, #logbackFile"() {
         given:
         def myFolder = projectDir.newFolder("src", "logback")
         and:
@@ -121,7 +121,7 @@ class LogbackConfigTaskTest extends GatlingUnitSpec {
     }
 
     @Unroll
-    def "should create logback.xml when logback config located not in the root of resources, #file"() {
+    def "should create logback.xml when logback config located not in the root of resources, #logbackFile"() {
         given:
         def myFolder = projectDir.newFolder("src", "gatling", "resources", "myfolder")
         new File(myFolder, logbackFile) << "arbitrary logback config file"
