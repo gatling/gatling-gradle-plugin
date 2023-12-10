@@ -4,7 +4,11 @@ plugins {
   id 'groovy'
 }
 
-release = '11'z
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
 
 repositories {
   mavenCentral()
