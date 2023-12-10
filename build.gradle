@@ -4,8 +4,7 @@ plugins {
   id 'groovy'
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
+release = '11'z
 
 repositories {
   mavenCentral()
