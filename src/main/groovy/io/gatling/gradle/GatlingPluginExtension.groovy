@@ -301,7 +301,7 @@ class GatlingPluginExtension {
 
     static final String GATLING_VERSION = '3.9.5'
 
-    static final String SCALA_VERSION = '2.13.11'
+    static final String SCALA_VERSION = '2.13.12'
 
     static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.java", "**/*Simulation*.kt", "**/*Simulation*.scala") }
 
