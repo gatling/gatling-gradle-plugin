@@ -1,79 +1,69 @@
 package io.gatling.gradle
 
+import io.gatling.plugin.io.PluginLogger
+import io.gatling.plugin.pkg.Dependency
+import io.gatling.plugin.pkg.EnterprisePackager
+import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolvedConfiguration
 import org.gradle.api.artifacts.ResolvedDependency
-import org.gradle.api.file.DuplicatesStrategy
-import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.copy.CopyAction
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Classpath
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.tasks.*
 
 @CacheableTask
-class GatlingEnterprisePackageTask extends Jar {
+class GatlingEnterprisePackageTask extends DefaultTask {
 
-    private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = [ "netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos" ].asUnmodifiable()
-
-    @Classpath @Optional
-    List<Configuration> configurations
-
-    GatlingEnterprisePackageTask() {
-        super()
-        setDuplicatesStrategy(DuplicatesStrategy.INCLUDE)
-    }
-
-    @TaskAction
-    void copy() {
-        String gatlingVersion = gatlingVersion()
-        manifest {
-            attributes("Manifest-Version": "1.0",
-                "Implementation-Title": project.name,
-                "Implementation-Version": project.version,
-                "Implementation-Vendor": project.group,
-                "Specification-Vendor": "GatlingCorp",
-                "Gatling-Version": gatlingVersion,
-                "Gatling-Packager": "gradle")
-        }
-        from(getIncludedDependencies())
-        super.copy()
-    }
+    private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = ["netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos"].asUnmodifiable()
+    private static final String JAR_EXTENSION = '.jar'
+    private static final String SHADED_SUFFIX = 'shaded'
 
     @Classpath
-    FileCollection getIncludedDependencies() {
+    @Optional
+    List<Configuration> configurations
+
+    @OutputFile
+    final RegularFileProperty outputFile = project.objects.fileProperty().fileValue(getJarFile())
+
+    @TaskAction
+    void createArchive() {
+        EnterprisePackager packager = new EnterprisePackager(new PluginLogger() {
+            @Override
+            void info(String s) {
+                logger.info(s)
+            }
+
+            @Override
+            void error(String s) {
+                logger.error(s)
+            }
+        })
+
         ResolvedConfiguration resolvedConfiguration = getResolvedConfiguration()
-
-        Set<ResolvedDependency> gatlingDependencies = new HashSet<ResolvedDependency>()
-        collectGatlingDepsRec(resolvedConfiguration.getFirstLevelModuleDependencies(), gatlingDependencies)
-
-        project.files(resolvedConfiguration.files) - project.files(gatlingDependencies.collect {
-            it.moduleArtifacts*.file
-        }.flatten())
-    }
-
-    @Override
-    protected CopyAction createCopyAction() {
-        return new GatlingEnterpriseCopyAction(
-            this.archiveFile.get().asFile,
-            getMetadataCharset(),
-            getMainSpec().buildRootResolver().getPatternSet(),
-            isPreserveFileTimestamps(),
-            getEntryCompression(),
-            isZip64()
+        packager.createEnterprisePackage(
+            getClassDirectories(),
+            collectGatlingDependencies(resolvedConfiguration.getFirstLevelModuleDependencies()),
+            collectExtraDependencies(resolvedConfiguration.getFirstLevelModuleDependencies()),
+            project.group,
+            project.name,
+            project.version,
+            'gradle',
+            getClass().getPackage().getImplementationVersion(),
+            outputFile.asFile.get()
         )
     }
 
-    private String gatlingVersion() {
-        for (artifact in getResolvedConfiguration().resolvedArtifacts.flatten()) {
-            def id = artifact.moduleVersion.id
-            if (id.group == "io.gatling" && id.name == "gatling-app") {
-                logger.debug("Detected Gatling compile version: {}", id.version)
-                return id.version
+    private File getJarFile() {
+        new File(project.getBuildDir(), project.name + '-' + project.version + '-' + SHADED_SUFFIX + JAR_EXTENSION)
+    }
+
+    private List<File> getClassDirectories() {
+        project.getAllprojects().collect { p ->
+            JavaPluginExtension javaPluginExtension = p.getExtensions().getByType(JavaPluginExtension.class)
+            javaPluginExtension.getSourceSets().collect {
+                sourceSet -> sourceSet.output.asList()
             }
-        }
-        throw new IllegalArgumentException("Couldn't locate io.gatling:gatling-app in dependencies")
+        }.flatten()
     }
 
     private ResolvedConfiguration getResolvedConfiguration() {
@@ -92,10 +82,50 @@ class GatlingEnterprisePackageTask extends Jar {
         }
     }
 
+    private void collectOtherDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> acc) {
+        for (dep in deps) {
+            if (dep?.module?.id?.group !in ["io.gatling", "io.gatling.highcharts", "io.gatling.frontline"]) {
+                collectDepAndChildren(dep, acc)
+            } else {
+                collectOtherDepsRec(dep.children, acc)
+            }
+        }
+    }
+
     private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> acc) {
         acc.add(dep)
         for (child in dep.children) {
             collectDepAndChildren(child, acc)
         }
+    }
+
+    private Set<Dependency> collectAllDependencies(Set<ResolvedDependency> firstLevelDependencies) {
+        Set<ResolvedDependency> deps = new HashSet<>();
+        for (dependency in firstLevelDependencies) {
+            collectDepAndChildren(dependency, deps)
+        }
+        return toDependencies(deps)
+    }
+
+    private Set<Dependency> collectGatlingDependencies(Set<ResolvedDependency> firstLevelDependencies) {
+        Set<ResolvedDependency> deps = new HashSet<>();
+        collectGatlingDepsRec(firstLevelDependencies, deps)
+        return toDependencies(deps)
+    }
+
+    private Set<Dependency> toDependencies(Set<ResolvedDependency> deps) {
+        deps.collectMany { resolvedDependency ->
+            resolvedDependency.getModuleArtifacts().collect(moduleArtifact ->
+                new Dependency(
+                    resolvedDependency.module.id.group,
+                    resolvedDependency.module.id.name,
+                    resolvedDependency.module.id.version,
+                    moduleArtifact.file
+                ))
+        }.toSet()
+    }
+
+    private Set<Dependency> collectExtraDependencies(Set<ResolvedDependency> firstLevelDependencies) {
+        return collectAllDependencies(firstLevelDependencies) - collectGatlingDependencies(firstLevelDependencies)
     }
 }
