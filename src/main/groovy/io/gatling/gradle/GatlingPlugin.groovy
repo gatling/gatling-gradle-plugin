@@ -125,48 +125,10 @@ final class GatlingPlugin implements Plugin<Project> {
 
     TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
         TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackage = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
-            packageTask.archiveClassifier.set("tests")
-
-            packageTask.exclude(
-                "module-info.class",
-                "META-INF/LICENSE",
-                "META-INF/MANIFEST.MF",
-                "META-INF/versions/**",
-                "META-INF/maven/**",
-                "**/*.SF",
-                "**/*.DSA",
-                "**/*.RSA"
-            )
-
-            packageTask.from(project.sourceSets.gatling.output)
-
             packageTask.configurations = [
                 project.configurations.gatlingRuntimeClasspath
             ]
-
-            packageTask.metaInf {
-                def tempDir = new File(packageTask.getTemporaryDir(), "META-INF")
-                def maven = new File(tempDir, "maven")
-                maven.mkdirs()
-                new File(maven,"pom.properties").text =
-                    """groupId=${project.group}
-                      |artifactId=${project.name}
-                      |version=${project.version}
-                      |""".stripMargin()
-                new File(maven, "pom.xml").text =
-                    """<?xml version="1.0" encoding="UTF-8"?>
-                      |<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                      |xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-                      |  <modelVersion>4.0.0</modelVersion>
-                      |  <groupId>${project.group}</groupId>
-                      |  <artifactId>${project.name}</artifactId>
-                      |  <version>${project.version}</version>
-                      |</project>
-                      |""".stripMargin()
-                from (tempDir)
-            }
         }
-
         gatlingEnterprisePackage
     }
 
