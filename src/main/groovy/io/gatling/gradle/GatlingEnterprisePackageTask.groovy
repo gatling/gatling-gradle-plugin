@@ -93,9 +93,11 @@ class GatlingEnterprisePackageTask extends Jar {
     }
 
     private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> acc) {
-        acc.add(dep)
-        for (child in dep.children) {
-            collectDepAndChildren(child, acc)
+        if (!acc.contains(dep)) {
+            acc.add(dep)
+            for (child in dep.children) {
+                collectDepAndChildren(child, acc)
+            }
         }
     }
 }
