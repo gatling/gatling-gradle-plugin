@@ -12,6 +12,8 @@
 ## Dev testing
 
 To manually test this plugin in a sample project, see the [Gradle documentation](https://docs.gradle.org/current/userguide/testing_gradle_plugins.html#manual-tests).
+
+### With IncludeBuild
 Note that the test project must use Gradle 7.1 or later for `includeBuild` within `pluginManagement` to work.
 
 Steps to be able to dev test this plugin:
@@ -39,4 +41,29 @@ Steps to be able to dev test this plugin:
     targetCompatibility = 1.8
     ```
 
-You could also add the `maven-publish` plugin and do a `gradle publishToMavenLocal`.
+### With maven-publish plugin
+
+To publish locally, you need to enable `maven-publish` plugin, add a version and a group. In `build.gradle`:
+
+```
+plugins {
+  ...
+  id 'maven-publish'
+}
+version '42.0.0-SNAPSHOT'
+group 'io.gatling'
+```
+
+You can do a `gradle publishToMavenLocal` to publish a snapshot version to your local maven repository.
+
+To use this local plugin in your project:
+* change the plugin version to the one above
+* add a `settings.gradle` file in the root of your project with the following content:
+```
+pluginManagement {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+  }
+}
+```
