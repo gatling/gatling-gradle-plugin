@@ -12,7 +12,7 @@
 ## Dev testing
 
 To manually test this plugin in a sample project, see the [Gradle documentation](https://docs.gradle.org/current/userguide/testing_gradle_plugins.html#manual-tests).
-Note that the test project must use Gradle 7.0 or later for `includeBuild` within `pluginManagement` to work.
+Note that the test project must use Gradle 7.1 or later for `includeBuild` within `pluginManagement` to work.
 
 Steps to be able to dev test this plugin:
 
