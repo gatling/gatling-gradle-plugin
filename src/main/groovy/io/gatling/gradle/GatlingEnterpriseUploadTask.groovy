@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.configuration.PackageConfiguration
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.CacheableTask
@@ -14,9 +15,17 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
         def gatling = project.extensions.getByType(GatlingPluginExtension)
         RecoverEnterprisePluginException.handle(logger) {
             EnterprisePlugin enterprisePlugin = gatling.enterprise.initBatchEnterprisePlugin(project.version.toString(), logger)
-            if (gatling.enterprise.packageId) {
-                logger.lifecycle("Uploading package with packageId " + gatling.enterprise.packageId)
-                enterprisePlugin.uploadPackage(gatling.enterprise.packageId, inputs.files.singleFile)
+
+            String jsonPackageConfig = PackageConfiguration.loadToJson(project.projectDir)
+            UUID packageUUID = gatling.enterprise.packageId
+            if (jsonPackageConfig != null) {
+                logger.lifecycle("Package configuration file detected, applying it.")
+                packageUUID =  enterprisePlugin.uploadPackageConfiguration(jsonPackageConfig)
+                logger.lifecycle("Package id: "+ packageUUID.toString())
+            }
+            if (packageUUID) {
+                logger.lifecycle("Uploading package with packageId " + packageUUID)
+                enterprisePlugin.uploadPackage(packageUUID, inputs.files.singleFile)
             } else if (gatling.enterprise.simulationId) {
                 logger.lifecycle("Uploading package belonging to the simulation " + gatling.enterprise.simulationId)
                 enterprisePlugin.uploadPackageWithSimulationId(gatling.enterprise.simulationId, inputs.files.singleFile)
