@@ -48,23 +48,11 @@ class GatlingRunTask extends DefaultTask {
     }
 
     List<String> createGatlingArgs(String gatlingVersion) {
-
-        FileCollection classesDirs = project.sourceSets.gatling.output.classesDirs
-
-        File javaClasses = classesDirForLanguage(classesDirs, 'java')
-        File scalaClasses = classesDirForLanguage(classesDirs, 'scala')
-        File kotlinClasses = classesDirForLanguage(classesDirs, 'kotlin')
-        File binariesFolder = scalaClasses != null ? scalaClasses :
-            kotlinClasses != null ? kotlinClasses : javaClasses
-
         def gatlingVersionComponents = gatlingVersion.split("\\.")
         int gatlingMajorVersion = Integer.valueOf(gatlingVersionComponents[0])
         int gatlingMinorVersion = Integer.valueOf(gatlingVersionComponents[1])
 
-        def baseArgs = [
-            '-bf', binariesFolder.absolutePath,
-            "-rsf", "${project.sourceSets.gatling.output.resourcesDir}",
-            "-rf", gatlingReportDir.absolutePath]
+        def baseArgs = ["-rf", gatlingReportDir.absolutePath]
 
         return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
             baseArgs + ["-l", "gradle", "-btv", GradleVersion.current().version] :
