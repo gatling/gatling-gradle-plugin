@@ -27,7 +27,7 @@ class GatlingRunTask extends DefaultTask {
     Map environment = [:]
 
     @Internal
-    String simulationClass = null
+    String simulationClass
 
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
