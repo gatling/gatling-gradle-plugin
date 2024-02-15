@@ -27,7 +27,7 @@ class GatlingRunTask extends DefaultTask {
     Map environment = [:]
 
     @Internal
-    Closure simulations
+    String simulationClass = null
 
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
@@ -52,7 +52,7 @@ class GatlingRunTask extends DefaultTask {
     void gatlingRun() {
         def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
 
-        Map<String, ExecResult> results = simulationFilesToFQN().collectEntries { String simulationClass ->
+        Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
             [(simulationClass): project.javaexec({ JavaExecSpec exec ->
                 exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
                 exec.classpath = project.configurations.gatlingRuntimeClasspath
@@ -84,7 +84,11 @@ class GatlingRunTask extends DefaultTask {
         }
     }
 
-    Iterable<String> simulationFilesToFQN() {
-        return SimulationFilesUtils.resolveSimulations(project, this.simulations)
+    List<String> simulationClasses() {
+        def classpath = project.configurations.gatlingRuntimeClasspath.getFiles()
+        def includes = this.simulationClass ? List.of(simulationClass) : project.gatling.includes
+        def excludes = this.simulationClass ? List.of() : project.gatling.excludes
+
+        return SimulationFilesUtils.resolveSimulations(classpath, includes, excludes)
     }
 }

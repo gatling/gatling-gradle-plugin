@@ -39,7 +39,7 @@ class GatlingPluginExtension {
         private String systemPropsString
         private Map<String, String> environmentVariables
         private String environmentVariablesString
-        private URL url = new URL("https://cloud.gatling.io")
+        private URL url = URI.create("https://cloud.gatling.io").toURL()
         private String simulationClass
         private boolean batchMode
         private boolean waitForRunEnd
@@ -54,7 +54,7 @@ class GatlingPluginExtension {
         }
 
         def setUrl(String url) {
-            this.url = new URL(url)
+            this.url = URI.create(url).toURL()
         }
 
         def url(String url) {
@@ -303,8 +303,6 @@ class GatlingPluginExtension {
 
     static final String SCALA_VERSION = '2.13.12'
 
-    static final Closure DEFAULT_SIMULATIONS = { include("**/*Simulation*.java", "**/*Simulation*.kt", "**/*Simulation*.scala") }
-
     static final String DEFAULT_LOG_LEVEL = "WARN"
     static final LogHttp DEFAULT_LOG_HTTP = LogHttp.NONE
 
@@ -327,7 +325,8 @@ class GatlingPluginExtension {
         gatlingVersion = toolVersion
     }
 
-    Closure simulations = DEFAULT_SIMULATIONS
+    List<String> includes = List.of()
+    List<String> excludes = List.of()
 
     Boolean includeMainOutput = true
     Boolean includeTestOutput = true

@@ -18,5 +18,4 @@ abstract class GatlingUnitSpec extends GatlingSpec {
 
         gatlingExt = project.extensions.getByType(GatlingPluginExtension)
     }
-
 }
