@@ -17,10 +17,7 @@ class WhenRunFailingSimulationSpec extends GatlingFuncSpec {
         given:
         buildFile << """
 gatling {
-  simulations = {
-    include 'computerdatabase/AFailedSimulation.scala'
-    include 'computerdatabase/BasicSimulation.scala'
-  }
+  includes = ['computerdatabase.AFailedSimulation', 'computerdatabase.BasicSimulation']
 }
 """
         and: "add incorrect simulation"
@@ -58,10 +55,7 @@ class AFailedSimulation extends Simulation {
         given:
         buildFile << """
 gatling {
-  simulations = {
-    include 'computerdatabase/AFailedSimulation.scala'
-    include 'computerdatabase/BasicSimulation.scala'
-  }
+  includes = ['computerdatabase.AFailedSimulation', 'computerdatabase.BasicSimulation']
 }
 """
         and: "add incorrect simulation"
@@ -92,10 +86,7 @@ class AFailedSimulation extends Simulation {
         given:
         buildFile << """
 gatling {
-  simulations = {
-    include 'computerdatabase/BasicSimulation.scala'
-    include 'computerdatabase/AFailedSimulation.scala'
-  }
+  includes = ['computerdatabase.BasicSimulation', 'computerdatabase.AFailedSimulation']
 }
 """
         and: "add incorrect simulation"

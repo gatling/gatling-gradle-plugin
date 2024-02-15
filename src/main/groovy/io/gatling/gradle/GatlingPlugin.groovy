@@ -98,13 +98,7 @@ final class GatlingPlugin implements Plugin<Project> {
             group = "Gatling"
 
             if (simulationFQN) {
-                simulations = {
-                    include(
-                        "${simulationFQN.replace('.', '/')}.java",
-                        "${simulationFQN.replace('.', '/')}.scala",
-                        "${simulationFQN.replace('.', '/')}.kt"
-                    )
-                }
+                simulationClass = simulationFQN
             }
         }
     }

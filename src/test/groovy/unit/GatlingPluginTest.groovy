@@ -24,7 +24,6 @@ class GatlingPluginTest extends GatlingUnitSpec {
         expect:
         with(gatlingExt) {
             it instanceof GatlingPluginExtension
-            it.simulations == DEFAULT_SIMULATIONS
             it.jvmArgs == GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING
             it.systemProperties == DEFAULT_SYSTEM_PROPS
         }
@@ -88,7 +87,6 @@ class GatlingPluginTest extends GatlingUnitSpec {
         expect:
         with(project.tasks.getByName(GATLING_RUN_TASK_NAME)) {
             it instanceof GatlingRunTask
-            it.simulations == null
             it.jvmArgs == null
             it.systemProperties == null
             it.dependsOn.size() == 2

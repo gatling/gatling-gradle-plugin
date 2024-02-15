@@ -89,7 +89,7 @@ gatling.charting.noReports = true
         given:
         prepareTest()
         buildFile << """
-gatling { simulations = { include 'computerdatabase/BasicSimulation.scala' } }
+gatling { includes = ['computerdatabase.BasicSimulation'] }
 """
         when: '1st time'
         BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME")

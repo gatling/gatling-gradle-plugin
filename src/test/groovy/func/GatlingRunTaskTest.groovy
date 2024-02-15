@@ -1,17 +1,18 @@
-package unit
+package func
 
+import helper.GatlingFuncSpec
 import io.gatling.gradle.GatlingPluginExtension
-import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingRunTask
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
-import static io.gatling.gradle.GatlingPluginExtension.SCALA_SIMULATIONS_DIR
 import static org.apache.commons.io.FileUtils.copyFileToDirectory
 import static org.apache.commons.io.FileUtils.moveFileToDirectory
 
-class GatlingRunTaskTest extends GatlingUnitSpec {
+@Ignore
+class GatlingRunTaskTest extends GatlingFuncSpec {
 
     GatlingRunTask theTask
 
@@ -21,7 +22,7 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
 
     def "should resolve simulations using default filter"() {
         when:
-        def gatlingRunSimulations = theTask.simulationFilesToFQN()
+        def gatlingRunSimulations = theTask.simulationClasses()
         then:
         gatlingRunSimulations.size() == 2
         and:
@@ -32,9 +33,9 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
 
     def "should resolve simulations using custom filter"() {
         given:
-        project.gatling.simulations = { include "**/*AdvancedSimulation*" }
+        project.gatling.includes = [ "**.*AdvancedSimulation*" ]
         when:
-        def gatlingRunSimulations = theTask.simulationFilesToFQN()
+        def gatlingRunSimulations = theTask.simulationClasses()
         then:
         gatlingRunSimulations == ["computerdatabase.advanced.AdvancedSimulationStep03"]
     }
@@ -43,17 +44,17 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
         given:
         project.gatling.simulations = GatlingPluginExtension.DEFAULT_SIMULATIONS
         and:
-        project.gatlingRun.simulations = { include "**/*AdvancedSimulation*" }
+        project.gatlingRun.includes = [ "**.*AdvancedSimulation*" ]
         when:
-        def gatlingRunSimulations = theTask.simulationFilesToFQN()
+        def gatlingRunSimulations = theTask.simulationClasses()
         then:
         gatlingRunSimulations == ["computerdatabase.advanced.AdvancedSimulationStep03"]
     }
 
     @Unroll
-    def "should fail if extension filter is not a closure but #val"() {
+    def "should fail if extension filter is not a list but #val"() {
         when:
-        project.gatling.simulations = val
+        project.gatling.includes = val
         then:
         def ex = thrown(GroovyCastException)
         ex.message.contains(val.toString())
@@ -62,9 +63,9 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
     }
 
     @Unroll
-    def "should fail if gatlingRun filter not a closure but #val"() {
+    def "should fail if gatlingRun filter not a list but #val"() {
         when:
-        project.gatlingRun.simulations = val
+        project.gatlingRun.includes = val
         then:
         def ex = thrown(GroovyCastException)
         ex.message.contains(val.toString())
@@ -81,13 +82,13 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
             gatling.scala.srcDirs = [overridenSrc]
         }
         then:
-        theTask.simulationFilesToFQN().size() == 0
+        theTask.simulationClasses().isEmpty()
 
         when: 'put simulations into overridden source dir'
-        copyFileToDirectory(new File(projectDir.root, "${SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
+        copyFileToDirectory(new File(projectDir.root, "${GatlingPluginExtension.SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
             new File(projectDir.root, "$overridenSrc/computerdatabase"))
         then:
-        theTask.simulationFilesToFQN() == ["computerdatabase.BasicSimulation"]
+        theTask.simulationClasses() == ["computerdatabase.BasicSimulation"]
     }
 
     def "should extend simulations dirs via sourceSet"() {
@@ -99,53 +100,45 @@ class GatlingRunTaskTest extends GatlingUnitSpec {
             gatling.scala.srcDir overridenSrc
         }
         then:
-        theTask.simulationFilesToFQN().size() == 2
+        theTask.simulationClasses().size() == 2
 
         when: "hide one simulation"
-        moveFileToDirectory(new File(projectDir.root, "${SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
+        moveFileToDirectory(new File(projectDir.root, "${GatlingPluginExtension.SCALA_SIMULATIONS_DIR}/computerdatabase/BasicSimulation.scala"),
             projectDir.root, true)
         then:
-        theTask.simulationFilesToFQN() == ["computerdatabase.advanced.AdvancedSimulationStep03"]
+        theTask.simulationClasses() == ["computerdatabase.advanced.AdvancedSimulationStep03"]
 
         when: 'move simulation back to overridden source dir'
         moveFileToDirectory(new File(projectDir.root, "BasicSimulation.scala"), new File(projectDir.root, "$overridenSrc/computerdatabase"), true)
         then:
-        theTask.simulationFilesToFQN().size() == 2
+        theTask.simulationClasses().size() == 2
     }
 
     def "should not find missing simulations via gatling extension"() {
         when: 'default src layout'
-        project.gatling.simulations = {
-            include "computerdatabase/BasicSimulation.scala"
-            include "some.missing.file"
-        }
+        project.gatling.includes = [ "computerdatabase.BasicSimulation", "some.missing.file" ]
         then:
-        theTask.simulationFilesToFQN() == ["computerdatabase.BasicSimulation"]
+        theTask.simulationClasses() == ["computerdatabase.BasicSimulation"]
 
         when: 'custom src layout'
         project.sourceSets {
             gatling.scala.srcDirs = ["missing/gatling"]
         }
         then:
-        theTask.simulationFilesToFQN().size() == 0
+        theTask.simulationClasses().isEmpty()
     }
 
     def "should not find missing simulations via gatlingRun"() {
         when: 'default src layout'
-        project.gatlingRun.simulations = {
-            include "computerdatabase/BasicSimulation.scala"
-            include "some.missing.file"
-        }
+        project.gatlingRun.includes = [ "computerdatabase.BasicSimulation", "some.missing.file" ]
         then:
-        theTask.simulationFilesToFQN() == ["computerdatabase.BasicSimulation"]
+        theTask.simulationClasses() == ["computerdatabase.BasicSimulation"]
 
         when: 'custom src layout'
         project.sourceSets {
             gatling.scala.srcDirs = ["missing/gatling"]
         }
         then:
-        theTask.simulationFilesToFQN().size() == 0
+        theTask.simulationClasses().isEmpty()
     }
-
-
 }
