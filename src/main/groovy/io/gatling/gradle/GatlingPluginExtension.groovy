@@ -291,6 +291,8 @@ class GatlingPluginExtension {
 
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
+    static final String GATLING_RECORDER_CLASS = 'io.gatling.recorder.GatlingRecorder'
+
     static final String JAVA_SIMULATIONS_DIR = "src/gatling/java"
 
     static final String SCALA_SIMULATIONS_DIR = "src/gatling/scala"
