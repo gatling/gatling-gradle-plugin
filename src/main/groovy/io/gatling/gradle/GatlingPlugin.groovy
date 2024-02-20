@@ -16,6 +16,8 @@ final class GatlingPlugin implements Plugin<Project> {
 
     public static def GATLING_RUN_TASK_NAME = 'gatlingRun'
 
+    public static def GATLING_RECORDER_TASK_NAME = 'gatlingRecorder'
+
     static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
 
     public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
@@ -44,6 +46,11 @@ final class GatlingPlugin implements Plugin<Project> {
         project.tasks.register(GATLING_LOGBACK_TASK_NAME, LogbackConfigTask.class) {
             dependsOn(project.tasks.named("gatlingClasses"))
             description = "Prepare logback config"
+            group = "Gatling"
+        }
+
+        project.tasks.register(GATLING_RECORDER_TASK_NAME, GatlingRecorderTask.class) {
+            description = "Launch recorder"
             group = "Gatling"
         }
 
