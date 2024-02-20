@@ -291,6 +291,8 @@ class GatlingPluginExtension {
 
     static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
+    static final String GATLING_RECORDER_CLASS = 'io.gatling.recorder.GatlingRecorder'
+
     static final String JAVA_SIMULATIONS_DIR = "src/gatling/java"
 
     static final String SCALA_SIMULATIONS_DIR = "src/gatling/scala"
@@ -299,7 +301,7 @@ class GatlingPluginExtension {
 
     static final String RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_VERSION = '3.10.3'
+    static final String GATLING_VERSION = '3.10.4'
 
     static final String SCALA_VERSION = '2.13.12'
 

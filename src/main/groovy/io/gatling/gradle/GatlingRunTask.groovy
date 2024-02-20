@@ -36,18 +36,6 @@ class GatlingRunTask extends DefaultTask {
         outputs.upToDateWhen { false }
     }
 
-    List<String> createGatlingArgs(String gatlingVersion) {
-        def gatlingVersionComponents = gatlingVersion.split("\\.")
-        int gatlingMajorVersion = Integer.valueOf(gatlingVersionComponents[0])
-        int gatlingMinorVersion = Integer.valueOf(gatlingVersionComponents[1])
-
-        def baseArgs = ["-rf", gatlingReportDir.absolutePath]
-
-        return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
-            baseArgs + ["-l", "gradle", "-btv", GradleVersion.current().version] :
-            baseArgs
-    }
-
     @TaskAction
     void gatlingRun() {
         def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
@@ -68,8 +56,7 @@ class GatlingRunTask extends DefaultTask {
                     exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
                 }
 
-                exec.args this.createGatlingArgs(gatlingExt.gatlingVersion)
-                exec.args "-s", simulationClass
+                exec.args this.createGatlingArgs(simulationClass, gatlingExt.gatlingVersion)
 
                 exec.standardInput = System.in
 
@@ -90,5 +77,20 @@ class GatlingRunTask extends DefaultTask {
         def excludes = this.simulationClass ? List.of() : project.gatling.excludes
 
         return SimulationFilesUtils.resolveSimulations(classpath, includes, excludes)
+    }
+
+    List<String> createGatlingArgs(String simulationClass, String gatlingVersion) {
+        def baseArgs = [
+            "-s", simulationClass,
+            "-rf", gatlingReportDir.absolutePath
+        ]
+
+        def gatlingVersionComponents = gatlingVersion.split("\\.")
+        int gatlingMajorVersion = Integer.valueOf(gatlingVersionComponents[0])
+        int gatlingMinorVersion = Integer.valueOf(gatlingVersionComponents[1])
+
+        return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
+            baseArgs + ["-l", "gradle", "-btv", GradleVersion.current().version] :
+            baseArgs
     }
 }
