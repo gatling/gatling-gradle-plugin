@@ -303,7 +303,7 @@ class GatlingPluginExtension {
 
     static final String GATLING_VERSION = '3.10.4'
 
-    static final String SCALA_VERSION = '2.13.12'
+    static final String SCALA_VERSION = '2.13.13'
 
     static final String DEFAULT_LOG_LEVEL = "WARN"
     static final LogHttp DEFAULT_LOG_HTTP = LogHttp.NONE

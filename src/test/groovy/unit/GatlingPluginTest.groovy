@@ -52,17 +52,6 @@ class GatlingPluginTest extends GatlingUnitSpec {
         }
     }
 
-    def "should allow overriding gatling version via extension with deprecated property"() {
-        when:
-        project.gatling { toolVersion = '3.5.1' }
-        and:
-        project.evaluate()
-        then:
-        project.configurations.getByName("gatling").allDependencies.find {
-            it.name == "gatling-charts-highcharts" && it.version == "3.5.1"
-        }
-    }
-
     def "should allow overriding scala version via extension"() {
         when:
         project.gatling { scalaVersion = '2.11.3' }
