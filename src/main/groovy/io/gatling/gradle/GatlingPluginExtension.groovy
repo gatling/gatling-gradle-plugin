@@ -316,17 +316,6 @@ class GatlingPluginExtension {
     Map systemProperties
     Map environment = [:]
 
-    /**
-     * Use gatlingVersion instead
-     * @param toolVersion the Gatling version
-     *
-     * @deprecated  As of release 3.7.0, replaced by {@link #gatlingVersion}
-     */
-    @Deprecated
-    void setToolVersion(String toolVersion) {
-        gatlingVersion = toolVersion
-    }
-
     List<String> includes = List.of()
     List<String> excludes = List.of()
 
