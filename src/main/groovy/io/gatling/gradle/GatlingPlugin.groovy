@@ -3,7 +3,6 @@ package io.gatling.gradle
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.GradleVersion
@@ -25,11 +24,6 @@ final class GatlingPlugin implements Plugin<Project> {
     public static def ENTERPRISE_UPLOAD_TASK_NAME = "gatlingEnterpriseUpload"
 
     public static def ENTERPRISE_START_TASK_NAME = "gatlingEnterpriseStart"
-
-    /**
-     * @deprecated Please use {@link io.gatling.gradle.GatlingPlugin#ENTERPRISE_PACKAGE_TASK_NAME} instead
-     */
-    public static def FRONTLINE_JAR_TASK_NAME = "frontLineJar"
 
     void apply(Project project) {
 
@@ -73,26 +67,6 @@ final class GatlingPlugin implements Plugin<Project> {
                         require "2.17.1"
                     }
                     because 'log4shell'
-                }
-            }
-        }
-
-        project.afterEvaluate {
-            if (project.plugins.findPlugin('io.gatling.frontline.gradle')) {
-                def errorMessage = """\
-                    Plugin io.gatling.frontline.gradle is no longer needed, its functionality is now included in the io.gatling.gradle plugin.
-                    Please remove io.gatling.frontline.gradle from your build.gradle configuration file, and use the $ENTERPRISE_PACKAGE_TASK_NAME task instead of $FRONTLINE_JAR_TASK_NAME.
-                    See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent()
-                throw new ProjectConfigurationException(errorMessage, [])
-            } else {
-                project.tasks.register(FRONTLINE_JAR_TASK_NAME) {
-                    doFirst {
-                        logger.warn("""\
-                            Task $FRONTLINE_JAR_TASK_NAME is deprecated and will be removed in a future version.
-                            Please use $ENTERPRISE_PACKAGE_TASK_NAME instead.
-                            See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information.""".stripIndent())
-                    }
-                    finalizedBy(gatlingEnterprisePackage)
                 }
             }
         }
