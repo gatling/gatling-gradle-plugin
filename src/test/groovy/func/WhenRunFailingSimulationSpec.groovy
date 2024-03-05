@@ -34,13 +34,13 @@ class AFailedSimulation extends Simulation {
 }
 """
         when:
-        executeGradle(GATLING_RUN_TASK_NAME)
+        executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
         then:
         UnexpectedBuildFailure ex = thrown(UnexpectedBuildFailure)
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There're failed simulations: computerdatabase.AFailedSimulation")
+            it.endsWith("There are failed simulations: computerdatabase.AFailedSimulation")
         }
         and: "all simulations were run"
         with(new File(buildDir, "reports/gatling")) { reports ->
@@ -70,7 +70,7 @@ class AFailedSimulation extends Simulation {
 }
 """
         when:
-        def buildResult = executeGradle(GATLING_RUN_TASK_NAME)
+        def buildResult = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
         then:
         buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and:
@@ -97,13 +97,13 @@ import io.gatling.http.Predef._
 class AFailedSimulation extends Simulation {}
 """
         when:
-        executeGradle(GATLING_RUN_TASK_NAME)
+        executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
         then:
         UnexpectedBuildFailure ex = thrown(UnexpectedBuildFailure)
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There're failed simulations: computerdatabase.AFailedSimulation")
+            it.endsWith("There are failed simulations: computerdatabase.AFailedSimulation")
         }
         and:
         with(new File(buildDir, "reports/gatling")) { reports ->
