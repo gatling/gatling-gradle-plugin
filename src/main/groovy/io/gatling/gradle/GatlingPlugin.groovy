@@ -17,8 +17,6 @@ final class GatlingPlugin implements Plugin<Project> {
 
     public static def GATLING_RECORDER_TASK_NAME = 'gatlingRecorder'
 
-    static String GATLING_TASK_NAME_PREFIX = "$GATLING_RUN_TASK_NAME-"
-
     public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
 
     public static def ENTERPRISE_UPLOAD_TASK_NAME = "gatlingEnterpriseUpload"
@@ -26,10 +24,7 @@ final class GatlingPlugin implements Plugin<Project> {
     public static def ENTERPRISE_START_TASK_NAME = "gatlingEnterpriseStart"
 
     void apply(Project project) {
-
-        if (GradleVersion.current() < GradleVersion.version("7.1")) {
-            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.1")
-        }
+        validateGradleVersion()
 
         project.pluginManager.apply ScalaPlugin
 
@@ -48,17 +43,15 @@ final class GatlingPlugin implements Plugin<Project> {
             group = "Gatling"
         }
 
-        registerGatlingTask(project, GATLING_RUN_TASK_NAME, null)
-
-        project.tasks.addRule("Pattern: $GATLING_RUN_TASK_NAME-<SimulationClass>: Executes single Gatling simulation.") { String taskName ->
-            if (taskName.startsWith(GATLING_TASK_NAME_PREFIX)) {
-                registerGatlingTask(project, taskName, (taskName - GATLING_TASK_NAME_PREFIX))
-            }
+        project.tasks.register(GATLING_RUN_TASK_NAME, GatlingRunTask.class) {
+            dependsOn(project.tasks.named("gatlingClasses"), project.tasks.named("gatlingLogback"))
+            description = "Execute Gatling simulations locally"
+            group = "Gatling"
         }
 
-        def gatlingEnterprisePackage = registerEnterprisePackageTask(project)
-        registerEnterpriseUploadTask(project, gatlingEnterprisePackage)
-        registerEnterpriseStartTask(project, gatlingEnterprisePackage)
+        def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
+        registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
+        registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
 
         project.dependencies {
             constraints {
@@ -72,33 +65,27 @@ final class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    void registerGatlingTask(Project project, String taskName, String simulationFQN) {
-        project.tasks.register(taskName, GatlingRunTask.class) {
-            dependsOn(project.tasks.named("gatlingClasses"), project.tasks.named("gatlingLogback"))
-            description = "Execute Gatling simulation"
-            group = "Gatling"
-
-            if (simulationFQN) {
-                simulationClass = simulationFQN
-            }
+    private void validateGradleVersion() {
+        if (GradleVersion.current() < GradleVersion.version("7.1")) {
+            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.1")
         }
     }
 
-    void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+    private void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
         project.tasks.register(ENTERPRISE_UPLOAD_TASK_NAME, GatlingEnterpriseUploadTask.class) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
         }
     }
 
-    void registerEnterpriseStartTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+    private void registerEnterpriseStartTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
         project.tasks.register(ENTERPRISE_START_TASK_NAME, GatlingEnterpriseStartTask.class) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
         }
     }
 
-    TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
+    private TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
         TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackage = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
             packageTask.configurations = [
                 project.configurations.gatlingRuntimeClasspath
@@ -107,7 +94,7 @@ final class GatlingPlugin implements Plugin<Project> {
         gatlingEnterprisePackage
     }
 
-    void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
+    private void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
         project.sourceSets {
             gatling {
                 java.srcDirs = [gatlingExt.JAVA_SIMULATIONS_DIR]

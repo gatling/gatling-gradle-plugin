@@ -1,16 +1,19 @@
 package io.gatling.gradle
 
+import io.gatling.plugin.SimulationSelector
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
+import org.gradle.api.tasks.options.Option
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.util.GradleVersion
+
+import java.nio.charset.StandardCharsets
 
 class GatlingRunTask extends DefaultTask {
 
@@ -26,8 +29,23 @@ class GatlingRunTask extends DefaultTask {
     @Optional
     Map environment = [:]
 
-    @Internal
-    String simulationClass = null
+    @Input
+    @Option(option = "non-interactive", description = "Force this plugin in non interactive mode")
+    boolean nonInteractive = Boolean.parseBoolean(System.getenv("CI"))
+
+    @Input
+    @Optional
+    @Option(option = "simulation", description = "Force the simulation to be executed")
+    String simulationClassName
+
+    @Input
+    @Option(option = "all", description = "Run all simulations sequentially in alphabetic order")
+    boolean runAllSimulations
+
+    @Input
+    @Optional
+    @Option(option = "run-description", description = "Add a description to be inserted in the HTML reports")
+    String runDescription
 
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
@@ -41,6 +59,8 @@ class GatlingRunTask extends DefaultTask {
         def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
 
         Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
+            getLogger().info("Running simulation " + simulationClass + ".")
+
             [(simulationClass): project.javaexec({ JavaExecSpec exec ->
                 exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
                 exec.classpath = project.configurations.gatlingRuntimeClasspath
@@ -56,7 +76,7 @@ class GatlingRunTask extends DefaultTask {
                     exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
                 }
 
-                exec.args this.createGatlingArgs(simulationClass, gatlingExt.gatlingVersion)
+                exec.args createGatlingArgs(simulationClass)
 
                 exec.standardInput = System.in
 
@@ -67,30 +87,61 @@ class GatlingRunTask extends DefaultTask {
         Map<String, ExecResult> failed = results.findAll { it.value.exitValue != 0 }
 
         if (!failed.isEmpty()) {
-            throw new TaskExecutionException(this, new RuntimeException("There're failed simulations: ${failed.keySet().sort().join(", ")}"))
+            throw new TaskExecutionException(this, new RuntimeException("There are failed simulations: ${failed.keySet().sort().join(", ")}"))
         }
     }
 
     List<String> simulationClasses() {
-        def classpath = project.configurations.gatlingRuntimeClasspath.getFiles()
-        def includes = this.simulationClass ? List.of(simulationClass) : project.gatling.includes
-        def excludes = this.simulationClass ? List.of() : project.gatling.excludes
+        List<String> gatlingClasspath = project.configurations.gatlingRuntimeClasspath.getFiles().collect {it.getAbsolutePath()}.toList()
 
-        return SimulationFilesUtils.resolveSimulations(classpath, includes, excludes)
+        SimulationSelector.Result result =
+            SimulationSelector.simulations(
+                simulationClassName,
+                gatlingClasspath,
+                project.gatling.includes,
+                project.gatling.excludes,
+                runAllSimulations,
+                !nonInteractive)
+
+        SimulationSelector.Result.Error error = result.error
+
+        if (error != null) {
+            // switch on null is only introduced in Java 18
+            String errorMessage
+
+            switch (error) {
+                case SimulationSelector.Result.Error.NoSimulations:
+                    errorMessage = "No simulations to run"
+                    break
+                case SimulationSelector.Result.Error.MoreThanOneSimulationInNonInteractiveMode:
+                    errorMessage =
+                        "Running in non-interactive mode, yet more than 1 simulation is available. Either specify one with --simulation=<className> or run them all sequentially with --all."
+                    break
+                case SimulationSelector.Result.Error.TooManyInteractiveAttempts:
+                    errorMessage = "Max attempts of reading simulation number reached. Aborting."
+                    break
+                default:
+                    throw new IllegalStateException("Unknown error: " + error)
+            }
+
+            throw new UnsupportedOperationException(errorMessage)
+        }
+
+        return result.simulations
     }
 
-    List<String> createGatlingArgs(String simulationClass, String gatlingVersion) {
+    List<String> createGatlingArgs(String simulationClass) {
         def baseArgs = [
             "-s", simulationClass,
-            "-rf", gatlingReportDir.absolutePath
+            "-rf", gatlingReportDir.absolutePath,
+            "-l", "gradle",
+            "-btv", GradleVersion.current().version
         ]
 
-        def gatlingVersionComponents = gatlingVersion.split("\\.")
-        int gatlingMajorVersion = Integer.valueOf(gatlingVersionComponents[0])
-        int gatlingMinorVersion = Integer.valueOf(gatlingVersionComponents[1])
+        if (runDescription) {
+            baseArgs += ["-rd", Base64.encoder.encodeToString(runDescription.getBytes(StandardCharsets.UTF_8))]
+        }
 
-        return (gatlingMajorVersion == 3 && gatlingMinorVersion >= 8) || gatlingMajorVersion >= 4 ?
-            baseArgs + ["-l", "gradle", "-btv", GradleVersion.current().version] :
-            baseArgs
+        return baseArgs
     }
 }

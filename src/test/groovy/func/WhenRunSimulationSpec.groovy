@@ -4,21 +4,24 @@ import helper.GatlingFuncSpec
 import io.gatling.gradle.LogbackConfigTask
 import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.UnexpectedBuildFailure
+import spock.lang.Ignore
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 import static java.lang.System.lineSeparator
+import static org.gradle.testkit.runner.TaskOutcome.FAILED
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 class WhenRunSimulationSpec extends GatlingFuncSpec {
 
     @Unroll
-    def "should execute all simulations by default for gradle version #gradleVersion"() {
+    def "should execute all simulations for gradle version #gradleVersion when forced by --all option"() {
         setup:
         prepareTest()
         when:
-        BuildResult result = createRunner(GATLING_RUN_TASK_NAME)
+        BuildResult result = createRunner(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
             .withGradleVersion(gradleVersion)
             .build()
         then: "default tasks were executed successfully"
@@ -33,13 +36,13 @@ class WhenRunSimulationSpec extends GatlingFuncSpec {
         gradleVersion << SUPPORTED_GRADLE_VERSIONS
     }
 
-    def "should execute only #simulation when initiated by rule"() {
+    def "should execute only #simulation when forced by --simulation option"() {
         setup:
         prepareTest()
         when:
-        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
         then: "custom task was run successfully"
-        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "only one simulation was executed"
         new File(buildDir, "reports/gatling").listFiles().size() == 1
         and: "logs doesn't contain INFO"
@@ -54,7 +57,7 @@ class WhenRunSimulationSpec extends GatlingFuncSpec {
 gatling.charting.noReports = true
 """
         when:
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME)
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
         then:
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "no reports generated"
@@ -68,21 +71,15 @@ gatling.charting.noReports = true
         }
     }
 
-    def "should not fail when layout is incorrect"() {
+
+    def "fail when no simulation is found"() {
         setup:
         prepareTest(null)
         when:
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME)
-        then: "default tasks were executed successfully"
-        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
-        result.task(":gatlingClasses").outcome == UP_TO_DATE
-        and: "no simulations compiled"
-        !new File(buildDir, "classes/gatling").exists()
-        and: "no simulations run"
-        with(new File(buildDir, "reports/gatling")) {
-            it.exists()
-            it.list().size() == 0
-        }
+        executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
+        then:
+        UnexpectedBuildFailure ex = thrown(UnexpectedBuildFailure)
+        ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
     }
 
     def "should run gatling twice even if no changes to source code"() {
@@ -92,7 +89,7 @@ gatling.charting.noReports = true
 gatling { includes = ['computerdatabase.BasicSimulation'] }
 """
         when: '1st time'
-        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
         then:
         result.task(":compileGatlingScala").outcome == SUCCESS
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
@@ -107,7 +104,7 @@ gatling { includes = ['computerdatabase.BasicSimulation'] }
         new File(new File(srcDir, "computerdatabase"), "BasicSimulation.scala") << """
 case class MyClz(str: String) // some fake code to change source file
 """
-        result = executeGradle("$GATLING_RUN_TASK_NAME")
+        result = executeGradle("$GATLING_RUN_TASK_NAME", )
         then:
         result.task(":compileGatlingScala").outcome == SUCCESS
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
@@ -125,9 +122,9 @@ gatling {
     logHttp = 'ALL'
 }"""
         when: 'run single simulation'
-        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
         then:
-        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "logback config created"
         LogbackConfigTask.logbackFile(buildDir).exists()
         and:
@@ -162,9 +159,9 @@ gatling {
 </configuration>"""
 
         when: 'run single simulation'
-        BuildResult result = executeGradle("$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
         then:
-        result.task(":$GATLING_RUN_TASK_NAME-computerdatabase.BasicSimulation").outcome == SUCCESS
+        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "no logback config created"
         !LogbackConfigTask.logbackFile(buildDir).exists()
         and:
