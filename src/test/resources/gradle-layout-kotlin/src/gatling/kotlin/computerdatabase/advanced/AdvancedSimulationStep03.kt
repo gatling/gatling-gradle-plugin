@@ -1,14 +1,17 @@
-package computerdatabase.advanced
+package computerdatabase.advanced;
 
+import io.gatling.javaapi.core.CoreDsl.*
+import io.gatling.javaapi.http.HttpDsl.*
 import org.apache.commons.lang.StringUtils.lowerCase
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import scala.concurrent.duration._
 
-class AdvancedSimulationStep03 extends Simulation {
+import io.gatling.javaapi.core.*
+import io.gatling.javaapi.http.*
+
+public class AdvancedSimulationStep03 : Simulation() {
 
   object Search {
-    val feeder = csv("search.csv").random
+
+    val feeder = csv("search.csv").random()
 
     val search = exec(
         http("Home").get("/"),
@@ -30,7 +33,10 @@ class AdvancedSimulationStep03 extends Simulation {
 
   val scn = scenario("Users").exec(Search.search)
 
-  setUp(scn.inject(atOnceUsers(1)))
-    .protocols(httpConf)
-    .assertions(global.successfulRequests.percent.gt(99))
+
+  init {
+    setUp(scn.injectOpen(atOnceUsers(1)))
+      .protocols(httpConf)
+      .assertions(global().successfulRequests().percent().gt(99.0))
+  }
 }

@@ -14,12 +14,12 @@ import static org.gradle.testkit.runner.TaskOutcome.FAILED
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
-class WhenRunSimulationSpec extends GatlingFuncSpec {
+class WhenGroovyRunScalaSimulationSpec extends GatlingFuncSpec {
 
     @Unroll
     def "should execute all simulations for gradle version #gradleVersion when forced by --all option"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         when:
         BuildResult result = createRunner(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
             .withGradleVersion(gradleVersion)
@@ -38,7 +38,7 @@ class WhenRunSimulationSpec extends GatlingFuncSpec {
 
     def "should execute only #simulation when forced by --simulation option"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         when:
         BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
         then: "custom task was run successfully"
@@ -51,7 +51,7 @@ class WhenRunSimulationSpec extends GatlingFuncSpec {
 
     def "should allow Gatling config override"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         and: "override config by disabling reports"
         new File(new File(projectDir.root, "src/gatling/resources"), "gatling.conf") << """
 gatling.charting.noReports = true
@@ -84,7 +84,7 @@ gatling.charting.noReports = true
 
     def "should run gatling twice even if no changes to source code"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         buildFile << """
 gatling { includes = ['computerdatabase.BasicSimulation'] }
 """
@@ -112,7 +112,7 @@ case class MyClz(str: String) // some fake code to change source file
 
     def "should use extension for generated logback config when there is no resources"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         and: "remove resources folder"
         FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
         and: "configure custom log level"
@@ -136,7 +136,7 @@ gatling {
 
     def "should ignore logging settings from extension, if logback config exists in resources"() {
         setup:
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
         and: "put some config to gatling closure"
         buildFile << """
 gatling {

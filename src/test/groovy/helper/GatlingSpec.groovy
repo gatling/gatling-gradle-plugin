@@ -16,19 +16,35 @@ abstract class GatlingSpec extends Specification {
 
     File buildFile
 
-    def createBuildFolder(String fixtureDir) {
+    def createBuildFolder(String fixtureDir, SimulationLanguage simulationLanguage) {
+        String suffix = simulationLanguage.name().toLowerCase(Locale.ROOT)
         if (fixtureDir) {
-            copyDirectory(new File(this.class.getResource(fixtureDir).file), projectDir.root)
+            copyDirectory(new File(this.class.getResource("$fixtureDir-$suffix").file), projectDir.root)
         }
-        srcDir = new File(projectDir.root, "src/gatling/scala")
+        srcDir = new File(projectDir.root, "src/gatling/$suffix")
         buildDir = new File(projectDir.root, "build")
     }
 
-    def generateGroovyBuildScriptWithScala() {
-        buildFile = projectDir.newFile("build.gradle")
-        buildFile.text = """
+    def generateBuildScript(GradleScriptingLanguage gradleScriptingLanguage, SimulationLanguage simulationLanguage) {
+        switch (gradleScriptingLanguage) {
+            case GradleScriptingLanguage.GROOVY:
+                buildFile = projectDir.newFile("build.gradle")
+
+                String languagePlugin
+                switch (simulationLanguage) {
+                    case SimulationLanguage.JAVA:
+                        languagePlugin = "java"
+                        break
+                    case SimulationLanguage.SCALA:
+                        languagePlugin = "scala"
+                        break
+                    case SimulationLanguage.KOTLIN:
+                        languagePlugin = "org.jetbrains.kotlin.jvmkotlin"
+                }
+
+                buildFile.text = """
 plugins {
-  id 'scala'
+  id '$languagePlugin'
   id 'io.gatling.gradle'
 }
 
@@ -41,13 +57,29 @@ dependencies {
   gatling group: 'org.json4s', name: 'json4s-jackson_2.13', version: '3.6.10'
 }
 """
-    }
+                break
 
-    def generateKotlinBuildScriptWithScala() {
-        buildFile = projectDir.newFile("build.gradle.kts")
-        buildFile.text = """
+            case GradleScriptingLanguage.KOTLIN:
+                buildFile = projectDir.newFile("build.gradle.kts")
+
+                String languagePlugin
+                switch (simulationLanguage) {
+                    case SimulationLanguage.JAVA:
+                        languagePlugin = "id(\"java\")"
+                        break
+                    case SimulationLanguage.SCALA:
+                        languagePlugin = "id(\"scala\")"
+                        break
+                    case SimulationLanguage.KOTLIN:
+                        languagePlugin = """
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.allopen") version "1.9.22"
+"""
+                }
+
+                buildFile.text = """
 plugins {
-  id("scala")
+  $languagePlugin
   id("io.gatling.gradle")
 }
 
@@ -60,5 +92,6 @@ dependencies {
   gatling("org.json4s:json4s-jackson_2.13:3.6.10")
 }
 """
+        }
     }
 }

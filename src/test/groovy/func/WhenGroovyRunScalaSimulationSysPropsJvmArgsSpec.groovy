@@ -11,7 +11,7 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 
-class WhenRunSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
+class WhenGroovyRunScalaSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
 
     @Rule
     public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties()
@@ -20,7 +20,7 @@ class WhenRunSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables()
 
     def setup() {
-        prepareGroovyTestWithScala("/gatling-debug-scala")
+        prepareGroovyTestWithScala("/gatling-debug")
         new File(new File(projectDir.root, "src/gatling/resources"), "gatling.conf").text = "gatling.data.writers = []"
     }
 

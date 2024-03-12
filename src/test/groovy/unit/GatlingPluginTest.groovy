@@ -33,10 +33,10 @@ class GatlingPluginTest extends GatlingUnitSpec {
         when:
         project.evaluate()
         then:
-        project.configurations.getByName("gatling").allDependencies.find {
+        project.configurations.gatling.allDependencies.find {
             it.name == "gatling-charts-highcharts" && it.version == GatlingPluginExtension.GATLING_VERSION
         }
-        project.configurations.getByName("gatlingImplementation").allDependencies.find {
+        project.configurations.gatlingImplementation.allDependencies.find {
             it.name == "scala-library" && it.version == GatlingPluginExtension.SCALA_VERSION
         }
     }
@@ -47,7 +47,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         and:
         project.evaluate()
         then:
-        project.configurations.getByName("gatling").allDependencies.find {
+        project.configurations.gatling.allDependencies.find {
             it.name == "gatling-charts-highcharts" && it.version == "3.5.1"
         }
     }
@@ -58,7 +58,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
         and:
         project.evaluate()
         then:
-        project.configurations.getByName("gatlingImplementation").allDependencies.find {
+        project.configurations.gatlingImplementation.allDependencies.find {
             it.name == "scala-library" && it.version == "2.11.3"
         }
     }
@@ -87,7 +87,7 @@ class GatlingPluginTest extends GatlingUnitSpec {
 
     def "should create processGatlingResources task"() {
         expect:
-        with(project.tasks.getByName("processGatlingResources")) {
+        with(project.tasks.processGatlingResources) {
             it instanceof ProcessResources
         }
     }
