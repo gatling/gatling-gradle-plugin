@@ -9,7 +9,7 @@ class WhenKotlinCompileSimulationSpec extends GatlingFuncSpec {
     static def GATLING_CLASSES_TASK_NAME = "gatlingClasses"
 
     def setup() {
-        prepareKotlinTest()
+        prepareKotlinTestWithScala("/gradle-layout-scala")
     }
 
     def "should compile"() {

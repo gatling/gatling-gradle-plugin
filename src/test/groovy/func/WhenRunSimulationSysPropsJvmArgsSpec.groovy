@@ -20,7 +20,7 @@ class WhenRunSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
     public final EnvironmentVariables environmentVariables = new EnvironmentVariables()
 
     def setup() {
-        prepareTest("/gatling-debug")
+        prepareGroovyTestWithScala("/gatling-debug-scala")
         new File(new File(projectDir.root, "src/gatling/resources"), "gatling.conf").text = "gatling.data.writers = []"
     }
 

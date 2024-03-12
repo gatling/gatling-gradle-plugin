@@ -9,10 +9,12 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class WhenPackageSpec extends GatlingFuncSpec {
 
+    def setup() {
+        prepareGroovyTestWithScala("/gradle-layout-scala")
+    }
+
     @Unroll
     def "should successfully create a package for gradle version #gradleVersion"() {
-        setup:
-        prepareTest()
         when:
         BuildResult result = createRunner(ENTERPRISE_PACKAGE_TASK_NAME)
             .withGradleVersion(gradleVersion)

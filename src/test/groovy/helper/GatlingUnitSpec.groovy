@@ -10,9 +10,10 @@ abstract class GatlingUnitSpec extends GatlingSpec {
     GatlingPluginExtension gatlingExt
 
     def setup() {
-        createBuildFolder("/gradle-layout")
+        createBuildFolder("/gradle-layout-scala")
 
         project = ProjectBuilder.builder().withProjectDir(projectDir.root).build()
+        project.pluginManager.apply 'scala'
         project.pluginManager.apply 'io.gatling.gradle'
         project.repositories { mavenCentral(name: "gatlingMavenCentral") }
 
