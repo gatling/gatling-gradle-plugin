@@ -10,7 +10,7 @@ abstract class GatlingUnitSpec extends GatlingSpec {
     GatlingPluginExtension gatlingExt
 
     def setup() {
-        createBuildFolder("/gradle-layout-scala")
+        createBuildFolder("/gradle-layout", SimulationLanguage.SCALA)
 
         project = ProjectBuilder.builder().withProjectDir(projectDir.root).build()
         project.pluginManager.apply 'scala'

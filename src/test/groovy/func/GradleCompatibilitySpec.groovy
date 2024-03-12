@@ -9,7 +9,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 class GradleCompatibilitySpec extends GatlingFuncSpec {
 
     def setup() {
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
     }
 
     BuildResult executeGradleTaskWithVersion(String task, String gradleVersion, boolean shouldFail) {

@@ -8,13 +8,23 @@ abstract class GatlingFuncSpec extends GatlingSpec {
     static def GATLING_HOST_NAME_SYS_PROP = "-Dgatling.hostName=HTTP://COMPUTER-DATABASE.GATLING.IO"
 
     void prepareGroovyTestWithScala(String fixtureDir) {
-        createBuildFolder(fixtureDir)
-        generateGroovyBuildScriptWithScala()
+        createBuildFolder(fixtureDir, SimulationLanguage.SCALA)
+        generateBuildScript(GradleScriptingLanguage.GROOVY, SimulationLanguage.SCALA)
+    }
+
+    void prepareGroovyTestWithJava(String fixtureDir) {
+        createBuildFolder(fixtureDir, SimulationLanguage.JAVA)
+        generateBuildScript(GradleScriptingLanguage.GROOVY, SimulationLanguage.JAVA)
+    }
+
+    void prepareKotlinTestWitKotlin(String fixtureDir) {
+        createBuildFolder(fixtureDir, SimulationLanguage.KOTLIN)
+        generateBuildScript(GradleScriptingLanguage.KOTLIN, SimulationLanguage.KOTLIN)
     }
 
     void prepareKotlinTestWithScala(String fixtureDir) {
-        createBuildFolder(fixtureDir)
-        generateKotlinBuildScriptWithScala()
+        createBuildFolder(fixtureDir, SimulationLanguage.SCALA)
+        generateBuildScript(GradleScriptingLanguage.KOTLIN, SimulationLanguage.SCALA)
     }
 
     protected GradleRunner createRunner(String... gradleArgs) {

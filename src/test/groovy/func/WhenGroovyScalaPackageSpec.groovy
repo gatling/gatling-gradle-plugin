@@ -7,10 +7,10 @@ import spock.lang.Unroll
 import static io.gatling.gradle.GatlingPlugin.ENTERPRISE_PACKAGE_TASK_NAME
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class WhenPackageSpec extends GatlingFuncSpec {
+class WhenGroovyScalaPackageSpec extends GatlingFuncSpec {
 
     def setup() {
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
     }
 
     @Unroll

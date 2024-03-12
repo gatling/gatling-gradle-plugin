@@ -7,12 +7,12 @@ import spock.lang.Unroll
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class WhenCompileSimulationSpec extends GatlingFuncSpec {
+class WhenGroovyCompileScalaSimulationSpec extends GatlingFuncSpec {
 
     static def GATLING_CLASSES_TASK_NAME = "gatlingClasses"
 
     def setup() {
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
     }
 
     def "should compile"() {

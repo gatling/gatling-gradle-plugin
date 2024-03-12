@@ -5,11 +5,11 @@ import org.gradle.testkit.runner.BuildResult
 
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class WhenKotlinCompileSimulationSpec extends GatlingFuncSpec {
+class WhenKotlinCompileScalaSimulationSpec extends GatlingFuncSpec {
     static def GATLING_CLASSES_TASK_NAME = "gatlingClasses"
 
     def setup() {
-        prepareKotlinTestWithScala("/gradle-layout-scala")
+        prepareKotlinTestWithScala("/gradle-layout")
     }
 
     def "should compile"() {
@@ -31,5 +31,4 @@ class WhenKotlinCompileSimulationSpec extends GatlingFuncSpec {
         def testDir = new File(buildDir, "classes/java/test")
         testDir.exists()
     }
-
 }

@@ -7,10 +7,10 @@ import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 import static org.gradle.testkit.runner.TaskOutcome.FAILED
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
-class WhenRunFailingSimulationSpec extends GatlingFuncSpec {
+class WhenGroovyRunFailingScalaSimulationSpec extends GatlingFuncSpec {
 
     def setup() {
-        prepareGroovyTestWithScala("/gradle-layout-scala")
+        prepareGroovyTestWithScala("/gradle-layout")
     }
 
     def "should execute all simulations even if one fails because of gatling assertions"() {

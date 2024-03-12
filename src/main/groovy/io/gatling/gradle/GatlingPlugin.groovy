@@ -25,9 +25,7 @@ final class GatlingPlugin implements Plugin<Project> {
     void apply(Project project) {
         validateGradleVersion()
 
-        GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
-
-        createConfiguration(project, gatlingExt)
+        createConfiguration(project)
 
         project.tasks.register(GATLING_LOGBACK_TASK_NAME, LogbackConfigTask.class) {
             dependsOn(project.tasks.named("gatlingClasses"))
@@ -80,28 +78,27 @@ final class GatlingPlugin implements Plugin<Project> {
         gatlingEnterprisePackage
     }
 
-    private void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
-
-        def hasJava = project.getPluginManager().hasPlugin("java")
-        def hasScala = project.getPluginManager().hasPlugin("scala")
-        def hasKotlin = project.getPluginManager().hasPlugin("kotlin")
+    private void createConfiguration(Project project) {
+        def hasJava = project.pluginManager.hasPlugin("java")
+        def hasScala = project.pluginManager.hasPlugin("scala")
+        def hasKotlin = project.pluginManager.hasPlugin("kotlin")
 
         if (!hasJava && !hasScala && !hasKotlin) {
             throw new UnsupportedOperationException("You must configure the plugin for your language of choice: java, scala or kotlin.")
         }
 
+        def gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
+
         project.sourceSets {
             gatling {
-                java.srcDirs = [gatlingExt.GATLING_JAVA_SOURCES_DIR]
                 resources.srcDirs = [gatlingExt.GATLING_RESOURCES_DIR]
-            }
-            if (hasScala) {
-                gatling {
+                if (hasJava) {
+                    java.srcDirs = [gatlingExt.GATLING_JAVA_SOURCES_DIR]
+                }
+                if (hasScala) {
                     scala.srcDirs = [gatlingExt.GATLING_SCALA_SOURCES_DIR]
                 }
-            }
-            if (hasKotlin) {
-                gatling {
+                if (hasKotlin) {
                     kotlin.srcDirs = [gatlingExt.GATLING_KOTLIN_SOURCES_DIR]
                 }
             }
