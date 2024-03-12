@@ -24,10 +24,11 @@ abstract class GatlingSpec extends Specification {
         buildDir = new File(projectDir.root, "build")
     }
 
-    def generateBuildScripts() {
+    def generateGroovyBuildScriptWithScala() {
         buildFile = projectDir.newFile("build.gradle")
         buildFile.text = """
 plugins {
+  id 'scala'
   id 'io.gatling.gradle'
 }
 
@@ -42,10 +43,11 @@ dependencies {
 """
     }
 
-    def generateKotlinBuildScripts() {
+    def generateKotlinBuildScriptWithScala() {
         buildFile = projectDir.newFile("build.gradle.kts")
         buildFile.text = """
 plugins {
+  id("scala")
   id("io.gatling.gradle")
 }
 

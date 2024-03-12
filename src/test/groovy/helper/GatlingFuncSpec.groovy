@@ -7,14 +7,14 @@ abstract class GatlingFuncSpec extends GatlingSpec {
 
     static def GATLING_HOST_NAME_SYS_PROP = "-Dgatling.hostName=HTTP://COMPUTER-DATABASE.GATLING.IO"
 
-    void prepareTest(String fixtureDir = "/gradle-layout") {
+    void prepareGroovyTestWithScala(String fixtureDir) {
         createBuildFolder(fixtureDir)
-        generateBuildScripts()
+        generateGroovyBuildScriptWithScala()
     }
 
-    void prepareKotlinTest(String fixtureDir = "/gradle-layout") {
+    void prepareKotlinTestWithScala(String fixtureDir) {
         createBuildFolder(fixtureDir)
-        generateKotlinBuildScripts()
+        generateKotlinBuildScriptWithScala()
     }
 
     protected GradleRunner createRunner(String... gradleArgs) {

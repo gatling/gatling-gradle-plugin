@@ -8,6 +8,10 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 
 class GradleCompatibilitySpec extends GatlingFuncSpec {
 
+    def setup() {
+        prepareGroovyTestWithScala("/gradle-layout-scala")
+    }
+
     BuildResult executeGradleTaskWithVersion(String task, String gradleVersion, boolean shouldFail) {
         def runner = createRunner(task).withGradleVersion(gradleVersion)
         if (shouldFail) {
@@ -19,8 +23,6 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
 
     @Unroll
     void 'should succeed for version #gradleVersion that is greater than 7.1'() {
-        given:
-        prepareTest()
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, false)
         then:
@@ -31,8 +33,6 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
 
     @Unroll
     void 'should fail with friendly message for version #gradleVersion that is less than 7.1'() {
-        given:
-        prepareTest()
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, true)
         then:

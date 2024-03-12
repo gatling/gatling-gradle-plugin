@@ -3,7 +3,6 @@ package io.gatling.gradle
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.scala.ScalaPlugin
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.GradleVersion
 
@@ -25,8 +24,6 @@ final class GatlingPlugin implements Plugin<Project> {
 
     void apply(Project project) {
         validateGradleVersion()
-
-        project.pluginManager.apply ScalaPlugin
 
         GatlingPluginExtension gatlingExt = project.extensions.create(GATLING_EXTENSION_NAME, GatlingPluginExtension)
 
@@ -52,17 +49,6 @@ final class GatlingPlugin implements Plugin<Project> {
         def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
         registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
-
-        project.dependencies {
-            constraints {
-                zinc("org.apache.logging.log4j:log4j-core") {
-                    version {
-                        require "2.17.1"
-                    }
-                    because 'log4shell'
-                }
-            }
-        }
     }
 
     private void validateGradleVersion() {
@@ -95,15 +81,28 @@ final class GatlingPlugin implements Plugin<Project> {
     }
 
     private void createConfiguration(Project project, GatlingPluginExtension gatlingExt) {
+
+        def hasJava = project.getPluginManager().hasPlugin("java")
+        def hasScala = project.getPluginManager().hasPlugin("scala")
+        def hasKotlin = project.getPluginManager().hasPlugin("kotlin")
+
+        if (!hasJava && !hasScala && !hasKotlin) {
+            throw new UnsupportedOperationException("You must configure the plugin for your language of choice: java, scala or kotlin.")
+        }
+
         project.sourceSets {
             gatling {
-                java.srcDirs = [gatlingExt.JAVA_SIMULATIONS_DIR]
-                scala.srcDirs = [gatlingExt.SCALA_SIMULATIONS_DIR]
-                resources.srcDirs = [gatlingExt.RESOURCES_DIR]
+                java.srcDirs = [gatlingExt.GATLING_JAVA_SOURCES_DIR]
+                resources.srcDirs = [gatlingExt.GATLING_RESOURCES_DIR]
             }
-            if (gatling.hasProperty("kotlin")) {
+            if (hasScala) {
                 gatling {
-                    kotlin.srcDirs = [gatlingExt.KOTLIN_SIMULATIONS_DIR]
+                    scala.srcDirs = [gatlingExt.GATLING_SCALA_SOURCES_DIR]
+                }
+            }
+            if (hasKotlin) {
+                gatling {
+                    kotlin.srcDirs = [gatlingExt.GATLING_KOTLIN_SOURCES_DIR]
                 }
             }
         }
@@ -115,17 +114,29 @@ final class GatlingPlugin implements Plugin<Project> {
 
         project.dependencies {
             gatlingRuntimeOnly project.sourceSets.gatling.output
+            if (hasScala) {
+                constraints {
+                    zinc("org.apache.logging.log4j:log4j-core") {
+                        version {
+                            require "2.17.1"
+                        }
+                        because 'log4shell'
+                    }
+                }
+            }
         }
 
-        project.tasks.named("compileGatlingScala").configure {
-            scalaCompileOptions.with {
-                additionalParameters = [
-                    "-deprecation",
-                    "-feature",
-                    "-unchecked",
-                    "-language:implicitConversions",
-                    "-language:postfixOps"
-                ]
+        if (hasScala) {
+            project.tasks.named("compileGatlingScala").configure {
+                scalaCompileOptions.with {
+                    additionalParameters = [
+                        "-deprecation",
+                        "-feature",
+                        "-unchecked",
+                        "-language:implicitConversions",
+                        "-language:postfixOps"
+                    ]
+                }
             }
         }
 
@@ -133,7 +144,9 @@ final class GatlingPlugin implements Plugin<Project> {
             evaluatedProject.dependencies {
                 def evaluatedExt = evaluatedProject.extensions.getByType(GatlingPluginExtension)
 
-                gatlingImplementation "org.scala-lang:scala-library:${evaluatedExt.scalaVersion}"
+                if (hasScala) {
+                    gatlingImplementation "org.scala-lang:scala-library:${evaluatedExt.scalaVersion}"
+                }
                 gatling "io.gatling.highcharts:gatling-charts-highcharts:${evaluatedExt.gatlingVersion}"
 
                 if (evaluatedExt.includeMainOutput) {

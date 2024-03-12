@@ -12,7 +12,7 @@ class WhenCompileSimulationSpec extends GatlingFuncSpec {
     static def GATLING_CLASSES_TASK_NAME = "gatlingClasses"
 
     def setup() {
-        prepareTest()
+        prepareGroovyTestWithScala("/gradle-layout-scala")
     }
 
     def "should compile"() {
@@ -51,10 +51,13 @@ class WhenCompileSimulationSpec extends GatlingFuncSpec {
         'gradle' | 'src/test' | "not found: value TestUtils"
     }
 
-    def "should not compile without required dependencies"() {
+    def "should fail to compile when required dependencies is missing"() {
         given:
         buildFile.text = """
-plugins { id 'io.gatling.gradle' }
+plugins {
+ id 'scala'
+ id 'io.gatling.gradle'
+}
 
 repositories {
   mavenCentral()

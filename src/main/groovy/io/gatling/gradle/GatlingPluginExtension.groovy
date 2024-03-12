@@ -293,13 +293,13 @@ class GatlingPluginExtension {
 
     static final String GATLING_RECORDER_CLASS = 'io.gatling.recorder.GatlingRecorder'
 
-    static final String JAVA_SIMULATIONS_DIR = "src/gatling/java"
+    static final String GATLING_JAVA_SOURCES_DIR = "src/gatling/java"
 
-    static final String SCALA_SIMULATIONS_DIR = "src/gatling/scala"
+    static final String GATLING_SCALA_SOURCES_DIR = "src/gatling/scala"
 
-    static final String KOTLIN_SIMULATIONS_DIR = "src/gatling/kotlin"
+    static final String GATLING_KOTLIN_SOURCES_DIR = "src/gatling/kotlin"
 
-    static final String RESOURCES_DIR = "src/gatling/resources"
+    static final String GATLING_RESOURCES_DIR = "src/gatling/resources"
 
     static final String GATLING_VERSION = '3.10.4'
 
