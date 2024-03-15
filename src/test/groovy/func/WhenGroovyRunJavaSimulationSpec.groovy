@@ -1,14 +1,9 @@
 package func
 
 import helper.GatlingFuncSpec
-import io.gatling.gradle.LogbackConfigTask
-import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.UnexpectedBuildFailure
-import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
-import static java.lang.System.lineSeparator
 import static org.gradle.testkit.runner.TaskOutcome.*
 
 class WhenGroovyRunJavaSimulationSpec extends GatlingFuncSpec {

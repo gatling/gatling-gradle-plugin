@@ -3,12 +3,10 @@ package unit
 import helper.GatlingUnitSpec
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.gradle.GatlingRunTask
-import io.gatling.gradle.LogbackConfigTask
 import io.gatling.plugin.GatlingConstants
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.language.jvm.tasks.ProcessResources
 
-import static io.gatling.gradle.GatlingPlugin.GATLING_LOGBACK_TASK_NAME
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 
 class GatlingPluginTest extends GatlingUnitSpec {
@@ -63,25 +61,15 @@ class GatlingPluginTest extends GatlingUnitSpec {
         }
     }
 
-    def "should create gatlingLogback task"() {
-        expect:
-        with(project.tasks.getByName(GATLING_LOGBACK_TASK_NAME)) {
-            it instanceof LogbackConfigTask
-            it.dependsOn.size() == 1
-            it.dependsOn.first().name == "gatlingClasses"
-        }
-    }
-
     def "should create gatlingRun task"() {
         expect:
         with(project.tasks.getByName(GATLING_RUN_TASK_NAME)) {
             it instanceof GatlingRunTask
             it.jvmArgs == null
             it.systemProperties == null
-            it.dependsOn.size() == 2
+            it.dependsOn.size() == 1
             def taskNames = it.dependsOn.collect {TaskProvider element -> return element.name}
             taskNames.contains("gatlingClasses")
-            taskNames.contains("gatlingLogback")
         }
     }
 

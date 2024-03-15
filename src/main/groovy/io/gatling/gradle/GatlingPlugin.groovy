@@ -10,8 +10,6 @@ final class GatlingPlugin implements Plugin<Project> {
 
     public static def GATLING_EXTENSION_NAME = 'gatling'
 
-    public static def GATLING_LOGBACK_TASK_NAME = 'gatlingLogback'
-
     public static def GATLING_RUN_TASK_NAME = 'gatlingRun'
 
     public static def GATLING_RECORDER_TASK_NAME = 'gatlingRecorder'
@@ -27,19 +25,13 @@ final class GatlingPlugin implements Plugin<Project> {
 
         createConfiguration(project)
 
-        project.tasks.register(GATLING_LOGBACK_TASK_NAME, LogbackConfigTask.class) {
-            dependsOn(project.tasks.named("gatlingClasses"))
-            description = "Prepare logback config"
-            group = "Gatling"
-        }
-
         project.tasks.register(GATLING_RECORDER_TASK_NAME, GatlingRecorderTask.class) {
             description = "Launch recorder"
             group = "Gatling"
         }
 
         project.tasks.register(GATLING_RUN_TASK_NAME, GatlingRunTask.class) {
-            dependsOn(project.tasks.named("gatlingClasses"), project.tasks.named("gatlingLogback"))
+            dependsOn(project.tasks.named("gatlingClasses"))
             description = "Execute Gatling simulations locally"
             group = "Gatling"
         }

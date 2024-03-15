@@ -1,15 +1,11 @@
 package func
 
 import helper.GatlingFuncSpec
-import io.gatling.gradle.LogbackConfigTask
-import org.apache.commons.io.FileUtils
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.UnexpectedBuildFailure
-import spock.lang.Ignore
 import spock.lang.Unroll
 
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
-import static java.lang.System.lineSeparator
 import static org.gradle.testkit.runner.TaskOutcome.FAILED
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
@@ -108,65 +104,5 @@ case class MyClz(str: String) // some fake code to change source file
         then:
         result.task(":compileGatlingScala").outcome == SUCCESS
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
-    }
-
-    def "should use extension for generated logback config when there is no resources"() {
-        setup:
-        prepareGroovyTestWithScala("/gradle-layout")
-        and: "remove resources folder"
-        FileUtils.deleteDirectory(new File(projectDir.root, "src/gatling/resources"))
-        and: "configure custom log level"
-        buildFile << """
-gatling {
-    logLevel = 'INFO'
-    logHttp = 'ALL'
-}"""
-        when: 'run single simulation'
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
-        then:
-        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
-        and: "logback config created"
-        LogbackConfigTask.logbackFile(buildDir).exists()
-        and:
-        with(result.output.split(lineSeparator())) { lines ->
-            lines.findAll { it.contains("[TRACE]") }.every { it.contains("i.g.h.e.r.DefaultStatsProcessor") }
-            lines.findAll { it.contains("[INFO ]") }.any { it.contains("i.g.") }
-        }
-    }
-
-    def "should ignore logging settings from extension, if logback config exists in resources"() {
-        setup:
-        prepareGroovyTestWithScala("/gradle-layout")
-        and: "put some config to gatling closure"
-        buildFile << """
-gatling {
-    logLevel = 'INFO'
-    logHttp = 'ALL'
-}"""
-        and: "create logback-test.xml"
-        new File(projectDir.root, "src/gatling/resources/logback-test.xml") << """<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>@@@@ %level %logger]</pattern>
-        </encoder>
-        <immediateFlush>false</immediateFlush>
-    </appender>
-    <logger name="io.gatling" level="INFO"/>
-    <root level="ERROR">
-       <appender-ref ref="CONSOLE" />
-    </root>
-</configuration>"""
-
-        when: 'run single simulation'
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
-        then:
-        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
-        and: "no logback config created"
-        !LogbackConfigTask.logbackFile(buildDir).exists()
-        and:
-        with(result.output.split(lineSeparator()).findAll { it.startsWith("@@@@") }) { lines ->
-            lines.every { it.contains("INFO") && it.contains("io.gatling") }
-        }
     }
 }

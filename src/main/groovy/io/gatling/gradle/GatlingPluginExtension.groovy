@@ -305,9 +305,6 @@ class GatlingPluginExtension {
 
     static final String SCALA_VERSION = '2.13.13'
 
-    static final String DEFAULT_LOG_LEVEL = "WARN"
-    static final LogHttp DEFAULT_LOG_HTTP = LogHttp.NONE
-
     String gatlingVersion = GATLING_VERSION
 
     String scalaVersion = SCALA_VERSION
@@ -321,10 +318,6 @@ class GatlingPluginExtension {
 
     Boolean includeMainOutput = true
     Boolean includeTestOutput = true
-
-    String logLevel
-
-    LogHttp logHttp
 
     GatlingPluginExtension() {
         this.jvmArgs = GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING

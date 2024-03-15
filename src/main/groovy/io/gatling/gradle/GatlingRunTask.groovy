@@ -71,11 +71,6 @@ class GatlingRunTask extends DefaultTask {
                 exec.environment += gatlingExt.environment
                 exec.environment += this.environment
 
-                def logbackFile = LogbackConfigTask.logbackFile(project.buildDir)
-                if (logbackFile.exists()) {
-                    exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
-                }
-
                 exec.args createGatlingArgs(simulationClass)
 
                 exec.standardInput = System.in
