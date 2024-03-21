@@ -9,7 +9,11 @@ java {
     languageVersion.set(JavaLanguageVersion.of(11))
   }
 }
-
+jar {
+  manifest {
+    attributes 'Implementation-Version': project.version
+  }
+}
 repositories {
   mavenCentral()
   gradlePluginPortal()
