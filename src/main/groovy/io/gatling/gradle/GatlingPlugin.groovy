@@ -20,6 +20,8 @@ final class GatlingPlugin implements Plugin<Project> {
 
     public static def ENTERPRISE_START_TASK_NAME = "gatlingEnterpriseStart"
 
+    public static def ENTERPRISE_DEPLOY_TASK_NAME = "gatlingEnterpriseDeploy"
+
     void apply(Project project) {
         validateGradleVersion()
 
@@ -39,6 +41,7 @@ final class GatlingPlugin implements Plugin<Project> {
         def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
         registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
+        registerEnterpriseDeployTask(project, gatlingEnterprisePackageTask)
     }
 
     private void validateGradleVersion() {
@@ -56,6 +59,13 @@ final class GatlingPlugin implements Plugin<Project> {
 
     private void registerEnterpriseStartTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
         project.tasks.register(ENTERPRISE_START_TASK_NAME, GatlingEnterpriseStartTask.class) {
+            inputs.files gatlingEnterprisePackageTask
+            dependsOn(gatlingEnterprisePackageTask)
+        }
+    }
+
+    private void registerEnterpriseDeployTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+        project.tasks.register(ENTERPRISE_DEPLOY_TASK_NAME, GatlingEnterpriseDeployTask.class) {
             inputs.files gatlingEnterprisePackageTask
             dependsOn(gatlingEnterprisePackageTask)
         }
