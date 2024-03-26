@@ -15,14 +15,8 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
         def gatling = project.extensions.getByType(GatlingPluginExtension)
         RecoverEnterprisePluginException.handle(logger) {
             EnterprisePlugin enterprisePlugin = gatling.enterprise.initBatchEnterprisePlugin(project.version.toString(), logger)
-
-            String jsonPackageConfig = PackageConfiguration.loadToJson(project.projectDir)
             UUID packageUUID = gatling.enterprise.packageId
-            if (jsonPackageConfig != null) {
-                logger.lifecycle("Package configuration file detected, applying it.")
-                packageUUID =  enterprisePlugin.uploadPackageConfiguration(jsonPackageConfig)
-                logger.lifecycle("Package id: "+ packageUUID.toString())
-            }
+
             if (packageUUID) {
                 logger.lifecycle("Uploading package with packageId " + packageUUID)
                 enterprisePlugin.uploadPackage(packageUUID, inputs.files.singleFile)
