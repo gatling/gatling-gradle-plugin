@@ -1,37 +1,19 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.model.RunSummary
 import io.gatling.plugin.model.SimulationEndResult
-import io.gatling.plugin.model.SimulationStartResult
-import io.gatling.plugin.util.PropertiesParserUtil
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.TaskAction
 
-@CacheableTask
-class GatlingEnterpriseStartTask extends DefaultTask {
-
-    private static Map<String, String> selectProperties(
-        Map<String, String> propertiesMap, String propertiesString) {
-        return (propertiesMap == null || propertiesMap.isEmpty()) ? PropertiesParserUtil.parseProperties(propertiesString) :propertiesMap
-    }
+class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
 
     @TaskAction
     void publish() {
+        super.deploy()
+
         final GatlingPluginExtension gatling = project.extensions.getByType(GatlingPluginExtension)
-        final Map<String, String> systemProperties = gatling.enterprise.systemProps ?: [:]
-        final String systemPropertiesString = gatling.enterprise.systemPropsString
-        final Map<String, String> environmentVariables = gatling.enterprise.environmentVariables ?: [:]
-        final String environmentVariablesString = gatling.enterprise.environmentVariablesString
         final String version = project.version.toString()
-        final UUID simulationId = gatling.enterprise.simulationId
-        final String simulationClass = gatling.enterprise.simulationClass
-        final File file = inputs.files.singleFile
-        final UUID teamId = gatling.enterprise.teamId
-        final String groupId = project.group.toString()
-        final String artifactId = project.name
-        final UUID packageId = gatling.enterprise.packageId
         final boolean waitForRunEnd = gatling.enterprise.waitForRunEnd
 
         final EnterprisePlugin enterprisePlugin =
@@ -39,29 +21,17 @@ class GatlingEnterpriseStartTask extends DefaultTask {
                 gatling.enterprise.initBatchEnterprisePlugin(version, logger) :
                 gatling.enterprise.initInteractiveEnterprisePlugin(version, logger)
 
-        final Map<String, String> selectedSystemProperties = selectProperties(systemProperties, systemPropertiesString)
-        final Map<String, String> selectedEnvVars = selectProperties(environmentVariables, environmentVariablesString)
-        final SimulationStartResult simulationStartResult = RecoverEnterprisePluginException.handle(logger) {
-            gatling.enterprise.simulationId ?
-                    enterprisePlugin.uploadPackageAndStartSimulation(simulationId, selectedSystemProperties, selectedEnvVars, simulationClass, file) :
-                    enterprisePlugin.createAndStartSimulation(teamId, groupId, artifactId, simulationClass, packageId, selectedSystemProperties, selectedEnvVars, file)
-        }
-
-        if (simulationStartResult.createdSimulation) {
-            CommonLogMessage.logSimulationCreated(simulationStartResult.simulation, logger)
-        }
-
-        CommonLogMessage.logSimulationConfiguration(logger, simulationStartResult.simulation, simulationId, waitForRunEnd)
-
-        logger.lifecycle("""
-                         |Simulation ${simulationStartResult.simulation.name} successfully started.
-                         |Once running, reports will be available at: ${gatling.enterprise.url.toExternalForm() + simulationStartResult.runSummary.reportsPath}
+        RecoverEnterprisePluginException.handle(logger) {
+            RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo)
+            logger.lifecycle("""
+                         |Simulation successfully started.
+                         |Reports are available at: ${gatling.enterprise.url.toExternalForm() + runSummary.reportsPath}
                          |""".stripMargin())
-
-        if (waitForRunEnd) {
-            SimulationEndResult finishedRun = enterprisePlugin.waitForRunEnd(simulationStartResult.runSummary)
-            if (!finishedRun.status.successful) {
-                throw new GradleException("Simulation failed.")
+            if (waitForRunEnd) {
+                SimulationEndResult finishedRun = enterprisePlugin.waitForRunEnd(runSummary)
+                if (!finishedRun.status.successful) {
+                    throw new GradleException("Simulation failed.")
+                }
             }
         }
     }
