@@ -1,7 +1,6 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.EnterprisePlugin
-import io.gatling.plugin.configuration.PackageConfiguration
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.CacheableTask

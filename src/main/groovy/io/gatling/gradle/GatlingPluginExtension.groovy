@@ -6,7 +6,7 @@ import io.gatling.plugin.GatlingConstants
 import io.gatling.plugin.InteractiveEnterprisePlugin
 import io.gatling.plugin.InteractiveEnterprisePluginClient
 import io.gatling.plugin.client.EnterpriseClient
-import io.gatling.plugin.client.http.HttpEnterpriseClient
+import io.gatling.plugin.client.HttpEnterpriseClient
 import io.gatling.plugin.exceptions.UnsupportedClientException
 import io.gatling.plugin.io.PluginIO
 import org.gradle.api.InvalidUserDataException
@@ -20,12 +20,9 @@ class GatlingPluginExtension {
     private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
     private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
-    private static final String TEAM_ID_PROPERTY = "gatling.enterprise.teamId"
+    private static final String SIMULATION_NAME_PROPERTY = "gatling.enterprise.simulationName"
     private static final String PACKAGE_ID_PROPERTY = "gatling.enterprise.packageId"
-    private static final String SIMULATION_CLASS_PROPERTY = "gatling.enterprise.simulationClass"
     private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
-    private static final String SYSTEM_PROPS_PROPERTY = "gatling.enterprise.systemProps"
-    private static final String ENVIRONMENT_VARIABLES_PROPERTY = "gatling.enterprise.environmentVariables"
     private static final String WAIT_FOR_RUN_END_PROPERTY = "gatling.enterprise.waitForRunEnd"
     private static final String CONTROL_PLANE_URL = "gatling.enterprise.controlPlaneUrl"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
@@ -33,14 +30,9 @@ class GatlingPluginExtension {
     final static class Enterprise {
         private String apiToken
         private UUID simulationId
-        private UUID teamId
+        private String simulationName
         private UUID packageId
-        private Map<String, String> systemProps
-        private String systemPropsString
-        private Map<String, String> environmentVariables
-        private String environmentVariablesString
         private URL url = URI.create("https://cloud.gatling.io").toURL()
-        private String simulationClass
         private boolean batchMode
         private boolean waitForRunEnd
         private URL controlPlaneUrl
@@ -69,44 +61,12 @@ class GatlingPluginExtension {
             setSimulationId(simulationId)
         }
 
-        def setTeamId(String teamId) {
-            this.teamId = UUID.fromString(teamId)
+        def setSimulationName(String simulationName) {
+            this.simulationId = UUID.fromString(simulationName)
         }
 
-        def teamId(String teamId) {
-            setTeamId(teamId)
-        }
-
-        def setSystemProps(Map<String, String> systemProps) {
-            this.systemProps = systemProps
-        }
-
-        def systemProps(Map<String, String> systemProps) {
-            setSystemProps(systemProps)
-        }
-
-        def setSystemPropsString(String systemPropsString) {
-            this.systemPropsString = systemPropsString
-        }
-
-        def systemPropsString(String systemPropsString) {
-            setSystemPropsString(systemPropsString)
-        }
-
-        def setEnvironmentVariables(Map<String, String> environmentVariables) {
-            this.environmentVariables = environmentVariables
-        }
-
-        def environmentVariables(Map<String, String> environmentVariables) {
-            setEnvironmentVariables(environmentVariables)
-        }
-
-        def setEnvironmentVariablesString(String environmentVariablesString) {
-            this.environmentVariablesString = environmentVariablesString
-        }
-
-        def environmentVariablesString(String environmentVariablesString) {
-            setEnvironmentVariablesString(environmentVariablesString)
+        def simulationName(String simulationName) {
+            setSimulationName(simulationName)
         }
 
         def setPackageId(String packageId) {
@@ -123,14 +83,6 @@ class GatlingPluginExtension {
 
         def apiToken(String apiToken) {
             setApiToken(apiToken)
-        }
-
-        def setSimulationClass(String simulationClass) {
-            this.simulationClass = simulationClass
-        }
-
-        def simulationClass(String simulationClass) {
-            setSimulationClass(simulationClass)
         }
 
         def setWaitForRunEnd(boolean waitForRunEnd) {
@@ -162,26 +114,13 @@ class GatlingPluginExtension {
 
         @Input
         @Optional
-        Map<String, String> getSystemProps() {
-            return systemProps
-        }
-
-        @Input
-        @Optional
-        String getSystemPropsString() {
-            return systemPropsString ?: System.getProperty(SYSTEM_PROPS_PROPERTY)
-        }
-
-        @Input
-        @Optional
-        Map<String, String> getEnvironmentVariables() {
-            return environmentVariables
-        }
-
-        @Input
-        @Optional
-        String getEnvironmentVariablesString() {
-            return environmentVariablesString ?: System.getProperty(ENVIRONMENT_VARIABLES_PROPERTY)
+        String getSimulationName() {
+            if (simulationName == null) {
+                def systemSimulationName = System.getProperty(SIMULATION_NAME_PROPERTY)
+                return systemSimulationName ? systemSimulationName : null
+            } else {
+                return simulationName
+            }
         }
 
         @Input
@@ -203,25 +142,8 @@ class GatlingPluginExtension {
 
         @Input
         @Optional
-        UUID getTeamId() {
-            if (teamId == null) {
-                def systemTeamId = System.getProperty(TEAM_ID_PROPERTY)
-                return systemTeamId ? UUID.fromString(systemTeamId) : null
-            } else {
-                return teamId
-            }
-        }
-
-        @Input
-        @Optional
         URL getUrl() {
             return url
-        }
-
-        @Input
-        @Optional
-        String getSimulationClass() {
-            return simulationClass ?: System.getProperty(SIMULATION_CLASS_PROPERTY)
         }
 
         @Input

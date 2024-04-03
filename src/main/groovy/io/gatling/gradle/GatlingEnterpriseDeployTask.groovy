@@ -3,10 +3,13 @@ package io.gatling.gradle
 import io.gatling.plugin.BatchEnterprisePlugin
 import io.gatling.plugin.deployment.DeploymentConfiguration
 import io.gatling.plugin.model.BuildTool
+import io.gatling.plugin.model.DeploymentInfo
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 class GatlingEnterpriseDeployTask extends DefaultTask {
+
+    protected DeploymentInfo deploymentInfo
 
     @TaskAction
     void deploy() {
@@ -19,6 +22,6 @@ class GatlingEnterpriseDeployTask extends DefaultTask {
         final Boolean isPrivateRepositoryEnabled = gatlingPlugin.enterprise.controlPlaneUrl != null
         final String artifactId = project.name
         final String implementationVersion = (getClass().getPackage().getImplementationVersion() == null) ? "undefined" : getClass().getPackage().getImplementationVersion()
-        enterprisePlugin.deployFromDescriptor(descriptorFile, packageFile, artifactId, isPrivateRepositoryEnabled, BuildTool.GRADLE, implementationVersion)
+        deploymentInfo = enterprisePlugin.deployFromDescriptor(descriptorFile, packageFile, artifactId, isPrivateRepositoryEnabled, BuildTool.GRADLE, implementationVersion)
     }
 }

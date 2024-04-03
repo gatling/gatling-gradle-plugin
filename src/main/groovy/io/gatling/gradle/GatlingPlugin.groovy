@@ -40,8 +40,8 @@ final class GatlingPlugin implements Plugin<Project> {
 
         def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
         registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
-        registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseDeployTask(project, gatlingEnterprisePackageTask)
+        registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
     }
 
     private void validateGradleVersion() {
@@ -57,6 +57,13 @@ final class GatlingPlugin implements Plugin<Project> {
         }
     }
 
+    private TaskProvider<GatlingEnterpriseDeployTask> registerEnterpriseDeployTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
+        project.tasks.register(ENTERPRISE_DEPLOY_TASK_NAME, GatlingEnterpriseDeployTask.class) {
+            inputs.files gatlingEnterprisePackageTask
+            dependsOn(gatlingEnterprisePackageTask)
+        }
+    }
+
     private void registerEnterpriseStartTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
         project.tasks.register(ENTERPRISE_START_TASK_NAME, GatlingEnterpriseStartTask.class) {
             inputs.files gatlingEnterprisePackageTask
@@ -64,20 +71,12 @@ final class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    private void registerEnterpriseDeployTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
-        project.tasks.register(ENTERPRISE_DEPLOY_TASK_NAME, GatlingEnterpriseDeployTask.class) {
-            inputs.files gatlingEnterprisePackageTask
-            dependsOn(gatlingEnterprisePackageTask)
-        }
-    }
-
     private TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
-        TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackage = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
+        project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
             packageTask.configurations = [
                 project.configurations.gatlingRuntimeClasspath
             ]
         }
-        gatlingEnterprisePackage
     }
 
     private void createConfiguration(Project project) {
