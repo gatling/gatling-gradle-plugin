@@ -109,6 +109,12 @@ final class GatlingPlugin implements Plugin<Project> {
         project.configurations {
             gatling { visible = false }
             gatlingImplementation.extendsFrom(gatling)
+            if (gatlingExt.includeMainOutput) {
+                gatlingImplementation.extendsFrom(project.configurations.implementation)
+            }
+            if (gatlingExt.includeTestOutput) {
+                gatlingImplementation.extendsFrom(project.configurations.testImplementation)
+            }
         }
 
         project.dependencies {
