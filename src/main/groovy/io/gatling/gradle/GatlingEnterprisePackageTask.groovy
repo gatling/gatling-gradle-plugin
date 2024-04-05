@@ -34,11 +34,11 @@ class GatlingEnterprisePackageTask extends Jar {
     @Override
     protected void copy() {
         EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
-        ResolvedConfiguration resolvedConfiguration = getResolvedConfiguration()
+        Set<ResolvedDependency> firstLevelModuleDependencies = project.configurations.gatlingRuntimeClasspath.resolvedConfiguration.getFirstLevelModuleDependencies()
         packager.createEnterprisePackage(
             getClassDirectories(),
-            collectGatlingDependencies(resolvedConfiguration.getFirstLevelModuleDependencies()),
-            collectExtraDependencies(resolvedConfiguration.getFirstLevelModuleDependencies()),
+            collectGatlingDependencies(firstLevelModuleDependencies),
+            collectExtraDependencies(firstLevelModuleDependencies),
             project.group,
             project.name,
             project.version,
@@ -55,10 +55,6 @@ class GatlingEnterprisePackageTask extends Jar {
                 sourceSet -> sourceSet.output.asList()
             }
         }.flatten()
-    }
-
-    private ResolvedConfiguration getResolvedConfiguration() {
-        project.configurations.gatlingRuntimeClasspath.resolvedConfiguration
     }
 
     private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> acc) {
