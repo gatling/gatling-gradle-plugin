@@ -2,21 +2,17 @@ package io.gatling.gradle
 
 import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
-import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolvedConfiguration
 import org.gradle.api.artifacts.ResolvedDependency
-import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.plugins.BasePluginExtension
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.*
+import org.gradle.jvm.tasks.Jar
 
 @CacheableTask
-class GatlingEnterprisePackageTask extends DefaultTask {
+class GatlingEnterprisePackageTask extends Jar {
 
     private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = ["netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos"].asUnmodifiable()
-    private static final String JAR_EXTENSION = '.jar'
-    private static final ARCHIVE_CLASSIFIER = 'tests'
 
     private static Set<Dependency> toDependencies(Set<ResolvedDependency> deps) {
         deps.collectMany { resolvedDependency ->
@@ -34,14 +30,9 @@ class GatlingEnterprisePackageTask extends DefaultTask {
     @Optional
     List<Configuration> configurations
 
-    @Internal
-    BasePluginExtension basePluginExtension = project.extensions.getByType(BasePluginExtension)
-
-    @OutputFile
-    final RegularFileProperty outputFile = project.objects.fileProperty().fileValue(getJarFile())
-
     @TaskAction
-    void createArchive() {
+    @Override
+    protected void copy() {
         EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
         ResolvedConfiguration resolvedConfiguration = getResolvedConfiguration()
         packager.createEnterprisePackage(
@@ -53,18 +44,8 @@ class GatlingEnterprisePackageTask extends DefaultTask {
             project.version,
             'gradle',
             getClass().getPackage().getImplementationVersion(),
-            outputFile.asFile.get()
+            getArchiveFile().get().asFile
         )
-    }
-
-    private File getJarFile() {
-        String jarVersion = project.version != 'unspecified' ? '-' + (project.version) : ''
-        new File(
-            basePluginExtension.libsDirectory.get().asFile,
-            project.name +
-                jarVersion +
-                '-' + ARCHIVE_CLASSIFIER +
-                JAR_EXTENSION)
     }
 
     private List<File> getClassDirectories() {
