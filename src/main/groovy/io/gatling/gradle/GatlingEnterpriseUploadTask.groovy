@@ -1,6 +1,6 @@
 package io.gatling.gradle
 
-import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.BatchEnterprisePlugin
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.CacheableTask
@@ -13,7 +13,7 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
     void publish() {
         def gatling = project.extensions.getByType(GatlingPluginExtension)
         RecoverEnterprisePluginException.handle(logger) {
-            EnterprisePlugin enterprisePlugin = gatling.enterprise.initBatchEnterprisePlugin(project.version.toString(), logger)
+            BatchEnterprisePlugin enterprisePlugin = gatling.enterprise.initBatchEnterprisePlugin(logger)
             UUID packageUUID = gatling.enterprise.packageId
 
             if (packageUUID) {
