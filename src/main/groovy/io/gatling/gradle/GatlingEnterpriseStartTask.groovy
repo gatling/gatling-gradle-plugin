@@ -13,13 +13,8 @@ class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
         super.deploy()
 
         final GatlingPluginExtension gatling = project.extensions.getByType(GatlingPluginExtension)
-        final String version = project.version.toString()
         final boolean waitForRunEnd = gatling.enterprise.waitForRunEnd
-
-        final EnterprisePlugin enterprisePlugin =
-            gatling.enterprise.batchMode ?
-                gatling.enterprise.initBatchEnterprisePlugin(version, logger) :
-                gatling.enterprise.initInteractiveEnterprisePlugin(version, logger)
+        final EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(logger)
 
         RecoverEnterprisePluginException.handle(logger) {
             RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo)

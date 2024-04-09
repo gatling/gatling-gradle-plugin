@@ -1,14 +1,15 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.BatchEnterprisePlugin
-import io.gatling.plugin.BatchEnterprisePluginClient
+import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.EnterprisePluginProvider
 import io.gatling.plugin.GatlingConstants
-import io.gatling.plugin.InteractiveEnterprisePlugin
-import io.gatling.plugin.InteractiveEnterprisePluginClient
-import io.gatling.plugin.client.EnterpriseClient
-import io.gatling.plugin.client.HttpEnterpriseClient
+import io.gatling.plugin.PluginConfiguration
 import io.gatling.plugin.exceptions.UnsupportedClientException
 import io.gatling.plugin.io.PluginIO
+import io.gatling.plugin.io.PluginLogger
+import io.gatling.plugin.io.PluginScanner
+import io.gatling.plugin.model.BuildTool
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.Input
@@ -171,8 +172,28 @@ class GatlingPluginExtension {
             }
         }
 
-        EnterpriseClient initEnterpriseClient(String version) {
-            def apiToken = getApiToken()
+        BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
+            PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, true)
+
+            try {
+                return EnterprisePluginProvider.getBatchInstance(pluginConfiguration)
+            } catch (UnsupportedClientException e) {
+                throw new UnsupportedClientPluginException(e)
+            }
+        }
+
+        EnterprisePlugin initEnterprisePlugin(Logger logger) {
+            PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, getBatchMode())
+
+            try {
+                return EnterprisePluginProvider.getInstance(pluginConfiguration)
+            } catch (UnsupportedClientException e) {
+                throw new UnsupportedClientPluginException(e)
+            }
+        }
+
+        private PluginConfiguration getPluginConfiguration(Logger logger, boolean forceBatchMode) {
+            final apiToken = getApiToken()
             if (!apiToken) {
                 throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
@@ -183,23 +204,37 @@ class GatlingPluginExtension {
                 )
             }
 
-            try {
-                return new HttpEnterpriseClient(getUrl(), getApiToken(), PLUGIN_NAME, version, getControlPlaneUrl())
-            } catch (UnsupportedClientException e) {
-                throw new InvalidUserDataException(
-                    "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/ for more information about this plugin.",
-                    e)
+            return new PluginConfiguration(
+                getUrl(),
+                apiToken,
+                getControlPlaneUrl(),
+                BuildTool.GRADLE,
+                getPluginVersion(),
+                forceBatchMode,
+                getPluginIOInstance(logger)
+            )
+        }
+
+        private String getPluginVersion() {
+            final String implementationVersion = getClass().getPackage().getImplementationVersion()
+
+            return (implementationVersion == null) ? "undefined" : implementationVersion
+        }
+
+        private PluginIO getPluginIOInstance(logger) {
+            return new PluginIO() {
+                private final GradlePluginIO gradlePluginIO = new GradlePluginIO(logger)
+
+                @Override
+                PluginLogger getLogger() {
+                    return gradlePluginIO.logger
+                }
+
+                @Override
+                PluginScanner getScanner() {
+                    return gradlePluginIO.scanner
+                }
             }
-        }
-
-        BatchEnterprisePlugin initBatchEnterprisePlugin(String version, Logger logger) {
-            return new BatchEnterprisePluginClient(initEnterpriseClient(version), new GradlePluginIO(logger).logger)
-        }
-
-        InteractiveEnterprisePlugin initInteractiveEnterprisePlugin(String version, Logger logger) {
-            PluginIO pluginIO = new GradlePluginIO(logger)
-
-            return new InteractiveEnterprisePluginClient(initEnterpriseClient(version), pluginIO)
         }
     }
 
