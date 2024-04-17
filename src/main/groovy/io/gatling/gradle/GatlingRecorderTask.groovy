@@ -71,12 +71,6 @@ class GatlingRecorderTask extends DefaultTask {
         def result = project.javaexec({ JavaExecSpec exec ->
             exec.mainClass.set(GatlingPluginExtension.GATLING_RECORDER_CLASS)
             exec.classpath = project.configurations.gatlingRuntimeClasspath
-
-            def logbackFile = LogbackConfigTask.logbackFile(project.buildDir)
-            if (logbackFile.exists()) {
-                exec.systemProperty("logback.configurationFile", logbackFile.absolutePath)
-            }
-
             exec.args this.createRecorderArgs()
 
             exec.standardInput = System.in
