@@ -14,7 +14,7 @@ class GatlingEnterpriseDeployTask extends DefaultTask {
     void deploy() {
         final GatlingPluginExtension gatlingPlugin = project.extensions.getByType(GatlingPluginExtension)
         final BatchEnterprisePlugin enterprisePlugin = gatlingPlugin.enterprise.initBatchEnterprisePlugin(logger)
-        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(project.rootDir)
+        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(project.rootDir, gatlingPlugin.enterprise.packageDescriptorFilename)
         final File packageFile = inputs.files.singleFile
         final Boolean isPrivateRepositoryEnabled = gatlingPlugin.enterprise.controlPlaneUrl != null
         final String artifactId = project.name
