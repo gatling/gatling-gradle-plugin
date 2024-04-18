@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.EnterprisePlugin
+import io.gatling.plugin.model.RunComment
 import io.gatling.plugin.model.RunSummary
 import io.gatling.plugin.model.SimulationEndResult
 import org.gradle.api.GradleException
@@ -17,7 +18,8 @@ class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
         final EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(logger)
 
         RecoverEnterprisePluginException.handle(logger) {
-            RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo)
+            final RunComment runComment = new RunComment(gatling.enterprise.runTitle, gatling.enterprise.runDescription)
+            final RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo, runComment)
             logger.lifecycle("""
                          |Simulation successfully started.
                          |Reports are available at: ${gatling.enterprise.url.toExternalForm() + runSummary.reportsPath}

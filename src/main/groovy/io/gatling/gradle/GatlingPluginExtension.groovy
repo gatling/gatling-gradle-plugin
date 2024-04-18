@@ -22,21 +22,27 @@ class GatlingPluginExtension {
     private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
     private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
     private static final String SIMULATION_NAME_PROPERTY = "gatling.enterprise.simulationName"
+    private static final String RUN_TITLE_PROPERTY = "gatling.enterprise.runTitle"
+    private static final String RUN_DESCRIPTION_PROPERTY = "gatling.enterprise.runDescription"
     private static final String PACKAGE_ID_PROPERTY = "gatling.enterprise.packageId"
     private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
     private static final String WAIT_FOR_RUN_END_PROPERTY = "gatling.enterprise.waitForRunEnd"
     private static final String CONTROL_PLANE_URL = "gatling.enterprise.controlPlaneUrl"
+    private static final String PACKAGE_DESCRIPTOR_FILENAME_PROPERTY = "gatling.enterprise.packageDescriptorFilename"
     private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
         private String apiToken
         private UUID simulationId
         private String simulationName
+        private String runTitle
+        private String runDescription
         private UUID packageId
         private URL url = URI.create("https://cloud.gatling.io").toURL()
         private boolean batchMode
         private boolean waitForRunEnd
         private URL controlPlaneUrl
+        private String packageDescriptorFilename
 
         def setBatchMode(boolean batchMode) {
             this.batchMode = batchMode
@@ -68,6 +74,22 @@ class GatlingPluginExtension {
 
         def simulationName(String simulationName) {
             setSimulationName(simulationName)
+        }
+
+        def setRunTitle(String runTitle) {
+            this.runTitle = runTitle
+        }
+
+        def runTitle(String runTitle) {
+            setRunTitle(runTitle)
+        }
+
+        def setRunDescription(String runDescription) {
+            this.runDescription = runDescription
+        }
+
+        def runDescription(String runDescription) {
+            setRunDescription(runTitle)
         }
 
         def setPackageId(String packageId) {
@@ -102,43 +124,46 @@ class GatlingPluginExtension {
             setControlPlaneUrl(controlPlaneUrl)
         }
 
+        def setPackageDescriptorFilename(String packageDescriptorFilename) {
+            this.packageDescriptorFilename = packageDescriptorFilename
+        }
+
+        def packageDescriptorFilename(String packageDescriptorFilename) {
+            setPackageDescriptorFilename(packageDescriptorFilename)
+        }
+
         @Input
         @Optional
         UUID getSimulationId() {
-            if (simulationId == null) {
-                def systemSimulationId = System.getProperty(SIMULATION_ID_PROPERTY)
-                return systemSimulationId ? UUID.fromString(systemSimulationId) : null
-            } else {
-                return simulationId
-            }
+            simulationId ?: System.getProperty(SIMULATION_ID_PROPERTY) ?: null
         }
 
         @Input
         @Optional
         String getSimulationName() {
-            if (simulationName == null) {
-                def systemSimulationName = System.getProperty(SIMULATION_NAME_PROPERTY)
-                return systemSimulationName ? systemSimulationName : null
-            } else {
-                return simulationName
-            }
+            simulationName ?: System.getProperty(SIMULATION_NAME_PROPERTY) ?: null
+        }
+
+        @Input
+        @Optional
+        String getRunTitle() {
+            runTitle ?: System.getProperty(RUN_TITLE_PROPERTY) ?: null
+        }
+
+        String getRunDescription() {
+            runDescription ?: System.getProperty(RUN_DESCRIPTION_PROPERTY) ?: null
         }
 
         @Input
         @Optional
         String getApiToken() {
-            return apiToken ?: System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
+            apiToken ?: System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
         }
 
         @Input
         @Optional
         UUID getPackageId() {
-            if (packageId == null) {
-                def systemPackageId = System.getProperty(PACKAGE_ID_PROPERTY)
-                return systemPackageId ? UUID.fromString(systemPackageId) : null
-            } else {
-                return packageId
-            }
+            packageId ?: System.getProperty(PACKAGE_ID_PROPERTY) ?: null
         }
 
         @Input
@@ -170,6 +195,12 @@ class GatlingPluginExtension {
             } else {
                 return null
             }
+        }
+
+        @Input
+        @Optional
+        String getPackageDescriptorFilename() {
+            packageDescriptorFilename ?: System.getProperty(PACKAGE_DESCRIPTOR_FILENAME_PROPERTY) ?: null
         }
 
         BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
