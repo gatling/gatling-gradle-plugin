@@ -1,5 +1,6 @@
 package io.gatling.gradle
 
+import io.gatling.shared.cli.RecorderCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.*
@@ -34,31 +35,31 @@ class GatlingRecorderTask extends DefaultTask {
         List<String> args
         if (scalaSrcDir != null && scalaSrcDir.exists()) {
             args = [
-                "-sf", scalaSrcDir.getAbsolutePath(),
-                "-fmt", "scala"
+                "-" + RecorderCliOptions.SimulationsFolder.abbr, scalaSrcDir.getAbsolutePath(),
+                "-" + RecorderCliOptions.Format.abbr, "scala"
             ]
         } else if (kotlinSrcDir != null && kotlinSrcDir.exists()) {
             args = [
-                "-sf", kotlinSrcDir.getAbsolutePath(),
-                "-fmt", "kotlin"
+                "-" + RecorderCliOptions.SimulationsFolder.abbr, kotlinSrcDir.getAbsolutePath(),
+                "-" + RecorderCliOptions.Format.abbr, "kotlin"
             ]
         } else if (javaSrcDir != null && javaSrcDir.exists()) {
             args = [
-                "-sf", javaSrcDir.getAbsolutePath()
+                "-" + RecorderCliOptions.SimulationsFolder.abbr, javaSrcDir.getAbsolutePath()
                 // let the Recorder pick a default Java format based on Java version
             ]
         } else {
             throw new IllegalStateException("None of the scala/kotlin/java src dir exist")
         }
 
-        args += [ "-rf", resourcesDir.getAbsolutePath() ]
+        args += [ "-" + RecorderCliOptions.ResourcesFolder.abbr, resourcesDir.getAbsolutePath() ]
 
         if (simulationPackage != null) {
-            args += [ "-pkg", simulationPackage ]
+            args += [ "-" + RecorderCliOptions.Package.abbr, simulationPackage ]
         }
 
         if (simulationClass != null) {
-            args += [ "-cn", simulationClass ]
+            args += [ "-" + RecorderCliOptions.ClassName.abbr, simulationClass ]
         }
 
         return args

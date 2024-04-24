@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.SimulationSelector
+import io.gatling.shared.cli.GatlingCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -127,14 +128,14 @@ class GatlingRunTask extends DefaultTask {
 
     List<String> createGatlingArgs(String simulationClass) {
         def baseArgs = [
-            "-s", simulationClass,
-            "-rf", gatlingReportDir.absolutePath,
-            "-l", "gradle",
-            "-btv", GradleVersion.current().version
+            "-" + GatlingCliOptions.Simulation.abbr, simulationClass,
+            "-" + GatlingCliOptions.ResultsFolder.abbr, gatlingReportDir.absolutePath,
+            "-" + GatlingCliOptions.Launcher.abbr, "gradle",
+            "-" + GatlingCliOptions.BuildToolVersion.abbr, GradleVersion.current().version
         ]
 
         if (runDescription) {
-            baseArgs += ["-rd", Base64.encoder.encodeToString(runDescription.getBytes(StandardCharsets.UTF_8))]
+            baseArgs += ["-" + GatlingCliOptions.RunDescription.abbr, Base64.encoder.encodeToString(runDescription.getBytes(StandardCharsets.UTF_8))]
         }
 
         return baseArgs
