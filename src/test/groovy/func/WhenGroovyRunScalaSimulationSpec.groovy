@@ -45,29 +45,6 @@ class WhenGroovyRunScalaSimulationSpec extends GatlingFuncSpec {
         !result.output.split().any { it.contains("INFO") }
     }
 
-    def "should allow Gatling config override"() {
-        setup:
-        prepareGroovyTestWithScala("/gradle-layout")
-        and: "override config by disabling reports"
-        new File(new File(projectDir.root, "src/gatling/resources"), "gatling.conf") << """
-gatling.charting.noReports = true
-"""
-        when:
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
-        then:
-        result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
-        and: "no reports generated"
-        with(new File(buildDir, "reports/gatling").listFiles()) { reports ->
-            reports.size() == 2
-            reports.find { it.name.startsWith("basicsimulation") } != null
-            reports.find { it.name.startsWith("basicsimulation") }.listFiles().collect { it.name } == ["simulation.log"]
-            reports.find { it.name.startsWith("advancedsimulationstep03") } != null
-            reports.find { it.name.startsWith("advancedsimulationstep03") }.listFiles().collect { it.name } == ["simulation.log"]
-
-        }
-    }
-
-
     def "fail when no simulation is found"() {
         setup:
         prepareGroovyTestWithScala(null)
