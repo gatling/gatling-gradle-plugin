@@ -2,12 +2,7 @@ plugins {
   id 'java-gradle-plugin'
   id 'com.gradle.plugin-publish' version '0.12.0'
   id 'groovy'
-
-  id 'maven-publish'
 }
-
-version '42.0.0-SNAPSHOT'
-group 'io.gatling'
 
 java {
   toolchain {
@@ -20,7 +15,6 @@ jar {
   }
 }
 repositories {
-  mavenLocal()
   mavenCentral()
   gradlePluginPortal()
 }
