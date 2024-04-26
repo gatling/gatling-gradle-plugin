@@ -128,14 +128,14 @@ class GatlingRunTask extends DefaultTask {
 
     List<String> createGatlingArgs(String simulationClass) {
         def baseArgs = [
-            "-" + GatlingCliOptions.Simulation.abbr, simulationClass,
-            "-" + GatlingCliOptions.ResultsFolder.abbr, gatlingReportDir.absolutePath,
-            "-" + GatlingCliOptions.Launcher.abbr, "gradle",
-            "-" + GatlingCliOptions.BuildToolVersion.abbr, GradleVersion.current().version
+            GatlingCliOptions.Simulation.shortOption(), simulationClass,
+            GatlingCliOptions.ResultsFolder.shortOption(), gatlingReportDir.absolutePath,
+            GatlingCliOptions.Launcher.shortOption(), "gradle",
+            GatlingCliOptions.BuildToolVersion.shortOption(), GradleVersion.current().version
         ]
 
         if (runDescription) {
-            baseArgs += ["-" + GatlingCliOptions.RunDescription.abbr, Base64.encoder.encodeToString(runDescription.getBytes(StandardCharsets.UTF_8))]
+            baseArgs += [GatlingCliOptions.RunDescription.shortOption(), Base64.encoder.encodeToString(runDescription.getBytes(StandardCharsets.UTF_8))]
         }
 
         return baseArgs

@@ -35,31 +35,31 @@ class GatlingRecorderTask extends DefaultTask {
         List<String> args
         if (scalaSrcDir != null && scalaSrcDir.exists()) {
             args = [
-                "-" + RecorderCliOptions.SimulationsFolder.abbr, scalaSrcDir.getAbsolutePath(),
-                "-" + RecorderCliOptions.Format.abbr, "scala"
+                RecorderCliOptions.SimulationsFolder.shortOption(), scalaSrcDir.getAbsolutePath(),
+                RecorderCliOptions.Format.shortOption(), "scala"
             ]
         } else if (kotlinSrcDir != null && kotlinSrcDir.exists()) {
             args = [
-                "-" + RecorderCliOptions.SimulationsFolder.abbr, kotlinSrcDir.getAbsolutePath(),
-                "-" + RecorderCliOptions.Format.abbr, "kotlin"
+                RecorderCliOptions.SimulationsFolder.shortOption(), kotlinSrcDir.getAbsolutePath(),
+                RecorderCliOptions.Format.shortOption(), "kotlin"
             ]
         } else if (javaSrcDir != null && javaSrcDir.exists()) {
             args = [
-                "-" + RecorderCliOptions.SimulationsFolder.abbr, javaSrcDir.getAbsolutePath()
+                RecorderCliOptions.SimulationsFolder.shortOption(), javaSrcDir.getAbsolutePath()
                 // let the Recorder pick a default Java format based on Java version
             ]
         } else {
             throw new IllegalStateException("None of the scala/kotlin/java src dir exist")
         }
 
-        args += [ "-" + RecorderCliOptions.ResourcesFolder.abbr, resourcesDir.getAbsolutePath() ]
+        args += [RecorderCliOptions.ResourcesFolder.shortOption(), resourcesDir.getAbsolutePath()]
 
         if (simulationPackage != null) {
-            args += [ "-" + RecorderCliOptions.Package.abbr, simulationPackage ]
+            args += [ RecorderCliOptions.Package.shortOption(), simulationPackage ]
         }
 
         if (simulationClass != null) {
-            args += [ "-" + RecorderCliOptions.ClassName.abbr, simulationClass ]
+            args += [ RecorderCliOptions.ClassName.shortOption(), simulationClass ]
         }
 
         return args
