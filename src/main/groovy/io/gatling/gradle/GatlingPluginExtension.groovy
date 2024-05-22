@@ -291,7 +291,7 @@ class GatlingPluginExtension {
 
     static final String GATLING_VERSION = '3.11.3'
 
-    static final String SCALA_VERSION = '2.13.13'
+    static final String SCALA_VERSION = '2.13.14'
 
     String gatlingVersion = GATLING_VERSION
 
