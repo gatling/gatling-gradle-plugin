@@ -135,7 +135,8 @@ class GatlingPluginExtension {
         @Input
         @Optional
         UUID getSimulationId() {
-            simulationId ?: System.getProperty(SIMULATION_ID_PROPERTY) ?: null
+            def sysProp = System.getProperty(SIMULATION_ID_PROPERTY)
+            return simulationId ?: (sysProp ? UUID.fromString(sysProp) : null)
         }
 
         @Input
@@ -163,7 +164,8 @@ class GatlingPluginExtension {
         @Input
         @Optional
         UUID getPackageId() {
-            packageId ?: System.getProperty(PACKAGE_ID_PROPERTY) ?: null
+            def sysProp = System.getProperty(PACKAGE_ID_PROPERTY)
+            return packageId ?: (sysProp ? UUID.fromString(sysProp) : null)
         }
 
         @Input
@@ -188,13 +190,7 @@ class GatlingPluginExtension {
         @Optional
         URL getControlPlaneUrl() {
             def sysProp = System.getProperty(CONTROL_PLANE_URL)
-            if (controlPlaneUrl != null) {
-                return controlPlaneUrl
-            } else if (sysProp != null && sysProp != ""){
-                return new URL(sysProp)
-            } else {
-                return null
-            }
+            return controlPlaneUrl ?: (sysProp ? new URL(sysProp) : null)
         }
 
         @Input
