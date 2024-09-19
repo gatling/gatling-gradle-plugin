@@ -213,7 +213,7 @@ class GatlingPluginExtension {
             if (!apiToken) {
                 throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
-                    |See https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ and create a token wil the role 'Configure'.
+                    |See https://docs.gatling.io/reference/execute/cloud/admin/api-tokens/ and create a token wil the role 'Configure'.
                     |You can then set your API token's value in the environment variable '${ConfigurationConstants.ApiToken.ENV_VAR}', pass it with '-D${ConfigurationConstants.ApiToken.SYS_PROP}=<API_TOKEN>' or add the configuration to your Gradle settings, e.g.:
                     |gatling.enterprise.apiToken \"MY_API_TOKEN_VALUE\"
                     """.stripMargin()
