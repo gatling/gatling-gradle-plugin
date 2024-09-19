@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.BatchEnterprisePlugin
+import io.gatling.plugin.ConfigurationConstants
 import io.gatling.plugin.EnterprisePlugin
 import io.gatling.plugin.EnterprisePluginProvider
 import io.gatling.plugin.GatlingConstants
@@ -18,30 +19,18 @@ import org.gradle.api.tasks.Optional
 class GatlingPluginExtension {
 
     static final Map DEFAULT_SYSTEM_PROPS = [:]
-    private static final String API_TOKEN_PROPERTY = "gatling.enterprise.apiToken"
-    private static final String API_TOKEN_ENV = "GATLING_ENTERPRISE_API_TOKEN"
-    private static final String SIMULATION_ID_PROPERTY = "gatling.enterprise.simulationId"
-    private static final String SIMULATION_NAME_PROPERTY = "gatling.enterprise.simulationName"
-    private static final String RUN_TITLE_PROPERTY = "gatling.enterprise.runTitle"
-    private static final String RUN_DESCRIPTION_PROPERTY = "gatling.enterprise.runDescription"
-    private static final String PACKAGE_ID_PROPERTY = "gatling.enterprise.packageId"
-    private static final String BATCH_MODE_PROPERTY = "gatling.enterprise.batchMode"
-    private static final String WAIT_FOR_RUN_END_PROPERTY = "gatling.enterprise.waitForRunEnd"
-    private static final String CONTROL_PLANE_URL = "gatling.enterprise.controlPlaneUrl"
-    private static final String PACKAGE_DESCRIPTOR_FILENAME_PROPERTY = "gatling.enterprise.packageDescriptorFilename"
-    private static final String PLUGIN_NAME = "gatling-gradle-plugin"
 
     final static class Enterprise {
         private String apiToken
-        private UUID simulationId
+        private String simulationId
         private String simulationName
         private String runTitle
         private String runDescription
-        private UUID packageId
-        private URL url = URI.create("https://cloud.gatling.io").toURL()
+        private String packageId
+        private String url
         private boolean batchMode
         private boolean waitForRunEnd
-        private URL controlPlaneUrl
+        private String controlPlaneUrl
         private String packageDescriptorFilename
 
         def setBatchMode(boolean batchMode) {
@@ -53,7 +42,7 @@ class GatlingPluginExtension {
         }
 
         def setUrl(String url) {
-            this.url = URI.create(url).toURL()
+            this.url = url
         }
 
         def url(String url) {
@@ -61,7 +50,7 @@ class GatlingPluginExtension {
         }
 
         def setSimulationId(String simulationId) {
-            this.simulationId = UUID.fromString(simulationId)
+            this.simulationId = simulationId
         }
 
         def simulationId(String simulationId) {
@@ -69,7 +58,7 @@ class GatlingPluginExtension {
         }
 
         def setSimulationName(String simulationName) {
-            this.simulationId = UUID.fromString(simulationName)
+            this.simulationName = simulationName
         }
 
         def simulationName(String simulationName) {
@@ -93,7 +82,7 @@ class GatlingPluginExtension {
         }
 
         def setPackageId(String packageId) {
-            this.packageId = UUID.fromString(packageId)
+            this.packageId = packageId
         }
 
         def packageId(String packageId) {
@@ -117,7 +106,7 @@ class GatlingPluginExtension {
         }
 
         def setControlPlaneUrl(String controlPlaneUrl) {
-            this.controlPlaneUrl = new URL(controlPlaneUrl)
+            this.controlPlaneUrl = controlPlaneUrl
         }
 
         def controlPlaneUrl(String controlPlaneUrl) {
@@ -135,68 +124,68 @@ class GatlingPluginExtension {
         @Input
         @Optional
         UUID getSimulationId() {
-            def sysProp = System.getProperty(SIMULATION_ID_PROPERTY)
-            return simulationId ?: (sysProp ? UUID.fromString(sysProp) : null)
+            var str = ConfigurationConstants.UploadOptions.SimulationId.valueOf(simulationId)
+            str ? UUID.fromString(str) : null
         }
 
         @Input
         @Optional
         String getSimulationName() {
-            simulationName ?: System.getProperty(SIMULATION_NAME_PROPERTY) ?: null
+            ConfigurationConstants.StartOptions.SimulationName.valueOf(simulationName)
         }
 
         @Input
         @Optional
         String getRunTitle() {
-            runTitle ?: System.getProperty(RUN_TITLE_PROPERTY) ?: null
+            ConfigurationConstants.StartOptions.RunTitle.valueOf(runTitle)
         }
 
         String getRunDescription() {
-            runDescription ?: System.getProperty(RUN_DESCRIPTION_PROPERTY) ?: null
+            ConfigurationConstants.StartOptions.RunTitle.valueOf(runDescription)
         }
 
         @Input
         @Optional
         String getApiToken() {
-            apiToken ?: System.getProperty(API_TOKEN_PROPERTY, System.getenv(API_TOKEN_ENV))
+            ConfigurationConstants.ApiToken.valueOf(apiToken)
         }
 
         @Input
         @Optional
         UUID getPackageId() {
-            def sysProp = System.getProperty(PACKAGE_ID_PROPERTY)
-            return packageId ?: (sysProp ? UUID.fromString(sysProp) : null)
+            var str = ConfigurationConstants.UploadOptions.PackageId.valueOf(packageId)
+            str ? UUID.fromString(str) : null
         }
 
         @Input
         @Optional
         URL getUrl() {
-            return url
+            new URI(ConfigurationConstants.Url.valueOf(url)).toURL()
         }
 
         @Input
         @Optional
         boolean getBatchMode() {
-            return batchMode || Boolean.getBoolean(BATCH_MODE_PROPERTY)
+            ConfigurationConstants.BatchMode.valueOf(batchMode)
         }
 
         @Input
         @Optional
         boolean getWaitForRunEnd() {
-            return waitForRunEnd || Boolean.getBoolean(WAIT_FOR_RUN_END_PROPERTY)
+            ConfigurationConstants.StartOptions.WaitForRunEnd.valueOf(waitForRunEnd)
         }
 
         @Input
         @Optional
         URL getControlPlaneUrl() {
-            def sysProp = System.getProperty(CONTROL_PLANE_URL)
-            return controlPlaneUrl ?: (sysProp ? new URL(sysProp) : null)
+            var str = ConfigurationConstants.ControlPlaneUrl.valueOf(controlPlaneUrl)
+            str ? new URI(str).toURL() : null
         }
 
         @Input
         @Optional
         String getPackageDescriptorFilename() {
-            packageDescriptorFilename ?: System.getProperty(PACKAGE_DESCRIPTOR_FILENAME_PROPERTY) ?: null
+            ConfigurationConstants.DeployOptions.PackageDescriptionFilename.valueOf(packageDescriptorFilename)
         }
 
         BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
@@ -220,12 +209,12 @@ class GatlingPluginExtension {
         }
 
         private PluginConfiguration getPluginConfiguration(Logger logger, boolean forceBatchMode) {
-            final apiToken = getApiToken()
+            final apiToken = ConfigurationConstants.ApiToken.value()
             if (!apiToken) {
                 throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
                     |See https://gatling.io/docs/enterprise/cloud/reference/admin/api_tokens/ and create a token wil the role 'Configure'.
-                    |You can then set your API token's value in the environment variable 'GATLING_ENTERPRISE_API_TOKEN', pass it with '-Dgatling.enterprise.apiToken=<API_TOKEN>' or add the configuration to your Gradle settings, e.g.:
+                    |You can then set your API token's value in the environment variable '${ConfigurationConstants.ApiToken.ENV_VAR}', pass it with '-D${ConfigurationConstants.ApiToken.SYS_PROP}=<API_TOKEN>' or add the configuration to your Gradle settings, e.g.:
                     |gatling.enterprise.apiToken \"MY_API_TOKEN_VALUE\"
                     """.stripMargin()
                 )
