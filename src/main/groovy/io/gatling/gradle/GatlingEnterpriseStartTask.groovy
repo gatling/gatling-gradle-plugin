@@ -22,7 +22,7 @@ class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
             final RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo, runComment)
             logger.lifecycle("""
                          |Simulation successfully started.
-                         |Reports are available at: ${gatling.enterprise.url.toExternalForm() + runSummary.reportsPath}
+                         |Reports are available at: ${gatling.enterprise.webAppUrl.toExternalForm() + runSummary.reportsPath}
                          |""".stripMargin())
             if (waitForRunEnd) {
                 SimulationEndResult finishedRun = enterprisePlugin.waitForRunEnd(runSummary)

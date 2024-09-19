@@ -27,7 +27,8 @@ class GatlingPluginExtension {
         private String runTitle
         private String runDescription
         private String packageId
-        private String url
+        private String apiUrl
+        private String webAppUrl
         private boolean batchMode
         private boolean waitForRunEnd
         private String controlPlaneUrl
@@ -41,12 +42,20 @@ class GatlingPluginExtension {
             setBatchMode(batchMode)
         }
 
-        def setUrl(String url) {
-            this.url = url
+        def setApiUrl(String apiUrl) {
+            this.apiUrl = apiUrl
         }
 
-        def url(String url) {
-            setUrl(url)
+        def apiUrl(String apiUrl) {
+            setApiUrl(apiUrl)
+        }
+
+        def setWebAppUrl(String webAppUrl) {
+            this.webAppUrl = webAppUrl
+        }
+
+        def webAppUrl(String webAppUrl) {
+            setWebAppUrl(webAppUrl)
         }
 
         def setSimulationId(String simulationId) {
@@ -159,8 +168,14 @@ class GatlingPluginExtension {
 
         @Input
         @Optional
-        URL getUrl() {
-            new URI(ConfigurationConstants.Url.valueOf(url)).toURL()
+        URL getApiUrl() {
+            new URI(ConfigurationConstants.ApiUrl.valueOf(apiUrl)).toURL()
+        }
+
+        @Input
+        @Optional
+        URL getWebAppUrl() {
+            new URI(ConfigurationConstants.WebAppUrl.valueOf(webAppUrl)).toURL()
         }
 
         @Input
@@ -221,7 +236,8 @@ class GatlingPluginExtension {
             }
 
             return new PluginConfiguration(
-                getUrl(),
+                getApiUrl(),
+                getWebAppUrl(),
                 apiToken,
                 getControlPlaneUrl(),
                 BuildTool.GRADLE,
