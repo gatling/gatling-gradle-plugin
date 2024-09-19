@@ -26,7 +26,7 @@ class GatlingEnterpriseUploadTask extends DefaultTask {
             } else {
                 throw new InvalidUserDataException("You need to either configure gatling.enterprise.packageId (or pass it with '-D${ConfigurationConstants.UploadOptions.PackageId.SYS_PROP}=<PACKAGE_ID>') " +
                     "or gatling.enterprise.simulationId (or pass it with '-D${ConfigurationConstants.UploadOptions.SimulationId.SYS_PROP}=<SIMULATION_ID>') to upload a package." +
-                    "Please see https://gatling.io/docs/gatling/reference/current/extensions/gradle_plugin/#working-with-gatling-enterprise-cloud for more information.")
+                    "Please see https://docs.gatling.io/reference/integrations/build-tools/gradle-plugin/#running-your-simulations-on-gatling-enterprise-cloud for more information.")
             }
         }
     }
