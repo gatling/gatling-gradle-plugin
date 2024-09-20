@@ -45,8 +45,8 @@ final class GatlingPlugin implements Plugin<Project> {
     }
 
     private void validateGradleVersion() {
-        if (GradleVersion.current() < GradleVersion.version("7.1")) {
-            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.1")
+        if (GradleVersion.current() < GradleVersion.version("7.6")) {
+            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.6")
         }
     }
 

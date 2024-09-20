@@ -22,7 +22,7 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
     }
 
     @Unroll
-    void 'should succeed for version #gradleVersion that is greater than 7.1'() {
+    void 'should succeed for version #gradleVersion that is greater than 7.6'() {
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, false)
         then:
@@ -32,11 +32,11 @@ class GradleCompatibilitySpec extends GatlingFuncSpec {
     }
 
     @Unroll
-    void 'should fail with friendly message for version #gradleVersion that is less than 7.1'() {
+    void 'should fail with friendly message for version #gradleVersion that is less than 7.6'() {
         when:
         BuildResult result = executeGradleTaskWithVersion('tasks', gradleVersion, true)
         then:
-        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 7.1")
+        result.output.contains("Current Gradle version (${gradleVersion}) is unsupported. Minimal supported version is 7.6")
         where:
         gradleVersion << ["6.9.4"]
     }
