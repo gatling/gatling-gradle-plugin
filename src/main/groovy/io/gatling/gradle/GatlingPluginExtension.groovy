@@ -87,7 +87,7 @@ class GatlingPluginExtension {
         }
 
         def runDescription(String runDescription) {
-            setRunDescription(runTitle)
+            setRunDescription(runDescription)
         }
 
         def setPackageId(String packageId) {
@@ -150,7 +150,7 @@ class GatlingPluginExtension {
         }
 
         String getRunDescription() {
-            ConfigurationConstants.StartOptions.RunTitle.valueOf(runDescription)
+            ConfigurationConstants.StartOptions.RunDescription.valueOf(runDescription)
         }
 
         @Input
