@@ -200,7 +200,7 @@ class GatlingPluginExtension {
         @Input
         @Optional
         String getPackageDescriptorFilename() {
-            ConfigurationConstants.DeployOptions.PackageDescriptionFilename.valueOf(packageDescriptorFilename)
+            ConfigurationConstants.DeployOptions.PackageDescriptorFilename.valueOf(packageDescriptorFilename)
         }
 
         BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
