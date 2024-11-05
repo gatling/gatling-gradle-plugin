@@ -51,7 +51,8 @@ gatling {
         BuildResult result = executeGradle(GATLING_RUN_TASK_NAME)
         then:
         with(new GatlingDebug(result)) {
-            jvmArgs.sort() == GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING.findAll { it.startsWith("-X") }.sort()
+            // remove -server of the comparison because gradle removes it?!
+            jvmArgs.sort() == GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING.findAll { it != "-server" }.sort()
         }
 
         when: "override via gatling extension"
