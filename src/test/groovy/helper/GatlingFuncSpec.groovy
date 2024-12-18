@@ -5,7 +5,7 @@ import org.gradle.testkit.runner.GradleRunner
 
 abstract class GatlingFuncSpec extends GatlingSpec {
 
-    static def GATLING_HOST_NAME_SYS_PROP = "-Dgatling.hostName=http://computer-database.gatling.io"
+    static def GATLING_HOST_NAME_SYS_PROP = "-Dtest.gatling.hostName=http://computer-database.gatling.io"
 
     void prepareGroovyTestWithScala(String fixtureDir) {
         createBuildFolder(fixtureDir, SimulationLanguage.SCALA)
