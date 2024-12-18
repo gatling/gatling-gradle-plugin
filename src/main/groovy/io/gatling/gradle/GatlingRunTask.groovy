@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.SimulationSelector
+import io.gatling.plugin.util.SystemProperties
 import io.gatling.shared.cli.GatlingCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
@@ -67,7 +68,14 @@ class GatlingRunTask extends DefaultTask {
                 exec.classpath = project.configurations.gatlingRuntimeClasspath
 
                 exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
-                exec.systemProperties System.properties
+
+                Properties propagatedSystemProperties = new Properties()
+                for (Map.Entry<Object, Object> systemProp : System.getProperties().entrySet()) {
+                    if (SystemProperties.isSystemPropertyPropagated(systemProp.getKey().toString())) {
+                        propagatedSystemProperties.put(systemProp.getKey(), systemProp.getValue())
+                    }
+                }
+                exec.systemProperties propagatedSystemProperties
                 exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
                 exec.environment += gatlingExt.environment
                 exec.environment += this.environment
