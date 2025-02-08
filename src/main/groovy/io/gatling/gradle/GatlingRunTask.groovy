@@ -1,6 +1,7 @@
 package io.gatling.gradle
 
 import io.gatling.plugin.SimulationSelector
+import io.gatling.plugin.util.NoFork
 import io.gatling.plugin.util.SystemProperties
 import io.gatling.shared.cli.GatlingCliOptions
 import org.gradle.api.Action
@@ -49,6 +50,16 @@ class GatlingRunTask extends DefaultTask {
     @Option(option = "run-description", description = "Add a description to be inserted in the HTML reports")
     String runDescription
 
+    /**
+     * Use only for attaching a debugger, not for running load tests. Run Gatling in gradle's JVM
+     * instead of forking a new Java process. Requires at least Gatling 3.13.4. When enabled, the user
+     * is responsible for passing the proper JVM options, eg with the <a
+     * href="https://docs.gradle.org/current/userguide/build_environment.html#environment_variables_reference">JAVA_OPTS env var</a>.
+     */
+    @Input
+    @Option(option = "same-process", description = "Run gatling in the Gradle process for debugging")
+    boolean runInSameProcess
+
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
 
@@ -58,40 +69,45 @@ class GatlingRunTask extends DefaultTask {
 
     @TaskAction
     void gatlingRun() {
-        def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
-
-        Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
-            getLogger().info("Running simulation " + simulationClass + ".")
-
-            [(simulationClass): project.javaexec({ JavaExecSpec exec ->
-                exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
-                exec.classpath = project.configurations.gatlingRuntimeClasspath
-
-                exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
-
+        if (runInSameProcess) {
+            simulationClasses().forEach { simulationClass ->
+                getLogger().info("Running simulation " + simulationClass + ".")
+                new NoFork(
+                    GatlingPluginExtension.GATLING_MAIN_CLASS,
+                    createGatlingArgs(simulationClass),
+                    project.configurations.gatlingRuntimeClasspath.files.toList()
+                ).run()
+            }
+        } else {
+            def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
+            Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
+                getLogger().info("Running simulation " + simulationClass + ".")
                 Properties propagatedSystemProperties = new Properties()
                 for (Map.Entry<Object, Object> systemProp : System.getProperties().entrySet()) {
                     if (SystemProperties.isSystemPropertyPropagated(systemProp.getKey().toString())) {
                         propagatedSystemProperties.put(systemProp.getKey(), systemProp.getValue())
                     }
                 }
-                exec.systemProperties propagatedSystemProperties
-                exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
-                exec.environment += gatlingExt.environment
-                exec.environment += this.environment
 
-                exec.args createGatlingArgs(simulationClass)
+                [(simulationClass): project.javaexec({ JavaExecSpec exec ->
+                    exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
+                    exec.classpath = project.configurations.gatlingRuntimeClasspath
+                    exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
+                    exec.systemProperties propagatedSystemProperties
+                    exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
+                    exec.environment += gatlingExt.environment
+                    exec.environment += this.environment
+                    exec.args createGatlingArgs(simulationClass)
+                    exec.standardInput = System.in
+                    exec.ignoreExitValue = true
+                } as Action<JavaExecSpec>)]
+            }
 
-                exec.standardInput = System.in
+            Map<String, ExecResult> failed = results.findAll { it.value.exitValue != 0 }
 
-                exec.ignoreExitValue = true
-            } as Action<JavaExecSpec>)]
-        }
-
-        Map<String, ExecResult> failed = results.findAll { it.value.exitValue != 0 }
-
-        if (!failed.isEmpty()) {
-            throw new TaskExecutionException(this, new RuntimeException("There are failed simulations: ${failed.keySet().sort().join(", ")}"))
+            if (!failed.isEmpty()) {
+                throw new TaskExecutionException(this, new RuntimeException("There are failed simulations: ${failed.keySet().sort().join(", ")}"))
+            }
         }
     }
 
