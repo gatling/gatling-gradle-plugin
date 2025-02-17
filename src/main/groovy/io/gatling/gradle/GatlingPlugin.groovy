@@ -44,7 +44,7 @@ final class GatlingPlugin implements Plugin<Project> {
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
     }
 
-    private void validateGradleVersion() {
+    private static void validateGradleVersion() {
         if (GradleVersion.current() < GradleVersion.version("7.6")) {
             throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.6")
         }
@@ -71,7 +71,7 @@ final class GatlingPlugin implements Plugin<Project> {
         }
     }
 
-    private TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
+    private static TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
         project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
             packageTask.archiveClassifier.set("tests")
             packageTask.configurations = [
