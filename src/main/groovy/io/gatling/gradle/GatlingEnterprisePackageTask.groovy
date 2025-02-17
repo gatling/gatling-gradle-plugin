@@ -2,8 +2,8 @@ package io.gatling.gradle
 
 import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
+import java.util.stream.Collectors
 import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.ResolvedConfiguration
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.*
@@ -59,7 +59,7 @@ class GatlingEnterprisePackageTask extends Jar {
 
     private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> acc) {
         for (dep in deps) {
-            if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts", "io.gatling.frontline"]) {
+            if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts"]) {
                 collectDepAndChildren(dep, acc)
             } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
                 acc.add(dep)
@@ -71,7 +71,10 @@ class GatlingEnterprisePackageTask extends Jar {
 
     private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> acc) {
         if (!acc.contains(dep)) {
-            acc.add(dep)
+            // force protobuf to be included in the package as only the user knows if he wants to use protobuf 3 or 4
+            if (dep?.module?.id?.group ) {
+                acc.add(dep)
+            }
             for (child in dep.children) {
                 collectDepAndChildren(child, acc)
             }
@@ -89,7 +92,11 @@ class GatlingEnterprisePackageTask extends Jar {
     private Set<Dependency> collectGatlingDependencies(Set<ResolvedDependency> firstLevelDependencies) {
         Set<ResolvedDependency> deps = new HashSet<>()
         collectGatlingDepsRec(firstLevelDependencies, deps)
-        return toDependencies(deps)
+        toDependencies(deps)
+            .stream()
+            // exclude protobuf from Gatling provided deps as only the user knows if he wants to use protobuf 3 or 4
+            .filter { it.groupId != "com.google.protobuf" || it.artifactId != "protobuf-java" }
+            .collect(Collectors.toSet())
     }
 
     private Set<Dependency> collectExtraDependencies(Set<ResolvedDependency> firstLevelDependencies) {
