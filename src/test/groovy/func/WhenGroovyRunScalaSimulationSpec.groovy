@@ -36,7 +36,7 @@ class WhenGroovyRunScalaSimulationSpec extends GatlingFuncSpec {
         setup:
         prepareGroovyTestWithScala("/gradle-layout")
         when:
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=example.BasicSimulation")
         then: "custom task was run successfully"
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "only one simulation was executed"
@@ -59,7 +59,7 @@ class WhenGroovyRunScalaSimulationSpec extends GatlingFuncSpec {
         setup:
         prepareGroovyTestWithScala("/gradle-layout")
         buildFile << """
-gatling { includes = ['computerdatabase.BasicSimulation'] }
+gatling { includes = ['example.BasicSimulation'] }
 """
         when: '1st time'
         BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--all")
@@ -74,7 +74,7 @@ gatling { includes = ['computerdatabase.BasicSimulation'] }
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
 
         when: '3r time with changes'
-        new File(new File(srcDir, "computerdatabase"), "BasicSimulation.scala") << """
+        new File(new File(srcDir, "example"), "BasicSimulation.scala") << """
 case class MyClz(str: String) // some fake code to change source file
 """
         result = executeGradle("$GATLING_RUN_TASK_NAME", )

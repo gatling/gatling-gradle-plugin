@@ -12,7 +12,7 @@ class WhenKotlinRunKotlinSimulationSpec extends GatlingFuncSpec {
         setup:
         prepareKotlinTestWitKotlin("/gradle-layout")
         when:
-        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=computerdatabase.BasicSimulation")
+        BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=example.BasicSimulation")
         then: "custom task was run successfully"
         result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
         and: "only one simulation was executed"

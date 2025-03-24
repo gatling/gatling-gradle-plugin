@@ -84,7 +84,7 @@ gatling {
         then:
         def e = thrown(UnexpectedBuildFailure)
         and:
-        e.buildResult.output.contains("object MainUtils is not a member of package computerdatabase")
+        e.buildResult.output.contains("object MainUtils is not a member of package example")
     }
 
     def "should not compile with test output excluded"() {

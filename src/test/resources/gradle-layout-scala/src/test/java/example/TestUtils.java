@@ -1,4 +1,4 @@
-package computerdatabase;
+package example;
 
 public class TestUtils {
     public static String hostName() {

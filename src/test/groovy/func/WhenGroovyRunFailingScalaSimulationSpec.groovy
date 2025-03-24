@@ -17,12 +17,12 @@ class WhenGroovyRunFailingScalaSimulationSpec extends GatlingFuncSpec {
         given:
         buildFile << """
 gatling {
-  includes = ['computerdatabase.AFailedSimulation', 'computerdatabase.BasicSimulation']
+  includes = ['example.AFailedSimulation', 'example.BasicSimulation']
 }
 """
         and: "add incorrect simulation"
-        new File(srcDir, "computerdatabase/AFailedSimulation.scala").text = """
-package computerdatabase
+        new File(srcDir, "example/AFailedSimulation.scala").text = """
+package example
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 class AFailedSimulation extends Simulation {
@@ -40,7 +40,7 @@ class AFailedSimulation extends Simulation {
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There are failed simulations: computerdatabase.AFailedSimulation")
+            it.endsWith("There are failed simulations: example.AFailedSimulation")
         }
         and: "all simulations were run"
         with(new File(buildDir, "reports/gatling")) { reports ->
@@ -55,12 +55,12 @@ class AFailedSimulation extends Simulation {
         given:
         buildFile << """
 gatling {
-  includes = ['computerdatabase.AFailedSimulation', 'computerdatabase.BasicSimulation']
+  includes = ['example.AFailedSimulation', 'example.BasicSimulation']
 }
 """
         and: "add incorrect simulation"
-        new File(srcDir, "computerdatabase/AFailedSimulation.scala").text = """
-package computerdatabase
+        new File(srcDir, "example/AFailedSimulation.scala").text = """
+package example
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 class AFailedSimulation extends Simulation {
@@ -86,12 +86,12 @@ class AFailedSimulation extends Simulation {
         given:
         buildFile << """
 gatling {
-  includes = ['computerdatabase.BasicSimulation', 'computerdatabase.AFailedSimulation']
+  includes = ['example.BasicSimulation', 'example.AFailedSimulation']
 }
 """
         and: "add incorrect simulation"
-        new File(srcDir, "computerdatabase/AFailedSimulation.scala").text = """
-package computerdatabase
+        new File(srcDir, "example/AFailedSimulation.scala").text = """
+package example
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 class AFailedSimulation extends Simulation {}
@@ -103,7 +103,7 @@ class AFailedSimulation extends Simulation {}
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There are failed simulations: computerdatabase.AFailedSimulation")
+            it.endsWith("There are failed simulations: example.AFailedSimulation")
         }
         and:
         with(new File(buildDir, "reports/gatling")) { reports ->
