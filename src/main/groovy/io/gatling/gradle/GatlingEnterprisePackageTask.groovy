@@ -57,29 +57,26 @@ class GatlingEnterprisePackageTask extends Jar {
         }.flatten()
     }
 
-    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> alreadyVisited, Set<ResolvedDependency> acc) {
+    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> alreadyVisited, Set<ResolvedDependency> gatlingDeps) {
         for (dep in deps) {
             if (!alreadyVisited.contains(dep)) {
                 alreadyVisited.add(dep)
                 if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts"]) {
-                    collectDepAndChildren(dep, acc)
+                    collectDepAndChildren(dep, gatlingDeps)
                 } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
-                    acc.add(dep)
+                    gatlingDeps.add(dep)
                 } else {
-                    collectGatlingDepsRec(dep.children, acc)
+                    collectGatlingDepsRec(dep.children, alreadyVisited, gatlingDeps)
                 }
             }
         }
     }
 
-    private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> acc) {
-        if (!acc.contains(dep)) {
-            // force protobuf to be included in the package as only the user knows if he wants to use protobuf 3 or 4
-            if (dep?.module?.id?.group ) {
-                acc.add(dep)
-            }
+    private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> gatlingDeps) {
+        if (!gatlingDeps.contains(dep)) {
+            gatlingDeps.add(dep)
             for (child in dep.children) {
-                collectDepAndChildren(child, acc)
+                collectDepAndChildren(child, gatlingDeps)
             }
         }
     }
@@ -94,7 +91,7 @@ class GatlingEnterprisePackageTask extends Jar {
 
     private Set<Dependency> collectGatlingDependencies(Set<ResolvedDependency> firstLevelDependencies) {
         Set<ResolvedDependency> deps = new HashSet<>()
-        collectGatlingDepsRec(firstLevelDependencies, deps)
+        collectGatlingDepsRec(firstLevelDependencies, new HashSet<>(), deps)
         toDependencies(deps)
             .stream()
             // exclude protobuf from Gatling provided deps as only the user knows if he wants to use protobuf 3 or 4
