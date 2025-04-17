@@ -57,14 +57,17 @@ class GatlingEnterprisePackageTask extends Jar {
         }.flatten()
     }
 
-    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> acc) {
+    private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> alreadyVisited, Set<ResolvedDependency> acc) {
         for (dep in deps) {
-            if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts"]) {
-                collectDepAndChildren(dep, acc)
-            } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
-                acc.add(dep)
-            } else {
-                collectGatlingDepsRec(dep.children, acc)
+            if (!alreadyVisited.contains(dep)) {
+                alreadyVisited.add(dep)
+                if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts"]) {
+                    collectDepAndChildren(dep, acc)
+                } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
+                    acc.add(dep)
+                } else {
+                    collectGatlingDepsRec(dep.children, acc)
+                }
             }
         }
     }
