@@ -1,6 +1,6 @@
 plugins {
   id 'java-gradle-plugin'
-  id 'com.gradle.plugin-publish' version '0.12.0'
+  id 'com.gradle.plugin-publish' version '1.3.1'
   id 'groovy'
 }
 
@@ -22,18 +22,9 @@ repositories {
 dependencies {
   implementation "io.gatling:gatling-enterprise-plugin-commons:1.16.3"
   implementation "io.gatling:gatling-shared-cli:0.0.6"
-  constraints {
-    implementation('com.fasterxml.jackson.core:jackson-databind') {
-      version {
-        strictly '2.14.3'
-      }
-      because 'some gradle versions have bug with multi-jdk jar, introduced in jackson-databind 2.15.' +
-        'cf. https://github.com/gradle/gradle/issues/24390'
-    }
-  }
 
   testImplementation('org.spockframework:spock-core:2.3-groovy-3.0') {
-    exclude module: 'groovy-all'
+    exclude module: 'groovy'
   }
   testImplementation 'org.spockframework:spock-junit4:2.3-groovy-3.0'
   testImplementation('com.github.stefanbirkner:system-rules:1.19.0') {
@@ -53,20 +44,17 @@ test {
 }
 
 gradlePlugin {
+  website.set("https://github.com/gatling/gatling-gradle-plugin")
+  vcsUrl.set("https://github.com/gatling/gatling-gradle-plugin")
   plugins {
-    gatlingPlugin {
+    create("gatlingPlugin") {
       id = "io.gatling.gradle"
-      implementationClass = 'io.gatling.gradle.GatlingPlugin'
+      implementationClass = "io.gatling.gradle.GatlingPlugin"
       displayName = "Gatling plugin for Gradle"
       description = "Gatling plugin for Gradle"
+      tags.set(["gatling", "load test", "stress test", "performance test", "java", "scala", "kotlin"])
     }
   }
-}
-
-pluginBundle {
-  website = 'https://github.com/gatling/gatling-gradle-plugin'
-  vcsUrl = 'https://github.com/gatling/gatling-gradle-plugin'
-  tags = ['gatling', 'load test', 'stress test', 'performance test', 'java', 'scala', 'kotlin']
 }
 
 validatePlugins.failOnWarning = false

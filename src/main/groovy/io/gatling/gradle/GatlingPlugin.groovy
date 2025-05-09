@@ -1,10 +1,8 @@
 package io.gatling.gradle
 
-import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.util.GradleVersion
 
 final class GatlingPlugin implements Plugin<Project> {
 
@@ -23,8 +21,6 @@ final class GatlingPlugin implements Plugin<Project> {
     public static def ENTERPRISE_DEPLOY_TASK_NAME = "gatlingEnterpriseDeploy"
 
     void apply(Project project) {
-        validateGradleVersion()
-
         createConfiguration(project)
 
         project.tasks.register(GATLING_RECORDER_TASK_NAME, GatlingRecorderTask.class) {
@@ -42,12 +38,6 @@ final class GatlingPlugin implements Plugin<Project> {
         registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseDeployTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
-    }
-
-    private static void validateGradleVersion() {
-        if (GradleVersion.current() < GradleVersion.version("7.6")) {
-            throw new GradleException("Current Gradle version (${GradleVersion.current().version}) is unsupported. Minimal supported version is 7.6")
-        }
     }
 
     private void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
