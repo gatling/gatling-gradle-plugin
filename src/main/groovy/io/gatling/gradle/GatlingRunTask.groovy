@@ -11,6 +11,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
+import org.gradle.api.tasks.VerificationException
 import org.gradle.api.tasks.options.Option
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
@@ -103,10 +104,13 @@ class GatlingRunTask extends DefaultTask {
                 } as Action<JavaExecSpec>)]
             }
 
-            Map<String, ExecResult> failed = results.findAll { it.value.exitValue != 0 }
+            Map<String, ExecResult> crashed = results.findAll { it.value.exitValue != 0 && it.value.exitValue != 2 }
+            Map<String, ExecResult> assertionFailed = results.findAll { it.value.exitValue == 2 }
 
-            if (!failed.isEmpty()) {
-                throw new TaskExecutionException(this, new RuntimeException("There are failed simulations: ${failed.keySet().sort().join(", ")}"))
+            if (!crashed.isEmpty()) {
+                throw new TaskExecutionException(this, new RuntimeException("Some of the simulations crashed: ${crashed.keySet().sort().join(", ")}"))
+            } else if (!assertionFailed.isEmpty()) {
+                throw new VerificationException("Some of the simulations failed assertions: ${assertionFailed.keySet().sort().join(", ")}")
             }
         }
     }

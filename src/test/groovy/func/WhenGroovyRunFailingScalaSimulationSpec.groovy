@@ -40,7 +40,7 @@ class AFailedSimulation extends Simulation {
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There are failed simulations: example.AFailedSimulation")
+            it.endsWith("Some of the simulations failed assertions: example.AFailedSimulation")
         }
         and: "all simulations were run"
         with(new File(buildDir, "reports/gatling")) { reports ->
@@ -103,7 +103,7 @@ class AFailedSimulation extends Simulation {}
         ex.buildResult.task(":$GATLING_RUN_TASK_NAME").outcome == FAILED
         and: "only single simulation reported as failed"
         ex.buildResult.output.readLines().any {
-            it.endsWith("There are failed simulations: example.AFailedSimulation")
+            it.endsWith("Some of the simulations crashed: example.AFailedSimulation")
         }
         and:
         with(new File(buildDir, "reports/gatling")) { reports ->
