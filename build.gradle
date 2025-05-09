@@ -40,7 +40,7 @@ dependencies {
     exclude module: 'junit-dep'
   }
   testImplementation "junit:junit:4.13.2"
-  testImplementation "commons-io:commons-io:2.11.0"
+  testImplementation "commons-io:commons-io:2.19.0"
 }
 
 test {
