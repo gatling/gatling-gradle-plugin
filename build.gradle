@@ -4,6 +4,8 @@ plugins {
   id 'groovy'
 }
 
+group = "gradle.plugin.io.gatling.gradle"
+
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))
@@ -48,7 +50,7 @@ gradlePlugin {
   vcsUrl.set("https://github.com/gatling/gatling-gradle-plugin")
   plugins {
     create("gatlingPlugin") {
-      id = "io.gatling.gradle.gradle.plugin"
+      id = "io.gatling.gradle"
       implementationClass = "io.gatling.gradle.GatlingPlugin"
       displayName = "Gatling plugin for Gradle"
       description = "Gatling plugin for Gradle"
