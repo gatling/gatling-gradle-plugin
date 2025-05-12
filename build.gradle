@@ -54,7 +54,7 @@ gradlePlugin {
       implementationClass = "io.gatling.gradle.GatlingPlugin"
       displayName = "Gatling plugin for Gradle"
       description = "Gatling plugin for Gradle"
-      tags.set(["gatling", "load test", "stress test", "performance test", "java", "scala", "kotlin"])
+      tags.addAll("gatling", "load test", "stress test", "performance test", "java", "scala", "kotlin")
     }
   }
 }
