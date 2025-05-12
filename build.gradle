@@ -4,6 +4,8 @@ plugins {
   id 'groovy'
 }
 
+group = 'io.gatling'
+
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))
