@@ -54,8 +54,12 @@ class GatlingRecorderTask extends DefaultTask {
 
         args += [RecorderCliOptions.ResourcesFolder.shortOption(), resourcesDir.getAbsolutePath()]
 
-        if (simulationPackage != null) {
-            args += [ RecorderCliOptions.Package.shortOption(), simulationPackage ]
+        def projectGroup = project.group.toString()
+        def nonEmptyGroup = projectGroup.isEmpty() ? null : projectGroup
+        def resolvedPackage = simulationPackage != null ? simulationPackage : nonEmptyGroup
+
+        if (resolvedPackage != null) {
+            args += [ RecorderCliOptions.Package.shortOption(), resolvedPackage ]
         }
 
         if (simulationClass != null) {
