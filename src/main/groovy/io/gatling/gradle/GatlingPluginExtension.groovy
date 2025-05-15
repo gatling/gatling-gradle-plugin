@@ -132,13 +132,6 @@ class GatlingPluginExtension {
 
         @Input
         @Optional
-        UUID getSimulationId() {
-            var str = ConfigurationConstants.UploadOptions.SimulationId.valueOf(simulationId)
-            str ? UUID.fromString(str) : null
-        }
-
-        @Input
-        @Optional
         String getSimulationName() {
             ConfigurationConstants.StartOptions.SimulationName.valueOf(simulationName)
         }
@@ -157,13 +150,6 @@ class GatlingPluginExtension {
         @Optional
         String getApiToken() {
             ConfigurationConstants.ApiToken.valueOf(apiToken)
-        }
-
-        @Input
-        @Optional
-        UUID getPackageId() {
-            var str = ConfigurationConstants.UploadOptions.PackageId.valueOf(packageId)
-            str ? UUID.fromString(str) : null
         }
 
         @Input
