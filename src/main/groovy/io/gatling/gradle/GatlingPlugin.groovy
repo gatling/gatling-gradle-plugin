@@ -14,8 +14,6 @@ final class GatlingPlugin implements Plugin<Project> {
 
     public static def ENTERPRISE_PACKAGE_TASK_NAME = "gatlingEnterprisePackage"
 
-    public static def ENTERPRISE_UPLOAD_TASK_NAME = "gatlingEnterpriseUpload"
-
     public static def ENTERPRISE_START_TASK_NAME = "gatlingEnterpriseStart"
 
     public static def ENTERPRISE_DEPLOY_TASK_NAME = "gatlingEnterpriseDeploy"
@@ -35,16 +33,8 @@ final class GatlingPlugin implements Plugin<Project> {
         }
 
         def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
-        registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseDeployTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
-    }
-
-    private void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
-        project.tasks.register(ENTERPRISE_UPLOAD_TASK_NAME, GatlingEnterpriseUploadTask.class) {
-            inputs.files gatlingEnterprisePackageTask
-            dependsOn(gatlingEnterprisePackageTask)
-        }
     }
 
     private TaskProvider<GatlingEnterpriseDeployTask> registerEnterpriseDeployTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
