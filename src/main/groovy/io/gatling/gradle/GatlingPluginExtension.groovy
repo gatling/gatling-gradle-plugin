@@ -33,6 +33,7 @@ class GatlingPluginExtension {
         private boolean waitForRunEnd
         private String controlPlaneUrl
         private String packageDescriptorFilename
+        private String validateSimulationId
 
         def setBatchMode(boolean batchMode) {
             this.batchMode = batchMode
@@ -130,6 +131,15 @@ class GatlingPluginExtension {
             setPackageDescriptorFilename(packageDescriptorFilename)
         }
 
+        def setValidateSimulationId(String validateSimulationId) {
+            this.validateSimulationId = validateSimulationId
+        }
+
+        def validateSimulationId(String validateSimulationId) {
+            this.validateSimulationId = validateSimulationId
+        }
+
+
         @Input
         @Optional
         UUID getSimulationId() {
@@ -201,6 +211,12 @@ class GatlingPluginExtension {
         @Optional
         String getPackageDescriptorFilename() {
             ConfigurationConstants.DeployOptions.PackageDescriptorFilename.valueOf(packageDescriptorFilename)
+        }
+
+        @Input
+        @Optional
+        String getValidateSimulationId() {
+            ConfigurationConstants.DeployOptions.ValidateSimulationId.valueOf(validateSimulationId)
         }
 
         BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
