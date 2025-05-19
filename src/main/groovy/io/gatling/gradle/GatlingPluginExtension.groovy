@@ -240,7 +240,7 @@ class GatlingPluginExtension {
         }
 
         private PluginConfiguration getPluginConfiguration(Logger logger, boolean forceBatchMode) {
-            final apiToken = ConfigurationConstants.ApiToken.value()
+            final apiToken = getApiToken()
             if (!apiToken) {
                 throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
