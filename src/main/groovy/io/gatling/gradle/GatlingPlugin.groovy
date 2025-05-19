@@ -35,16 +35,13 @@ final class GatlingPlugin implements Plugin<Project> {
         }
 
         def gatlingEnterprisePackageTask = registerEnterprisePackageTask(project)
-        registerEnterpriseUploadTask(project, gatlingEnterprisePackageTask)
+        registerEnterpriseUploadTask(project)
         registerEnterpriseDeployTask(project, gatlingEnterprisePackageTask)
         registerEnterpriseStartTask(project, gatlingEnterprisePackageTask)
     }
 
-    private void registerEnterpriseUploadTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
-        project.tasks.register(ENTERPRISE_UPLOAD_TASK_NAME, GatlingEnterpriseUploadTask.class) {
-            inputs.files gatlingEnterprisePackageTask
-            dependsOn(gatlingEnterprisePackageTask)
-        }
+    private static void registerEnterpriseUploadTask(Project project) {
+        project.tasks.register(ENTERPRISE_UPLOAD_TASK_NAME, GatlingEnterpriseUploadTask.class)
     }
 
     private TaskProvider<GatlingEnterpriseDeployTask> registerEnterpriseDeployTask(Project project, TaskProvider<GatlingEnterprisePackageTask> gatlingEnterprisePackageTask) {
