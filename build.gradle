@@ -32,7 +32,8 @@ dependencies {
   testImplementation('com.github.stefanbirkner:system-rules:1.19.0') {
     exclude module: 'junit-dep'
   }
-  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.junit.jupiter:junit-jupiter:5.12.2"
+  testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.12.2"
   testImplementation "commons-io:commons-io:2.19.0"
 }
 
