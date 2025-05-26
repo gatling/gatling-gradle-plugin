@@ -11,11 +11,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK11
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
+          java-version: '24'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
