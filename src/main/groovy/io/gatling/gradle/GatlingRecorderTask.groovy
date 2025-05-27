@@ -22,7 +22,7 @@ class GatlingRecorderTask extends DefaultTask {
     String simulationPackage
 
     @OutputDirectory
-    File gatlingReportDir = project.file("${project.reportsDir}/gatling")
+    File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()
 
     protected final ExecOperations execOperations
     protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
