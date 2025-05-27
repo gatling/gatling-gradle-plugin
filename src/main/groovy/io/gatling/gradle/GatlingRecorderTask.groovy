@@ -3,9 +3,13 @@ package io.gatling.gradle
 import io.gatling.shared.cli.RecorderCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.ExecException
+
+import javax.inject.Inject
 
 class GatlingRecorderTask extends DefaultTask {
 
@@ -20,17 +24,22 @@ class GatlingRecorderTask extends DefaultTask {
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
 
-    GatlingRecorderTask() {
+    protected final ExecOperations execOperations
+    protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
+    protected final SourceSet gatlingSourceSet = project.sourceSets.gatling
+    protected final String groupId = project.group.toString()
+
+    @Inject
+    GatlingRecorderTask(ExecOperations execOperations) {
+        this.execOperations = execOperations
         outputs.upToDateWhen { false }
     }
 
     List<String> createRecorderArgs() {
-        def gatling = project.sourceSets.gatling
-
-        File javaSrcDir = gatling.hasProperty("java") ? gatling.java.srcDirs?.find() : null
-        File scalaSrcDir = gatling.hasProperty("scala") ? gatling.scala.srcDirs?.find() : null
-        File kotlinSrcDir = gatling.hasProperty("kotlin") ? gatling.kotlin.srcDirs?.find() : null
-        File resourcesDir = gatling.resources.srcDirs?.find()
+        File javaSrcDir = gatlingSourceSet.hasProperty("java") ? gatlingSourceSet.java.srcDirs?.find() : null
+        File scalaSrcDir = gatlingSourceSet.hasProperty("scala") ? gatlingSourceSet.scala.srcDirs?.find() : null
+        File kotlinSrcDir = gatlingSourceSet.hasProperty("kotlin") ? gatlingSourceSet.kotlin.srcDirs?.find() : null
+        File resourcesDir = gatlingSourceSet.resources.srcDirs?.find()
 
         List<String> args
         if (scalaSrcDir != null && scalaSrcDir.exists()) {
@@ -54,8 +63,7 @@ class GatlingRecorderTask extends DefaultTask {
 
         args += [RecorderCliOptions.ResourcesFolder.shortOption(), resourcesDir.getAbsolutePath()]
 
-        def projectGroup = project.group.toString()
-        def nonEmptyGroup = projectGroup.isEmpty() ? null : projectGroup
+        def nonEmptyGroup = groupId.isEmpty() ? null : groupId
         def resolvedPackage = simulationPackage != null ? simulationPackage : nonEmptyGroup
 
         if (resolvedPackage != null) {
@@ -71,12 +79,10 @@ class GatlingRecorderTask extends DefaultTask {
 
     @TaskAction
     void gatlingRecorder() {
-        def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
-
-        def result = project.javaexec({ JavaExecSpec exec ->
+        def result = execOperations.javaexec({ JavaExecSpec exec ->
             exec.mainClass.set(GatlingPluginExtension.GATLING_RECORDER_CLASS)
-            exec.classpath = project.configurations.gatlingRuntimeClasspath
-            exec.args this.createRecorderArgs()
+            exec.classpath = gatlingRuntimeClasspathConfiguration
+            exec.args createRecorderArgs()
 
             exec.standardInput = System.in
 

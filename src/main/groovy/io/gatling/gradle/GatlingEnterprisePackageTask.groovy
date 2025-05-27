@@ -2,6 +2,8 @@ package io.gatling.gradle
 
 import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
+import org.gradle.api.Project
+
 import java.util.stream.Collectors
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolvedDependency
@@ -30,18 +32,24 @@ class GatlingEnterprisePackageTask extends Jar {
     @Optional
     List<Configuration> configurations
 
+    protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
+    protected final String groupId = project.group.toString()
+    protected final String artifactId = project.name
+    protected final String artifactVersion = project.version.toString()
+    protected final Set<Project> allProjects = project.getAllprojects()
+
     @TaskAction
     @Override
     protected void copy() {
         EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
-        Set<ResolvedDependency> firstLevelModuleDependencies = project.configurations.gatlingRuntimeClasspath.resolvedConfiguration.getFirstLevelModuleDependencies()
+        Set<ResolvedDependency> firstLevelModuleDependencies = gatlingRuntimeClasspathConfiguration.resolvedConfiguration.getFirstLevelModuleDependencies()
         packager.createEnterprisePackage(
             getClassDirectories(),
             collectGatlingDependencies(firstLevelModuleDependencies),
             collectExtraDependencies(firstLevelModuleDependencies),
-            project.group,
-            project.name,
-            project.version,
+            groupId,
+            artifactId,
+            artifactVersion,
             'gradle',
             getClass().getPackage().getImplementationVersion(),
             getArchiveFile().get().asFile
@@ -49,7 +57,7 @@ class GatlingEnterprisePackageTask extends Jar {
     }
 
     private List<File> getClassDirectories() {
-        project.getAllprojects().collect { p ->
+        allProjects.collect { p ->
             JavaPluginExtension javaPluginExtension = p.getExtensions().getByType(JavaPluginExtension.class)
             javaPluginExtension.getSourceSets().collect {
                 sourceSet -> sourceSet.output.asList()
