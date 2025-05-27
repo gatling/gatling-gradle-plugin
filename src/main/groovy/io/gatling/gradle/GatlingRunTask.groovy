@@ -13,10 +13,12 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskExecutionException
 import org.gradle.api.tasks.VerificationException
 import org.gradle.api.tasks.options.Option
+import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.util.GradleVersion
 
+import javax.inject.Inject
 import java.nio.charset.StandardCharsets
 
 class GatlingRunTask extends DefaultTask {
@@ -64,7 +66,11 @@ class GatlingRunTask extends DefaultTask {
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
 
-    GatlingRunTask() {
+    private ExecOperations execOperations
+
+    @Inject
+    GatlingRunTask(ExecOperations execOperations) {
+        this.execOperations = execOperations
         outputs.upToDateWhen { false }
     }
 
@@ -81,6 +87,8 @@ class GatlingRunTask extends DefaultTask {
             }
         } else {
             def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
+            final def thisExecOperations = execOperations
+
             Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
                 getLogger().info("Running simulation " + simulationClass + ".")
                 Properties propagatedSystemProperties = new Properties()
@@ -90,7 +98,7 @@ class GatlingRunTask extends DefaultTask {
                     }
                 }
 
-                [(simulationClass): project.javaexec({ JavaExecSpec exec ->
+                [(simulationClass): thisExecOperations.javaexec({ JavaExecSpec exec ->
                     exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
                     exec.classpath = project.configurations.gatlingRuntimeClasspath
                     exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
