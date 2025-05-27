@@ -65,7 +65,7 @@ class GatlingRunTask extends DefaultTask {
     boolean runInSameProcess
 
     @OutputDirectory
-    File gatlingReportDir = project.file("${project.reportsDir}/gatling")
+    File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()
 
     protected final ExecOperations execOperations
     protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
