@@ -9,16 +9,17 @@ import org.gradle.api.tasks.TaskAction
 class GatlingEnterpriseDeployTask extends DefaultTask {
 
     protected DeploymentInfo deploymentInfo
+    protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
+    protected final String artifactId = project.name
+    protected final File rootDir = project.rootDir
 
     @TaskAction
     void deploy() {
-        final GatlingPluginExtension gatlingPlugin = project.extensions.getByType(GatlingPluginExtension)
-        final BatchEnterprisePlugin enterprisePlugin = gatlingPlugin.enterprise.initBatchEnterprisePlugin(logger)
-        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(project.rootDir, gatlingPlugin.enterprise.packageDescriptorFilename)
+        final BatchEnterprisePlugin enterprisePlugin = gatlingExt.enterprise.initBatchEnterprisePlugin(logger)
+        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(rootDir, gatlingExt.enterprise.packageDescriptorFilename)
         final File packageFile = inputs.files.singleFile
-        final Boolean isPrivateRepositoryEnabled = gatlingPlugin.enterprise.controlPlaneUrl != null
-        final String validateSimulationId = gatlingPlugin.enterprise.validateSimulationId;
-        final String artifactId = project.name
+        final Boolean isPrivateRepositoryEnabled = gatlingExt.enterprise.controlPlaneUrl != null
+        final String validateSimulationId = gatlingExt.enterprise.validateSimulationId;
 
         deploymentInfo = validateSimulationId != null
             ? enterprisePlugin.deployFromDescriptor(descriptorFile, packageFile, artifactId, isPrivateRepositoryEnabled, validateSimulationId)

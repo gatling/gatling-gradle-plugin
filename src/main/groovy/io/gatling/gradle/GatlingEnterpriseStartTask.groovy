@@ -13,16 +13,15 @@ class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
     void publish() {
         super.deploy()
 
-        final GatlingPluginExtension gatling = project.extensions.getByType(GatlingPluginExtension)
-        final boolean waitForRunEnd = gatling.enterprise.waitForRunEnd
-        final EnterprisePlugin enterprisePlugin = gatling.enterprise.initEnterprisePlugin(logger)
+        final boolean waitForRunEnd = gatlingExt.enterprise.waitForRunEnd
+        final EnterprisePlugin enterprisePlugin = gatlingExt.enterprise.initEnterprisePlugin(logger)
 
         RecoverEnterprisePluginException.handle(logger) {
-            final RunComment runComment = new RunComment(gatling.enterprise.runTitle, gatling.enterprise.runDescription)
-            final RunSummary runSummary = enterprisePlugin.startSimulation(gatling.enterprise.simulationName, deploymentInfo, runComment)
+            final RunComment runComment = new RunComment(gatlingExt.enterprise.runTitle, gatlingExt.enterprise.runDescription)
+            final RunSummary runSummary = enterprisePlugin.startSimulation(gatlingExt.enterprise.simulationName, deploymentInfo, runComment)
             logger.lifecycle("""
                          |Simulation successfully started.
-                         |Reports are available at: ${gatling.enterprise.webAppUrl.toExternalForm() + runSummary.reportsPath}
+                         |Reports are available at: ${gatlingExt.enterprise.webAppUrl.toExternalForm() + runSummary.reportsPath}
                          |""".stripMargin())
             if (waitForRunEnd) {
                 SimulationEndResult finishedRun = enterprisePlugin.waitForRunEnd(runSummary)

@@ -6,6 +6,7 @@ import io.gatling.plugin.util.SystemProperties
 import io.gatling.shared.cli.GatlingCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
@@ -66,7 +67,11 @@ class GatlingRunTask extends DefaultTask {
     @OutputDirectory
     File gatlingReportDir = project.file("${project.reportsDir}/gatling")
 
-    private ExecOperations execOperations
+    protected final ExecOperations execOperations
+    protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
+    protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
+    protected final def includes = project.gatling.includes
+    protected final def excludes = project.gatling.excludes
 
     @Inject
     GatlingRunTask(ExecOperations execOperations) {
@@ -82,13 +87,10 @@ class GatlingRunTask extends DefaultTask {
                 new NoFork(
                     GatlingPluginExtension.GATLING_MAIN_CLASS,
                     createGatlingArgs(simulationClass),
-                    project.configurations.gatlingRuntimeClasspath.files.toList()
+                    gatlingRuntimeClasspathConfiguration.files.toList()
                 ).run()
             }
         } else {
-            def gatlingExt = project.extensions.getByType(GatlingPluginExtension)
-            final def thisExecOperations = execOperations
-
             Map<String, ExecResult> results = simulationClasses().collectEntries { String simulationClass ->
                 getLogger().info("Running simulation " + simulationClass + ".")
                 Properties propagatedSystemProperties = new Properties()
@@ -98,9 +100,9 @@ class GatlingRunTask extends DefaultTask {
                     }
                 }
 
-                [(simulationClass): thisExecOperations.javaexec({ JavaExecSpec exec ->
+                [(simulationClass): execOperations.javaexec({ JavaExecSpec exec ->
                     exec.mainClass.set(GatlingPluginExtension.GATLING_MAIN_CLASS)
-                    exec.classpath = project.configurations.gatlingRuntimeClasspath
+                    exec.classpath = gatlingRuntimeClasspathConfiguration
                     exec.jvmArgs this.jvmArgs ?: gatlingExt.jvmArgs
                     exec.systemProperties propagatedSystemProperties
                     exec.systemProperties this.systemProperties ?: gatlingExt.systemProperties
@@ -124,14 +126,14 @@ class GatlingRunTask extends DefaultTask {
     }
 
     List<String> simulationClasses() {
-        List<String> gatlingClasspath = project.configurations.gatlingRuntimeClasspath.getFiles().collect {it.getAbsolutePath()}.toList()
+        List<String> gatlingClasspath = gatlingRuntimeClasspathConfiguration.getFiles().collect {it.getAbsolutePath()}.toList()
 
         SimulationSelector.Result result =
             SimulationSelector.simulations(
                 simulationClassName,
                 gatlingClasspath,
-                project.gatling.includes,
-                project.gatling.excludes,
+                includes,
+                excludes,
                 runAllSimulations,
                 !nonInteractive)
 
