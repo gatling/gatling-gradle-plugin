@@ -52,7 +52,8 @@ class GatlingEnterprisePackageTask extends Jar {
             artifactVersion,
             'gradle',
             getClass().getPackage().getImplementationVersion(),
-            getArchiveFile().get().asFile
+            getArchiveFile().get().asFile,
+            project.getProjectDir()
         )
     }
 
