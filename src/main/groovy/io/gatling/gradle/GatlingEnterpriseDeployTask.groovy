@@ -11,12 +11,12 @@ class GatlingEnterpriseDeployTask extends DefaultTask {
     protected DeploymentInfo deploymentInfo
     protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
     protected final String artifactId = project.name
-    protected final File rootDir = project.rootDir
+    protected final File projectDir = project.projectDir
 
     @TaskAction
     void deploy() {
         final BatchEnterprisePlugin enterprisePlugin = gatlingExt.enterprise.initBatchEnterprisePlugin(logger)
-        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(rootDir, gatlingExt.enterprise.packageDescriptorFilename)
+        final File descriptorFile = DeploymentConfiguration.fromBaseDirectory(projectDir, gatlingExt.enterprise.packageDescriptorFilename)
         final File packageFile = inputs.files.singleFile
         final Boolean isPrivateRepositoryEnabled = gatlingExt.enterprise.controlPlaneUrl != null
         final String validateSimulationId = gatlingExt.enterprise.validateSimulationId;
