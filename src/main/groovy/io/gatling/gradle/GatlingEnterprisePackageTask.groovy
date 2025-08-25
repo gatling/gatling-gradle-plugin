@@ -13,7 +13,8 @@ import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.Jar
 
 @DisableCachingByDefault(because = "Must always run, target file is configured environment variable in enterprise packager")
-class GatlingEnterprisePackageTask extends Jar {
+// abstract because https://docs.gradle.org/current/userguide/upgrading_major_version_9.html#injection_getters_are_now_abstract
+abstract class GatlingEnterprisePackageTask extends Jar {
 
     private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = ["netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos"].asUnmodifiable()
 

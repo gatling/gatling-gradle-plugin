@@ -35,7 +35,7 @@ class WhenGroovyRunScalaSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
         when: "override via gatling extension"
         buildFile << """
 gatling {
-    jvmArgs = ['-Xms32m']
+    jvmArgs = ['-Xms32m', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED']
 }
 """
         and:
@@ -58,14 +58,14 @@ gatling {
         when: "override via gatling extension"
         buildFile << """
 gatling {
-    jvmArgs = ['-Xms32m', '-XX:+UseG1GC']
+    jvmArgs = ['-Xms32m', '-XX:+UseG1GC', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED']
 }
 """
         and:
         result = executeGradle("--rerun-tasks", GATLING_RUN_TASK_NAME)
         then:
         with(new GatlingDebug(result)) {
-            jvmArgs.sort() == ['-Xms32m', '-XX:+UseG1GC'].sort()
+            jvmArgs.sort() == ['-Xms32m', '-XX:+UseG1GC', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'].sort()
         }
     }
 
@@ -76,14 +76,14 @@ gatling {
     jvmArgs = ['-Xms32m', '-XX:+AggressiveOpts']
 }
 gatlingRun {
-    jvmArgs = ['-Xms128m', '-XX:+UseG1GC']
+    jvmArgs = ['-Xms128m', '-XX:+UseG1GC', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED']
 }
 """
         and:
         def result = executeGradle(GATLING_RUN_TASK_NAME)
         then:
         with(new GatlingDebug(result)) {
-            jvmArgs.sort() == ['-Xms128m', '-XX:+UseG1GC'].sort()
+            jvmArgs.sort() == ['-Xms128m', '-XX:+UseG1GC', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED'].sort()
         }
     }
 
