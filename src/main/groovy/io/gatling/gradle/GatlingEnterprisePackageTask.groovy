@@ -3,6 +3,7 @@ package io.gatling.gradle
 import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
 import org.gradle.api.Project
+import org.gradle.work.DisableCachingByDefault
 
 import java.util.stream.Collectors
 import org.gradle.api.artifacts.Configuration
@@ -11,7 +12,7 @@ import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.Jar
 
-@CacheableTask
+@DisableCachingByDefault(because = "Must always run, target file is configured environment variable in enterprise packager")
 class GatlingEnterprisePackageTask extends Jar {
 
     private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = ["netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos"].asUnmodifiable()
@@ -37,6 +38,10 @@ class GatlingEnterprisePackageTask extends Jar {
     protected final String artifactId = project.name
     protected final String artifactVersion = project.version.toString()
     protected final Set<Project> allProjects = project.getAllprojects()
+
+    GatlingEnterprisePackageTask() {
+        outputs.upToDateWhen { false }
+    }
 
     @TaskAction
     @Override
