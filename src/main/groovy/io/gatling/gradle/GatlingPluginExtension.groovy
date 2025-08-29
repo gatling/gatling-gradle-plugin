@@ -269,7 +269,7 @@ class GatlingPluginExtension {
             return (implementationVersion == null) ? "undefined" : implementationVersion
         }
 
-        private PluginIO getPluginIOInstance(logger) {
+        private PluginIO getPluginIOInstance(Logger logger) {
             return new PluginIO() {
                 private final GradlePluginIO gradlePluginIO = new GradlePluginIO(logger)
 
