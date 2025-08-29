@@ -18,10 +18,14 @@ final class GradlePluginIO implements PluginIO {
     PluginLogger getLogger() {
         return new PluginLogger() {
             @Override
+            void debug(String message) {
+                gradleLogger.debug(message)
+            }
+
+            @Override
             void info(String message) {
                 gradleLogger.lifecycle(message)
             }
-
 
             @Override
             void error(String message) {
