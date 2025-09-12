@@ -8,9 +8,14 @@ group = "gradle.plugin.io.gatling.gradle"
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
+
+compileJava {
+  options.release = 11
+}
+
 jar {
   manifest {
     attributes 'Implementation-Version': project.version
