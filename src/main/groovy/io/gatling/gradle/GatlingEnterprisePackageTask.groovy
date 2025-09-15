@@ -107,10 +107,6 @@ class GatlingEnterprisePackageTask extends Jar {
         Set<ResolvedDependency> deps = new HashSet<>()
         collectGatlingDepsRec(firstLevelDependencies, new HashSet<>(), deps)
         toDependencies(deps)
-            .stream()
-            // exclude protobuf from Gatling provided deps as only the user knows if he wants to use protobuf 3 or 4
-            .filter { it.groupId != "com.google.protobuf" || it.artifactId != "protobuf-java" }
-            .collect(Collectors.toSet())
     }
 
     private Set<Dependency> collectExtraDependencies(Set<ResolvedDependency> firstLevelDependencies) {
