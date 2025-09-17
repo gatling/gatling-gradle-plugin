@@ -7,6 +7,8 @@ import io.gatling.shared.cli.GatlingCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
@@ -65,7 +67,7 @@ class GatlingRunTask extends DefaultTask {
     boolean runInSameProcess
 
     @OutputDirectory
-    File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()
+    Provider<Directory> gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling")
 
     protected final ExecOperations execOperations
     protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
@@ -167,7 +169,7 @@ class GatlingRunTask extends DefaultTask {
     List<String> createGatlingArgs(String simulationClass) {
         def baseArgs = [
             GatlingCliOptions.Simulation.shortOption(), simulationClass,
-            GatlingCliOptions.ResultsFolder.shortOption(), gatlingReportDir.absolutePath,
+            GatlingCliOptions.ResultsFolder.shortOption(), gatlingReportDir.get().asFile.absolutePath,
             GatlingCliOptions.Launcher.shortOption(), "gradle",
             GatlingCliOptions.BuildToolVersion.shortOption(), GradleVersion.current().version
         ]

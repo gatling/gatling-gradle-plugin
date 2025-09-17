@@ -4,6 +4,8 @@ import io.gatling.shared.cli.RecorderCliOptions
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.Directory
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.gradle.process.JavaExecSpec
@@ -22,7 +24,7 @@ class GatlingRecorderTask extends DefaultTask {
     String simulationPackage
 
     @OutputDirectory
-    File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()
+    Provider<Directory> gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling")
 
     protected final ExecOperations execOperations
     protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
