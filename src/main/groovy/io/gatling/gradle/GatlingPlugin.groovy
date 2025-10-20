@@ -60,6 +60,7 @@ final class GatlingPlugin implements Plugin<Project> {
 
     private static TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
         project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
+            dependsOn(project.tasks.named("gatlingClasses"))
             packageTask.archiveClassifier.set("tests")
             packageTask.configurations = [
                 project.configurations.gatlingRuntimeClasspath
