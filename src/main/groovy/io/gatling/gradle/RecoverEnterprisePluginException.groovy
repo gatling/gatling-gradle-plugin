@@ -15,7 +15,6 @@
  */
 package io.gatling.gradle
 
-
 import io.gatling.plugin.exceptions.*
 import org.gradle.api.BuildCancelledException
 import org.gradle.api.Task
