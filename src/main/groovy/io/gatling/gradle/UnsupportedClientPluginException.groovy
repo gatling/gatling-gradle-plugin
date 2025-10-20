@@ -13,8 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package helper
+package io.gatling.gradle
 
-enum SimulationLanguage {
-  JAVA, SCALA, KOTLIN
+final class UnsupportedClientPluginException extends Exception {
+  UnsupportedClientPluginException(Exception cause) {
+    super(
+    "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://docs.gatling.io/reference/integrations/build-tools/gradle-plugin/ for more information about this plugin.",
+    cause
+    )
+  }
 }

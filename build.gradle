@@ -1,7 +1,8 @@
 plugins {
   id 'java-gradle-plugin'
-  id 'com.gradle.plugin-publish' version "2.0.0"
   id 'groovy'
+  id 'com.gradle.plugin-publish' version "2.0.0"
+  id("com.diffplug.spotless") version "8.0.0"
 }
 
 group = "gradle.plugin.io.gatling.gradle"
@@ -26,6 +27,7 @@ jar {
     attributes 'Implementation-Version': project.version
   }
 }
+
 repositories {
   mavenCentral()
   gradlePluginPortal()
@@ -69,6 +71,19 @@ gradlePlugin {
       description = "Gatling plugin for Gradle"
       tags.addAll("gatling", "load test", "stress test", "performance test", "java", "scala", "kotlin")
     }
+  }
+}
+
+spotless {
+  groovy {
+    importOrder()
+    removeSemicolons()
+    greclipse().configFile(rootProject.files("src/etc/greclipse.properties"))
+    licenseHeaderFile("src/etc/header.txt")
+  }
+  groovyGradle {
+    target '*.gradle'
+    greclipse().configFile(rootProject.files("src/etc/greclipse.properties"))
   }
 }
 

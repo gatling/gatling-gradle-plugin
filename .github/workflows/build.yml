@@ -42,4 +42,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Check
-        run: ./gradlew check
+        run: ./gradlew check spotlessCheck

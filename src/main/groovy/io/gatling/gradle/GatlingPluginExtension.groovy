@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011-2025 GatlingCorp (https://gatling.io)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.gatling.gradle
 
 import io.gatling.plugin.BatchEnterprisePlugin
@@ -18,314 +33,314 @@ import org.gradle.api.tasks.Optional
 
 class GatlingPluginExtension {
 
-    static final Map DEFAULT_SYSTEM_PROPS = [:]
+  static final Map DEFAULT_SYSTEM_PROPS = [:]
 
-    final static class Enterprise {
-        private String apiToken
-        private String simulationId
-        private String simulationName
-        private String runTitle
-        private String runDescription
-        private String packageId
-        private String apiUrl
-        private String webAppUrl
-        private boolean batchMode
-        private boolean waitForRunEnd
-        private String controlPlaneUrl
-        private String packageDescriptorFilename
-        private String validateSimulationId
+  final static class Enterprise {
+    private String apiToken
+    private String simulationId
+    private String simulationName
+    private String runTitle
+    private String runDescription
+    private String packageId
+    private String apiUrl
+    private String webAppUrl
+    private boolean batchMode
+    private boolean waitForRunEnd
+    private String controlPlaneUrl
+    private String packageDescriptorFilename
+    private String validateSimulationId
 
-        def setBatchMode(boolean batchMode) {
-            this.batchMode = batchMode
-        }
+    def setBatchMode(boolean batchMode) {
+      this.batchMode = batchMode
+    }
 
-        def batchMode(boolean batchMode) {
-            setBatchMode(batchMode)
-        }
+    def batchMode(boolean batchMode) {
+      setBatchMode(batchMode)
+    }
 
-        def setApiUrl(String apiUrl) {
-            this.apiUrl = apiUrl
-        }
+    def setApiUrl(String apiUrl) {
+      this.apiUrl = apiUrl
+    }
 
-        def apiUrl(String apiUrl) {
-            setApiUrl(apiUrl)
-        }
+    def apiUrl(String apiUrl) {
+      setApiUrl(apiUrl)
+    }
 
-        def setWebAppUrl(String webAppUrl) {
-            this.webAppUrl = webAppUrl
-        }
+    def setWebAppUrl(String webAppUrl) {
+      this.webAppUrl = webAppUrl
+    }
 
-        def webAppUrl(String webAppUrl) {
-            setWebAppUrl(webAppUrl)
-        }
+    def webAppUrl(String webAppUrl) {
+      setWebAppUrl(webAppUrl)
+    }
 
-        def setSimulationId(String simulationId) {
-            this.simulationId = simulationId
-        }
+    def setSimulationId(String simulationId) {
+      this.simulationId = simulationId
+    }
 
-        def simulationId(String simulationId) {
-            setSimulationId(simulationId)
-        }
+    def simulationId(String simulationId) {
+      setSimulationId(simulationId)
+    }
 
-        def setSimulationName(String simulationName) {
-            this.simulationName = simulationName
-        }
+    def setSimulationName(String simulationName) {
+      this.simulationName = simulationName
+    }
 
-        def simulationName(String simulationName) {
-            setSimulationName(simulationName)
-        }
+    def simulationName(String simulationName) {
+      setSimulationName(simulationName)
+    }
 
-        def setRunTitle(String runTitle) {
-            this.runTitle = runTitle
-        }
+    def setRunTitle(String runTitle) {
+      this.runTitle = runTitle
+    }
 
-        def runTitle(String runTitle) {
-            setRunTitle(runTitle)
-        }
+    def runTitle(String runTitle) {
+      setRunTitle(runTitle)
+    }
 
-        def setRunDescription(String runDescription) {
-            this.runDescription = runDescription
-        }
+    def setRunDescription(String runDescription) {
+      this.runDescription = runDescription
+    }
 
-        def runDescription(String runDescription) {
-            setRunDescription(runDescription)
-        }
+    def runDescription(String runDescription) {
+      setRunDescription(runDescription)
+    }
 
-        def setPackageId(String packageId) {
-            this.packageId = packageId
-        }
+    def setPackageId(String packageId) {
+      this.packageId = packageId
+    }
 
-        def packageId(String packageId) {
-            setPackageId(packageId)
-        }
+    def packageId(String packageId) {
+      setPackageId(packageId)
+    }
 
-        def setApiToken(String apiToken) {
-            this.apiToken = apiToken
-        }
+    def setApiToken(String apiToken) {
+      this.apiToken = apiToken
+    }
 
-        def apiToken(String apiToken) {
-            setApiToken(apiToken)
-        }
+    def apiToken(String apiToken) {
+      setApiToken(apiToken)
+    }
 
-        def setWaitForRunEnd(boolean waitForRunEnd) {
-            this.waitForRunEnd = waitForRunEnd
-        }
+    def setWaitForRunEnd(boolean waitForRunEnd) {
+      this.waitForRunEnd = waitForRunEnd
+    }
 
-        def waitForRunEnd(boolean waitForRunEnd) {
-            setWaitForRunEnd(waitForRunEnd)
-        }
+    def waitForRunEnd(boolean waitForRunEnd) {
+      setWaitForRunEnd(waitForRunEnd)
+    }
 
-        def setControlPlaneUrl(String controlPlaneUrl) {
-            this.controlPlaneUrl = controlPlaneUrl
-        }
+    def setControlPlaneUrl(String controlPlaneUrl) {
+      this.controlPlaneUrl = controlPlaneUrl
+    }
 
-        def controlPlaneUrl(String controlPlaneUrl) {
-            setControlPlaneUrl(controlPlaneUrl)
-        }
+    def controlPlaneUrl(String controlPlaneUrl) {
+      setControlPlaneUrl(controlPlaneUrl)
+    }
 
-        def setPackageDescriptorFilename(String packageDescriptorFilename) {
-            this.packageDescriptorFilename = packageDescriptorFilename
-        }
+    def setPackageDescriptorFilename(String packageDescriptorFilename) {
+      this.packageDescriptorFilename = packageDescriptorFilename
+    }
 
-        def packageDescriptorFilename(String packageDescriptorFilename) {
-            setPackageDescriptorFilename(packageDescriptorFilename)
-        }
+    def packageDescriptorFilename(String packageDescriptorFilename) {
+      setPackageDescriptorFilename(packageDescriptorFilename)
+    }
 
-        def setValidateSimulationId(String validateSimulationId) {
-            this.validateSimulationId = validateSimulationId
-        }
+    def setValidateSimulationId(String validateSimulationId) {
+      this.validateSimulationId = validateSimulationId
+    }
 
-        def validateSimulationId(String validateSimulationId) {
-            this.validateSimulationId = validateSimulationId
-        }
+    def validateSimulationId(String validateSimulationId) {
+      this.validateSimulationId = validateSimulationId
+    }
 
 
-        @Input
-        @Optional
-        UUID getSimulationId() {
-            var str = ConfigurationConstants.UploadOptions.SimulationId.valueOf(simulationId)
-            str ? UUID.fromString(str) : null
-        }
+    @Input
+    @Optional
+    UUID getSimulationId() {
+      var str = ConfigurationConstants.UploadOptions.SimulationId.valueOf(simulationId)
+      str ? UUID.fromString(str) : null
+    }
 
-        @Input
-        @Optional
-        String getSimulationName() {
-            ConfigurationConstants.StartOptions.SimulationName.valueOf(simulationName)
-        }
+    @Input
+    @Optional
+    String getSimulationName() {
+      ConfigurationConstants.StartOptions.SimulationName.valueOf(simulationName)
+    }
 
-        @Input
-        @Optional
-        String getRunTitle() {
-            ConfigurationConstants.StartOptions.RunTitle.valueOf(runTitle)
-        }
+    @Input
+    @Optional
+    String getRunTitle() {
+      ConfigurationConstants.StartOptions.RunTitle.valueOf(runTitle)
+    }
 
-        String getRunDescription() {
-            ConfigurationConstants.StartOptions.RunDescription.valueOf(runDescription)
-        }
+    String getRunDescription() {
+      ConfigurationConstants.StartOptions.RunDescription.valueOf(runDescription)
+    }
 
-        @Input
-        @Optional
-        String getApiToken() {
-            ConfigurationConstants.ApiToken.valueOf(apiToken)
-        }
+    @Input
+    @Optional
+    String getApiToken() {
+      ConfigurationConstants.ApiToken.valueOf(apiToken)
+    }
 
-        @Input
-        @Optional
-        UUID getPackageId() {
-            var str = ConfigurationConstants.UploadOptions.PackageId.valueOf(packageId)
-            str ? UUID.fromString(str) : null
-        }
+    @Input
+    @Optional
+    UUID getPackageId() {
+      var str = ConfigurationConstants.UploadOptions.PackageId.valueOf(packageId)
+      str ? UUID.fromString(str) : null
+    }
 
-        @Input
-        @Optional
-        URL getApiUrl() {
-            new URI(ConfigurationConstants.ApiUrl.valueOf(apiUrl)).toURL()
-        }
+    @Input
+    @Optional
+    URL getApiUrl() {
+      new URI(ConfigurationConstants.ApiUrl.valueOf(apiUrl)).toURL()
+    }
 
-        @Input
-        @Optional
-        URL getWebAppUrl() {
-            new URI(ConfigurationConstants.WebAppUrl.valueOf(webAppUrl)).toURL()
-        }
+    @Input
+    @Optional
+    URL getWebAppUrl() {
+      new URI(ConfigurationConstants.WebAppUrl.valueOf(webAppUrl)).toURL()
+    }
 
-        @Input
-        @Optional
-        boolean getBatchMode() {
-            ConfigurationConstants.BatchMode.valueOf(batchMode)
-        }
+    @Input
+    @Optional
+    boolean getBatchMode() {
+      ConfigurationConstants.BatchMode.valueOf(batchMode)
+    }
 
-        @Input
-        @Optional
-        boolean getWaitForRunEnd() {
-            ConfigurationConstants.StartOptions.WaitForRunEnd.valueOf(waitForRunEnd)
-        }
+    @Input
+    @Optional
+    boolean getWaitForRunEnd() {
+      ConfigurationConstants.StartOptions.WaitForRunEnd.valueOf(waitForRunEnd)
+    }
 
-        @Input
-        @Optional
-        URL getControlPlaneUrl() {
-            var str = ConfigurationConstants.ControlPlaneUrl.valueOf(controlPlaneUrl)
-            str ? new URI(str).toURL() : null
-        }
+    @Input
+    @Optional
+    URL getControlPlaneUrl() {
+      var str = ConfigurationConstants.ControlPlaneUrl.valueOf(controlPlaneUrl)
+      str ? new URI(str).toURL() : null
+    }
 
-        @Input
-        @Optional
-        String getPackageDescriptorFilename() {
-            ConfigurationConstants.DeployOptions.PackageDescriptorFilename.valueOf(packageDescriptorFilename)
-        }
+    @Input
+    @Optional
+    String getPackageDescriptorFilename() {
+      ConfigurationConstants.DeployOptions.PackageDescriptorFilename.valueOf(packageDescriptorFilename)
+    }
 
-        @Input
-        @Optional
-        String getValidateSimulationId() {
-            ConfigurationConstants.DeployOptions.ValidateSimulationId.valueOf(validateSimulationId)
-        }
+    @Input
+    @Optional
+    String getValidateSimulationId() {
+      ConfigurationConstants.DeployOptions.ValidateSimulationId.valueOf(validateSimulationId)
+    }
 
-        BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
-            PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, true)
+    BatchEnterprisePlugin initBatchEnterprisePlugin(Logger logger) {
+      PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, true)
 
-            try {
-                return EnterprisePluginProvider.getBatchInstance(pluginConfiguration)
-            } catch (UnsupportedClientException e) {
-                throw new UnsupportedClientPluginException(e)
-            }
-        }
+      try {
+        return EnterprisePluginProvider.getBatchInstance(pluginConfiguration)
+      } catch (UnsupportedClientException e) {
+        throw new UnsupportedClientPluginException(e)
+      }
+    }
 
-        EnterprisePlugin initEnterprisePlugin(Logger logger) {
-            PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, getBatchMode())
+    EnterprisePlugin initEnterprisePlugin(Logger logger) {
+      PluginConfiguration pluginConfiguration = getPluginConfiguration(logger, getBatchMode())
 
-            try {
-                return EnterprisePluginProvider.getInstance(pluginConfiguration)
-            } catch (UnsupportedClientException e) {
-                throw new UnsupportedClientPluginException(e)
-            }
-        }
+      try {
+        return EnterprisePluginProvider.getInstance(pluginConfiguration)
+      } catch (UnsupportedClientException e) {
+        throw new UnsupportedClientPluginException(e)
+      }
+    }
 
-        private PluginConfiguration getPluginConfiguration(Logger logger, boolean forceBatchMode) {
-            final apiToken = getApiToken()
-            if (!apiToken) {
-                throw new InvalidUserDataException("""
+    private PluginConfiguration getPluginConfiguration(Logger logger, boolean forceBatchMode) {
+      final apiToken = getApiToken()
+      if (!apiToken) {
+        throw new InvalidUserDataException("""
                     |An API token is required to call the Gatling Enterprise server.
                     |See https://docs.gatling.io/reference/execute/cloud/admin/api-tokens/ and create a token wil the role 'Configure'.
                     |You can then set your API token's value in the environment variable '${ConfigurationConstants.ApiToken.ENV_VAR}', pass it with '-D${ConfigurationConstants.ApiToken.SYS_PROP}=<API_TOKEN>' or add the configuration to your Gradle settings, e.g.:
                     |gatling.enterprise.apiToken \"MY_API_TOKEN_VALUE\"
                     """.stripMargin()
-                )
-            }
+        )
+      }
 
-            return new PluginConfiguration(
-                getApiUrl(),
-                getWebAppUrl(),
-                apiToken,
-                getControlPlaneUrl(),
-                BuildTool.GRADLE,
-                getPluginVersion(),
-                forceBatchMode,
-                getPluginIOInstance(logger)
-            )
-        }
+      return new PluginConfiguration(
+              getApiUrl(),
+              getWebAppUrl(),
+              apiToken,
+              getControlPlaneUrl(),
+              BuildTool.GRADLE,
+              getPluginVersion(),
+              forceBatchMode,
+              getPluginIOInstance(logger)
+              )
+    }
 
-        private String getPluginVersion() {
-            final String implementationVersion = getClass().getPackage().getImplementationVersion()
+    private String getPluginVersion() {
+      final String implementationVersion = getClass().getPackage().getImplementationVersion()
 
-            return (implementationVersion == null) ? "undefined" : implementationVersion
-        }
+      return (implementationVersion == null) ? "undefined" : implementationVersion
+    }
 
-        private PluginIO getPluginIOInstance(Logger logger) {
-            return new PluginIO() {
+    private PluginIO getPluginIOInstance(Logger logger) {
+      return new PluginIO() {
                 private final GradlePluginIO gradlePluginIO = new GradlePluginIO(logger)
 
                 @Override
                 PluginLogger getLogger() {
-                    return gradlePluginIO.logger
+                  return gradlePluginIO.logger
                 }
 
                 @Override
                 PluginScanner getScanner() {
-                    return gradlePluginIO.scanner
+                  return gradlePluginIO.scanner
                 }
-            }
-        }
+              }
     }
+  }
 
-    Enterprise enterprise = new Enterprise()
+  Enterprise enterprise = new Enterprise()
 
-    def enterprise(Closure c) {
-        c.resolveStrategy = Closure.DELEGATE_FIRST
-        c.delegate = enterprise
-        c()
-    }
+  def enterprise(Closure c) {
+    c.resolveStrategy = Closure.DELEGATE_FIRST
+    c.delegate = enterprise
+    c()
+  }
 
-    static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
+  static final String GATLING_MAIN_CLASS = 'io.gatling.app.Gatling'
 
-    static final String GATLING_RECORDER_CLASS = 'io.gatling.recorder.GatlingRecorder'
+  static final String GATLING_RECORDER_CLASS = 'io.gatling.recorder.GatlingRecorder'
 
-    static final String GATLING_JAVA_SOURCES_DIR = "src/gatling/java"
+  static final String GATLING_JAVA_SOURCES_DIR = "src/gatling/java"
 
-    static final String GATLING_SCALA_SOURCES_DIR = "src/gatling/scala"
+  static final String GATLING_SCALA_SOURCES_DIR = "src/gatling/scala"
 
-    static final String GATLING_KOTLIN_SOURCES_DIR = "src/gatling/kotlin"
+  static final String GATLING_KOTLIN_SOURCES_DIR = "src/gatling/kotlin"
 
-    static final String GATLING_RESOURCES_DIR = "src/gatling/resources"
+  static final String GATLING_RESOURCES_DIR = "src/gatling/resources"
 
-    static final String GATLING_VERSION = '3.14.6'
+  static final String GATLING_VERSION = '3.14.6'
 
-    static final String SCALA_VERSION = '2.13.17'
+  static final String SCALA_VERSION = '2.13.17'
 
-    String gatlingVersion = GATLING_VERSION
+  String gatlingVersion = GATLING_VERSION
 
-    String scalaVersion = SCALA_VERSION
+  String scalaVersion = SCALA_VERSION
 
-    List<String> jvmArgs
-    Map systemProperties
-    Map environment = [:]
+  List<String> jvmArgs
+  Map systemProperties
+  Map environment = [:]
 
-    List<String> includes = List.of()
-    List<String> excludes = List.of()
+  List<String> includes = List.of()
+  List<String> excludes = List.of()
 
-    Boolean includeMainOutput = true
-    Boolean includeTestOutput = true
+  Boolean includeMainOutput = true
+  Boolean includeTestOutput = true
 
-    GatlingPluginExtension() {
-        this.jvmArgs = GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING
-        this.systemProperties = DEFAULT_SYSTEM_PROPS
-    }
+  GatlingPluginExtension() {
+    this.jvmArgs = GatlingConstants.DEFAULT_JVM_OPTIONS_GATLING
+    this.systemProperties = DEFAULT_SYSTEM_PROPS
+  }
 }
