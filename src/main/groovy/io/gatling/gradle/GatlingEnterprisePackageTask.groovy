@@ -19,7 +19,7 @@ import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
 import java.util.stream.Collectors
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.*
@@ -32,54 +32,147 @@ abstract class GatlingEnterprisePackageTask extends Jar {
 
   private static final Set<String> EXCLUDED_NETTY_ARTIFACTS = ["netty-all", "netty-resolver-dns-classes-macos", "netty-resolver-dns-native-macos"].asUnmodifiable()
 
-  private static Set<Dependency> toDependencies(Set<ResolvedDependency> deps) {
-    deps.collectMany { resolvedDependency ->
-      resolvedDependency.getModuleArtifacts().collect { moduleArtifact ->
-        new Dependency(
-                resolvedDependency.module.id.group,
-                resolvedDependency.module.id.name,
-                resolvedDependency.module.id.version,
-                moduleArtifact.file
-                )
-      }
-    }.toSet()
-  }
+  @Input
+  String groupId = project.group.toString()
 
-  @Classpath
-  @Optional
-  List<Configuration> configurations
+  @Input
+  String artifactId = project.name
 
-  protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
-  protected final String groupId = project.group.toString()
-  protected final String artifactId = project.name
-  protected final String artifactVersion = project.version.toString()
-  protected final Set<Project> allProjects = project.getAllprojects()
+  @Input
+  String artifactVersion = project.version.toString()
+
+  @Input
+  List<File> classDirectories = getClassDirectories(project)
+
+  @InputDirectory
+  File projectDir = project.getProjectDir()
+
+  @Input
+  Set<SerializableDependency> gatlingDependencies
+
+  @Input
+  Set<SerializableDependency> extraDependencies
 
   GatlingEnterprisePackageTask() {
     outputs.upToDateWhen { false }
+  }
+
+  void init() {
+    Set<ResolvedDependency> firstLevelModuleDependencies = project.configurations.gatlingRuntimeClasspath.resolvedConfiguration.getFirstLevelModuleDependencies()
+
+    Map<SerializableDependency.Id, SerializableDependency> allDependenciesById = collectAllDependencies(firstLevelModuleDependencies)
+    Set<SerializableDependency.Id> gatlingDependencyTree = collectGatlingDependencyTree(firstLevelModuleDependencies)
+
+    gatlingDependencies =
+            gatlingDependencyTree
+            .stream()
+            .map { allDependenciesById.get(it) }
+            .collect(Collectors.toSet())
+
+    extraDependencies =
+            allDependenciesById
+            .entrySet()
+            .stream()
+            .filter { entry -> !gatlingDependencyTree.contains(entry.key)}
+            .map { entry -> entry.value }
+            .collect(Collectors.toSet())
+  }
+
+  private static Map<SerializableDependency.Id, SerializableDependency> collectAllDependencies(Set<ResolvedDependency> firstLevelModuleDependencies) {
+    Map<SerializableDependency.Id, SerializableDependency> acc = new HashMap<>()
+    collectAllDependenciesRec(firstLevelModuleDependencies, acc)
+    return acc
+  }
+
+  private static void collectAllDependenciesRec(Set<ResolvedDependency> dependencies, Map<SerializableDependency.Id, SerializableDependency> acc) {
+    for (dependency in dependencies)
+      if (dependency.module?.id != null) {
+        for (moduleArtifact in dependency.moduleArtifacts) {
+          SerializableDependency.Id id = new SerializableDependency.Id(
+                  dependency.module.id.group,
+                  dependency.module.id.name,
+                  moduleArtifact.classifier,
+                  dependency.module.id.version
+                  )
+          acc.put(id, new SerializableDependency(id, moduleArtifact.file.path))
+        }
+        collectAllDependenciesRec(dependency.children, acc)
+      }
+  }
+
+  private static Set<SerializableDependency.Id> collectGatlingDependencyTree(Set<ResolvedDependency> firstLevelModuleDependencies) {
+    var acc = new HashSet<SerializableDependency.Id>()
+    collectGatlingDependencyTreeRec(
+            firstLevelModuleDependencies,
+            acc,
+            new HashSet<ModuleVersionIdentifier>()
+            )
+    return acc
+  }
+
+  private static void collectGatlingDependencyTreeRec(
+          Set<ResolvedDependency> dependencies,
+          Set<SerializableDependency.Id> acc,
+          Set<ModuleVersionIdentifier> alreadyVisited) {
+
+    for (dependency in dependencies) {
+      if (dependency.module?.id != null) {
+        if (!alreadyVisited.contains(dependency.module.id)) {
+          alreadyVisited.add(dependency.module.id)
+          if (dependency.module.id.group in ["io.gatling", "io.gatling.highcharts"]) {
+            collectAllDependencyTree(dependency, acc)
+          } else if (dependency.module.id.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dependency.module.id.module)) {
+            // so we don't ship them
+            addAllArtifacts(dependency, acc)
+          } else {
+            collectGatlingDependencyTreeRec(dependency.children, acc, alreadyVisited)
+          }
+        }
+      }
+    }
+  }
+
+  private static void addAllArtifacts(ResolvedDependency dependency, Set<SerializableDependency.Id> acc) {
+    acc.addAll(
+            dependency.moduleArtifacts
+            .stream()
+            .map { artifact ->
+              new SerializableDependency.Id(
+                      dependency.module.id.group,
+                      dependency.module.id.name,
+                      artifact.classifier,
+                      dependency.module.id.version
+                      )
+            }.collect(Collectors.toList()))
+  }
+
+  private static void collectAllDependencyTree(ResolvedDependency dependency, Set<SerializableDependency.Id> acc) {
+    addAllArtifacts(dependency, acc)
+    for (child in dependency.children) {
+      collectAllDependencyTree(child, acc)
+    }
   }
 
   @TaskAction
   @Override
   protected void copy() {
     EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
-    Set<ResolvedDependency> firstLevelModuleDependencies = gatlingRuntimeClasspathConfiguration.resolvedConfiguration.getFirstLevelModuleDependencies()
     packager.createEnterprisePackage(
-            getClassDirectories(),
-            collectGatlingDependencies(firstLevelModuleDependencies),
-            collectExtraDependencies(firstLevelModuleDependencies),
+            classDirectories,
+            gatlingDependencies.stream().map { it.toDependency() }.collect(Collectors.toSet()),
+            extraDependencies.stream().map { it.toDependency() }.collect(Collectors.toSet()),
             groupId,
             artifactId,
             artifactVersion,
             'gradle',
             getClass().getPackage().getImplementationVersion(),
             getArchiveFile().get().asFile,
-            project.getProjectDir()
+            projectDir
             )
   }
 
-  private List<File> getClassDirectories() {
-    allProjects.collect { p ->
+  static List<File> getClassDirectories(Project rootProject) {
+    rootProject.getAllprojects().collect { p ->
       JavaPluginExtension javaPluginExtension = p.getExtensions().getByType(JavaPluginExtension.class)
       javaPluginExtension.getSourceSets().collect { sourceSet ->
         sourceSet.output.asList()
@@ -87,45 +180,85 @@ abstract class GatlingEnterprisePackageTask extends Jar {
     }.flatten()
   }
 
-  private void collectGatlingDepsRec(Set<ResolvedDependency> deps, Set<ResolvedDependency> alreadyVisited, Set<ResolvedDependency> gatlingDeps) {
-    for (dep in deps) {
-      if (!alreadyVisited.contains(dep)) {
-        alreadyVisited.add(dep)
-        if (dep?.module?.id?.group in ["io.gatling", "io.gatling.highcharts"]) {
-          collectDepAndChildren(dep, gatlingDeps)
-        } else if (dep?.module?.id?.group == "io.netty" && EXCLUDED_NETTY_ARTIFACTS.contains(dep?.module?.id?.name)) {
-          gatlingDeps.add(dep)
-        } else {
-          collectGatlingDepsRec(dep.children, alreadyVisited, gatlingDeps)
-        }
+  static class SerializableDependency implements Serializable {
+    static class Id implements Serializable {
+      String groupId
+      String artifactId
+      String classifier
+      String version
+
+      Id(
+      String groupId,
+      String artifactId,
+      String classifier,
+      String version
+      ) {
+        this.groupId = Objects.requireNonNull(groupId)
+        this.artifactId = Objects.requireNonNull(artifactId)
+        this.classifier = classifier
+        this.version = Objects.requireNonNull(version)
+      }
+
+      boolean equals(o) {
+        if (this.is(o)) return true
+        if (!(o instanceof Id)) return false
+
+        Id that = (Id) o
+
+        if (artifactId != that.artifactId) return false
+        if (classifier != that.classifier) return false
+        if (groupId != that.groupId) return false
+        if (version != that.version) return false
+
+        return true
+      }
+
+      int hashCode() {
+        int result
+        result = groupId.hashCode()
+        result = 31 * result + artifactId.hashCode()
+        result = 31 * result + (classifier != null ? classifier.hashCode() : 0)
+        result = 31 * result + version.hashCode()
+        return result
       }
     }
-  }
 
-  private void collectDepAndChildren(ResolvedDependency dep, Set<ResolvedDependency> gatlingDeps) {
-    if (!gatlingDeps.contains(dep)) {
-      gatlingDeps.add(dep)
-      for (child in dep.children) {
-        collectDepAndChildren(child, gatlingDeps)
-      }
+    Id id
+    String file
+
+    SerializableDependency(
+    Id id,
+    String file
+    ) {
+      this.id = Objects.requireNonNull(id)
+      this.file = Objects.requireNonNull(file)
     }
-  }
 
-  private Set<Dependency> collectAllDependencies(Set<ResolvedDependency> firstLevelDependencies) {
-    Set<ResolvedDependency> deps = new HashSet<>()
-    for (dependency in firstLevelDependencies) {
-      collectDepAndChildren(dependency, deps)
+    Dependency toDependency() {
+      return new Dependency(
+              id.groupId,
+              id.artifactId,
+              id.version,
+              new File(file)
+              )
     }
-    return toDependencies(deps)
-  }
 
-  private Set<Dependency> collectGatlingDependencies(Set<ResolvedDependency> firstLevelDependencies) {
-    Set<ResolvedDependency> deps = new HashSet<>()
-    collectGatlingDepsRec(firstLevelDependencies, new HashSet<>(), deps)
-    toDependencies(deps)
-  }
+    boolean equals(o) {
+      if (this.is(o)) return true
+      if (!(o instanceof SerializableDependency)) return false
 
-  private Set<Dependency> collectExtraDependencies(Set<ResolvedDependency> firstLevelDependencies) {
-    return collectAllDependencies(firstLevelDependencies) - collectGatlingDependencies(firstLevelDependencies)
+      SerializableDependency that = (SerializableDependency) o
+
+      if (id != that.id) return false
+      if (file != that.file) return false
+      return true
+    }
+
+    int hashCode() {
+      int result
+      result = id.hashCode()
+      result = 31 * result + file.hashCode()
+      return result
+    }
   }
 }
