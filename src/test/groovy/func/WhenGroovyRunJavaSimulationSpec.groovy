@@ -28,8 +28,29 @@ class WhenGroovyRunJavaSimulationSpec extends GatlingFuncSpec {
     prepareGroovyTestWithJava("/gradle-layout")
     when:
     BuildResult result = executeGradle(GATLING_RUN_TASK_NAME, "--non-interactive", "--simulation=example.BasicSimulation")
-    then: "custom task was run successfully"
+    then: "task with args was run successfully"
     result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
+    and: "only one simulation was executed"
+    new File(buildDir, "reports/gatling").listFiles().size() == 1
+    and: "logs doesn't contain INFO"
+    !result.output.split().any { it.contains("INFO") }
+  }
+
+  def "should support creating a custom task based on GatlingRunTask"() {
+    var gatlingRunTaskCustomName = "gatlingRunTaskCustom"
+
+    setup:
+    prepareGroovyTestWithJava("/gradle-layout")
+    buildFile.append """
+tasks.register('$gatlingRunTaskCustomName', io.gatling.gradle.GatlingRunTask) {
+    dependsOn(project.tasks.named("gatlingClasses"))
+    simulationClassName = "example.BasicSimulation"
+}
+"""
+    when:
+    BuildResult result = executeGradle(gatlingRunTaskCustomName, "--non-interactive")
+    then: "custom task was run successfully"
+    result.task(":$gatlingRunTaskCustomName").outcome == SUCCESS
     and: "only one simulation was executed"
     new File(buildDir, "reports/gatling").listFiles().size() == 1
     and: "logs doesn't contain INFO"

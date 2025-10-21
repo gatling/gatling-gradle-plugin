@@ -82,7 +82,7 @@ class GatlingRunTask extends DefaultTask {
 
   @InputFiles
   @Classpath
-  FileCollection gatlingRuntimeClasspath
+  FileCollection gatlingRuntimeClasspath = project.configurations.gatlingRuntimeClasspath
 
   @OutputDirectory
   File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()

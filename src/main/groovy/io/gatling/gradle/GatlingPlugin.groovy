@@ -44,7 +44,6 @@ final class GatlingPlugin implements Plugin<Project> {
     }
 
     project.tasks.register(GATLING_RUN_TASK_NAME, GatlingRunTask.class) {runTask ->
-      runTask.gatlingRuntimeClasspath = project.configurations.gatlingRuntimeClasspath
       dependsOn(project.tasks.named("gatlingClasses"))
       description = "Execute Gatling simulations locally"
       group = "Gatling"
