@@ -7,12 +7,9 @@ plugins {
 
 group = "gradle.plugin.io.gatling.gradle"
 
-compileJava {
-  options.release = 11
-}
-
 compileGroovy {
-  options.release = 11
+  sourceCompatibility = 11
+  targetCompatibility = 11
 }
 
 java {
