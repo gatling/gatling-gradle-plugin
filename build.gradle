@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-  implementation "io.gatling:gatling-enterprise-plugin-commons:1.20.5"
+  implementation "io.gatling:gatling-enterprise-plugin-commons:1.20.6"
   implementation "io.gatling:gatling-shared-cli:0.0.6"
 
   testImplementation('org.spockframework:spock-core:2.3-groovy-4.0') {
