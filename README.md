@@ -37,8 +37,8 @@ Steps to be able to dev test this plugin:
       mavenCentral()
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
     ```
 
 ### With maven-publish plugin
