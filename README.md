@@ -30,15 +30,13 @@ Steps to be able to dev test this plugin:
 
     ```groovy
     plugins {
+      id "java"
       id "io.gatling.gradle"
     }
 
     repositories {
       mavenCentral()
     }
-
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
     ```
 
 ### With maven-publish plugin
