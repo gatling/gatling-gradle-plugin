@@ -80,23 +80,30 @@ abstract class GatlingEnterprisePackageTask extends Jar {
 
   private static Map<SerializableDependency.Id, SerializableDependency> collectAllDependencies(Set<ResolvedDependency> firstLevelModuleDependencies) {
     Map<SerializableDependency.Id, SerializableDependency> acc = new HashMap<>()
-    collectAllDependenciesRec(firstLevelModuleDependencies, acc)
+    collectAllDependenciesRec(firstLevelModuleDependencies, acc, new HashSet<ResolvedDependency>())
     return acc
   }
 
-  private static void collectAllDependenciesRec(Set<ResolvedDependency> dependencies, Map<SerializableDependency.Id, SerializableDependency> acc) {
+  private static void collectAllDependenciesRec(
+          Set<ResolvedDependency> dependencies,
+          Map<SerializableDependency.Id, SerializableDependency> acc,
+          Set<ResolvedDependency> alreadyVisited) {
+
     for (dependency in dependencies)
       if (dependency.module?.id != null) {
-        for (moduleArtifact in dependency.moduleArtifacts) {
-          SerializableDependency.Id id = new SerializableDependency.Id(
-                  dependency.module.id.group,
-                  dependency.module.id.name,
-                  moduleArtifact.classifier,
-                  dependency.module.id.version
-                  )
-          acc.put(id, new SerializableDependency(id, moduleArtifact.file.path))
+        if (!alreadyVisited.contains(dependency)) {
+          alreadyVisited.add(dependency)
+          for (moduleArtifact in dependency.moduleArtifacts) {
+            SerializableDependency.Id id = new SerializableDependency.Id(
+                    dependency.module.id.group,
+                    dependency.module.id.name,
+                    moduleArtifact.classifier,
+                    dependency.module.id.version
+                    )
+            acc.put(id, new SerializableDependency(id, moduleArtifact.file.path))
+          }
+          collectAllDependenciesRec(dependency.children, acc, alreadyVisited)
         }
-        collectAllDependenciesRec(dependency.children, acc)
       }
   }
 
