@@ -24,9 +24,8 @@ import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.Jar
-import org.gradle.work.DisableCachingByDefault
 
-@DisableCachingByDefault(because = "Must always run, target file is configured environment variable in enterprise packager")
+@CacheableTask
 // abstract because https://docs.gradle.org/current/userguide/upgrading_major_version_9.html#injection_getters_are_now_abstract
 abstract class GatlingEnterprisePackageTask extends Jar {
 
@@ -41,20 +40,25 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   @Input
   String artifactVersion = project.version.toString()
 
-  @Input
+  @Classpath
   List<File> classDirectories = getClassDirectories(project)
 
-  @InputDirectory
+  @Internal("only used to determine Git metadata (branch name and sha) which should not require task re-execution")
   File projectDir = project.getProjectDir()
 
-  @Input
+  @Nested
   Set<SerializableDependency> gatlingDependencies
 
-  @Input
+  @Nested
   Set<SerializableDependency> extraDependencies
 
   GatlingEnterprisePackageTask() {
-    outputs.upToDateWhen { false }
+    def envPackagePath = System.getenv("GATLING_ENTERPRISE_BUILDER_PACKAGE_PATH")
+    if (envPackagePath != null) {
+      def packagePath = new File(envPackagePath).absoluteFile
+      destinationDirectory.fileValue(packagePath.parentFile)
+      archiveFileName.set(packagePath.name)
+    }
   }
 
   void init() {
@@ -79,7 +83,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   }
 
   private static Map<SerializableDependency.Id, SerializableDependency> collectAllDependencies(Set<ResolvedDependency> firstLevelModuleDependencies) {
-    Map<SerializableDependency.Id, SerializableDependency> acc = new HashMap<>()
+    Map<SerializableDependency.Id, SerializableDependency> acc = new LinkedHashMap<>()
     collectAllDependenciesRec(firstLevelModuleDependencies, acc, new HashSet<ResolvedDependency>())
     return acc
   }
@@ -108,7 +112,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   }
 
   private static Set<SerializableDependency.Id> collectGatlingDependencyTree(Set<ResolvedDependency> firstLevelModuleDependencies) {
-    var acc = new HashSet<SerializableDependency.Id>()
+    var acc = new LinkedHashSet<SerializableDependency.Id>()
     collectGatlingDependencyTreeRec(
             firstLevelModuleDependencies,
             acc,
@@ -206,6 +210,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
         this.version = Objects.requireNonNull(version)
       }
 
+      @Override
       boolean equals(o) {
         if (this.is(o)) return true
         if (!(o instanceof Id)) return false
@@ -220,6 +225,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
         return true
       }
 
+      @Override
       int hashCode() {
         int result
         result = groupId.hashCode()
@@ -230,7 +236,10 @@ abstract class GatlingEnterprisePackageTask extends Jar {
       }
     }
 
+    @Input
     Id id
+
+    @Classpath
     String file
 
     SerializableDependency(
@@ -250,6 +259,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
               )
     }
 
+    @Override
     boolean equals(o) {
       if (this.is(o)) return true
       if (!(o instanceof SerializableDependency)) return false
@@ -261,6 +271,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
       return true
     }
 
+    @Override
     int hashCode() {
       int result
       result = id.hashCode()
