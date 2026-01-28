@@ -7,15 +7,18 @@ plugins {
 
 group = "gradle.plugin.io.gatling.gradle"
 
-compileGroovy {
-  sourceCompatibility = 11
-  targetCompatibility = 11
-}
-
 java {
   toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
+
+tasks {
+  test {
     // highest Java version supported by the current Gradle range we support (see GatlingFuncSpec)
-    languageVersion.set(JavaLanguageVersion.of(21))
+    javaLauncher.set(javaToolchains.launcherFor {
+      languageVersion.set(JavaLanguageVersion.of(21))
+    })
   }
 }
 
