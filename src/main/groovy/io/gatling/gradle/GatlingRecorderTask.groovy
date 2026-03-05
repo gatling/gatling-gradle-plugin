@@ -24,7 +24,9 @@ import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.gradle.process.JavaExecSpec
 import org.gradle.process.internal.ExecException
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault(because = "Launching the recorder is not a cacheable task")
 class GatlingRecorderTask extends DefaultTask {
 
   @Input

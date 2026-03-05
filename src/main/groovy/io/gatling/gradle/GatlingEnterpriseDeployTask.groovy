@@ -20,7 +20,9 @@ import io.gatling.plugin.deployment.DeploymentConfiguration
 import io.gatling.plugin.model.DeploymentInfo
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault(because = "Deploying a package on Gatling Enterprise is not a cacheable task")
 class GatlingEnterpriseDeployTask extends DefaultTask {
 
   protected DeploymentInfo deploymentInfo

@@ -37,7 +37,9 @@ import org.gradle.process.ExecOperations
 import org.gradle.process.ExecResult
 import org.gradle.process.JavaExecSpec
 import org.gradle.util.GradleVersion
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault(because = "Running a Gatling test locally is not a cacheable task")
 class GatlingRunTask extends DefaultTask {
 
   @Input

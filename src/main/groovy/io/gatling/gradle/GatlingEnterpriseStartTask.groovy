@@ -21,7 +21,9 @@ import io.gatling.plugin.model.RunSummary
 import io.gatling.plugin.model.SimulationEndResult
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
+import org.gradle.work.DisableCachingByDefault
 
+@DisableCachingByDefault(because = "Deploying a package on Gatling Enterprise is not a cacheable task")
 class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
 
   @TaskAction
