@@ -19,6 +19,7 @@ import io.gatling.plugin.EnterprisePlugin
 import io.gatling.plugin.model.RunComment
 import io.gatling.plugin.model.RunSummary
 import io.gatling.plugin.model.SimulationEndResult
+import io.gatling.plugin.util.WebAppUrlRenderer
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.TaskAction
 
@@ -36,11 +37,11 @@ class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
       final RunSummary runSummary = enterprisePlugin.startSimulation(gatlingExt.enterprise.simulationName, deploymentInfo, runComment)
       logger.lifecycle("""
                          |Simulation successfully started.
-                         |Reports are available at: ${gatlingExt.enterprise.webAppUrl.toExternalForm() + runSummary.reportsPath}
+                         |Reports are available at: ${WebAppUrlRenderer.toWebAppUrl(gatlingExt.enterprise.webAppUrl, runSummary.reportsUrl)}
                          |""".stripMargin())
       if (waitForRunEnd) {
         SimulationEndResult finishedRun = enterprisePlugin.waitForRunEnd(runSummary)
-        if (!finishedRun.status.successful) {
+        if (!finishedRun.successful) {
           throw new GradleException("Simulation failed.")
         }
       }
