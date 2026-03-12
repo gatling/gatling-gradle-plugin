@@ -6,6 +6,7 @@ plugins {
 }
 
 group = "gradle.plugin.io.gatling.gradle"
+version = "3.15.0.1"
 
 java {
   toolchain {
@@ -34,7 +35,7 @@ repositories {
 }
 
 dependencies {
-  implementation "io.gatling:gatling-enterprise-plugin-commons:1.23.0"
+  implementation "io.gatling:gatling-enterprise-plugin-commons:1.24.0"
   implementation "io.gatling:gatling-shared-cli:0.0.6"
 
   testImplementation('org.spockframework:spock-core:2.3-groovy-4.0') {
