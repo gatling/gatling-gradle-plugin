@@ -188,7 +188,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
       javaPluginExtension.getSourceSets().collect { sourceSet ->
         sourceSet.output.asList()
       }
-    }.flatten()
+    }.flatten() as List<File>
   }
 
   static class SerializableDependency implements Serializable {
