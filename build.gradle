@@ -6,7 +6,6 @@ plugins {
 }
 
 group = "gradle.plugin.io.gatling.gradle"
-version = "3.15.0.1"
 
 java {
   toolchain {
