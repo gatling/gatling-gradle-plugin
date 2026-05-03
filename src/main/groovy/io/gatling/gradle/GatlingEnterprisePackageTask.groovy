@@ -99,10 +99,12 @@ abstract class GatlingEnterprisePackageTask extends Jar {
           alreadyVisited.add(dependency)
           for (moduleArtifact in dependency.moduleArtifacts) {
             Dependency dep = new Dependency(
+                    new Dependency.Id(
                     dependency.module.id.group,
                     dependency.module.id.name,
                     dependency.module.id.version,
-                    moduleArtifact.classifier,
+                    moduleArtifact.classifier
+                    ),
                     moduleArtifact.file
                     )
             acc.put(dep.id, dep)
