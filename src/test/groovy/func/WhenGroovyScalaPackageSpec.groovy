@@ -24,7 +24,6 @@ import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 import helper.GatlingFuncSpec
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import spock.lang.PendingFeature
 import spock.lang.TempDir
 import spock.lang.Unroll
 
@@ -120,6 +119,62 @@ class WhenGroovyScalaPackageSpec extends GatlingFuncSpec {
 
     then: "the package task is from-cache"
     result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == FROM_CACHE
+
+    where:
+    gradleVersion << SUPPORTED_GRADLE_VERSIONS
+  }
+
+  @Unroll
+  def "package task should not be up-to-date when dependencies change #gradleVersion"() {
+    given: "the package has been built"
+    build(gradleVersion, [ENTERPRISE_PACKAGE_TASK_NAME])
+
+    when: "changing the version of a dependency"
+    buildFile << """
+      dependencies {
+        constraints {
+          gatling("commons-lang:commons-lang") {
+            version {
+              strictly("2.6")
+            }
+          }
+        }
+      }
+    """
+
+    and: "building the package again"
+    def result = build(gradleVersion, [ENTERPRISE_PACKAGE_TASK_NAME])
+
+    then: "the package task is not up-to-date"
+    result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
+
+    where:
+    gradleVersion << SUPPORTED_GRADLE_VERSIONS
+  }
+
+  @Unroll
+  def "package task should not be from-cache when dependencies change #gradleVersion"() {
+    given: "the package has been built"
+    build(gradleVersion, ['--build-cache', ENTERPRISE_PACKAGE_TASK_NAME])
+
+    when: "changing the version of a dependency"
+    buildFile << """
+      dependencies {
+        constraints {
+          gatling("commons-lang:commons-lang") {
+            version {
+              strictly("2.6")
+            }
+          }
+        }
+      }
+    """
+
+    and: "building the package again with clean"
+    def result = build(gradleVersion, ['--build-cache', 'clean', ENTERPRISE_PACKAGE_TASK_NAME])
+
+    then: "the package task is not from-cache"
+    result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
 
     where:
     gradleVersion << SUPPORTED_GRADLE_VERSIONS

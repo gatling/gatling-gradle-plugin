@@ -68,7 +68,7 @@ repositories {
 }
 
 dependencies {
-  gatling group: 'commons-lang', name: 'commons-lang', version: '2.6'
+  gatling group: 'commons-lang', name: 'commons-lang', version: '2.5'
   gatling group: 'org.json4s', name: 'json4s-jackson_2.13', version: '3.6.10'
 }
 """
@@ -103,7 +103,7 @@ repositories {
 }
 
 dependencies {
-  gatling("commons-lang:commons-lang:2.6")
+  gatling("commons-lang:commons-lang:2.5")
   gatling("org.json4s:json4s-jackson_2.13:3.6.10")
 }
 """
