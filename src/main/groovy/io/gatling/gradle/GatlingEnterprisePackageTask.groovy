@@ -47,10 +47,10 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   File projectDir = project.getProjectDir()
 
   @Nested
-  Set<Dependency> gatlingDependencies
+  Set<SerializableDependency> gatlingDependencies
 
   @Nested
-  Set<Dependency> extraDependencies
+  Set<SerializableDependency> extraDependencies
 
   GatlingEnterprisePackageTask() {
     def envPackagePath = System.getenv("GATLING_ENTERPRISE_BUILDER_PACKAGE_PATH")
@@ -64,8 +64,8 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   void init() {
     Set<ResolvedDependency> firstLevelModuleDependencies = project.configurations.gatlingRuntimeClasspath.resolvedConfiguration.getFirstLevelModuleDependencies()
 
-    Map<Dependency.Id, Dependency> allDependenciesById = collectAllDependencies(firstLevelModuleDependencies)
-    Set<Dependency.Id> gatlingDependencyTree = collectGatlingDependencyTree(firstLevelModuleDependencies)
+    Map<SerializableDependency.Id, SerializableDependency> allDependenciesById = collectAllDependencies(firstLevelModuleDependencies)
+    Set<SerializableDependency.Id> gatlingDependencyTree = collectGatlingDependencyTree(firstLevelModuleDependencies)
 
     gatlingDependencies =
             gatlingDependencyTree
@@ -82,15 +82,15 @@ abstract class GatlingEnterprisePackageTask extends Jar {
             .collect(Collectors.toSet())
   }
 
-  private static Map<Dependency.Id, Dependency> collectAllDependencies(Set<ResolvedDependency> firstLevelModuleDependencies) {
-    Map<Dependency.Id, Dependency> acc = new LinkedHashMap<>()
+  private static Map<SerializableDependency.Id, SerializableDependency> collectAllDependencies(Set<ResolvedDependency> firstLevelModuleDependencies) {
+    Map<SerializableDependency.Id, SerializableDependency> acc = new LinkedHashMap<>()
     collectAllDependenciesRec(firstLevelModuleDependencies, acc, new HashSet<ResolvedDependency>())
     return acc
   }
 
   private static void collectAllDependenciesRec(
           Set<ResolvedDependency> dependencies,
-          Map<Dependency.Id, Dependency> acc,
+          Map<SerializableDependency.Id, SerializableDependency> acc,
           Set<ResolvedDependency> alreadyVisited) {
 
     for (dependency in dependencies)
@@ -98,14 +98,14 @@ abstract class GatlingEnterprisePackageTask extends Jar {
         if (!alreadyVisited.contains(dependency)) {
           alreadyVisited.add(dependency)
           for (moduleArtifact in dependency.moduleArtifacts) {
-            Dependency dep = new Dependency(
-                    new Dependency.Id(
+            SerializableDependency dep = new SerializableDependency(
+                    new SerializableDependency.Id(
                     dependency.module.id.group,
                     dependency.module.id.name,
                     dependency.module.id.version,
                     moduleArtifact.classifier
                     ),
-                    moduleArtifact.file
+                    moduleArtifact.file.path
                     )
             acc.put(dep.id, dep)
           }
@@ -114,8 +114,8 @@ abstract class GatlingEnterprisePackageTask extends Jar {
       }
   }
 
-  private static Set<Dependency.Id> collectGatlingDependencyTree(Set<ResolvedDependency> firstLevelModuleDependencies) {
-    var acc = new LinkedHashSet<Dependency.Id>()
+  private static Set<SerializableDependency.Id> collectGatlingDependencyTree(Set<ResolvedDependency> firstLevelModuleDependencies) {
+    var acc = new LinkedHashSet<SerializableDependency.Id>()
     collectGatlingDependencyTreeRec(
             firstLevelModuleDependencies,
             acc,
@@ -126,7 +126,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
 
   private static void collectGatlingDependencyTreeRec(
           Set<ResolvedDependency> dependencies,
-          Set<Dependency.Id> acc,
+          Set<SerializableDependency.Id> acc,
           Set<ModuleVersionIdentifier> alreadyVisited) {
 
     for (dependency in dependencies) {
@@ -146,12 +146,12 @@ abstract class GatlingEnterprisePackageTask extends Jar {
     }
   }
 
-  private static void addAllArtifacts(ResolvedDependency dependency, Set<Dependency.Id> acc) {
+  private static void addAllArtifacts(ResolvedDependency dependency, Set<SerializableDependency.Id> acc) {
     acc.addAll(
             dependency.moduleArtifacts
             .stream()
             .map { artifact ->
-              new Dependency.Id(
+              new SerializableDependency.Id(
                       dependency.module.id.group,
                       dependency.module.id.name,
                       dependency.module.id.version,
@@ -160,7 +160,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
             }.collect(Collectors.toList()))
   }
 
-  private static void collectAllDependencyTree(ResolvedDependency dependency, Set<Dependency.Id> acc) {
+  private static void collectAllDependencyTree(ResolvedDependency dependency, Set<SerializableDependency.Id> acc) {
     addAllArtifacts(dependency, acc)
     for (child in dependency.children) {
       collectAllDependencyTree(child, acc)
@@ -173,8 +173,8 @@ abstract class GatlingEnterprisePackageTask extends Jar {
     EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
     packager.createEnterprisePackage(
             classDirectories,
-            gatlingDependencies,
-            extraDependencies,
+            gatlingDependencies.stream().map { it.toDependency() }.collect(Collectors.toSet()),
+            extraDependencies.stream().map { it.toDependency() }.collect(Collectors.toSet()),
             groupId,
             artifactId,
             artifactVersion,
@@ -192,5 +192,97 @@ abstract class GatlingEnterprisePackageTask extends Jar {
         sourceSet.output.asList()
       }
     }.flatten() as List<File>
+  }
+
+  static class SerializableDependency implements Serializable {
+    static class Id implements Serializable {
+      String groupId
+      String artifactId
+      String version
+      String classifier
+
+      Id(
+      String groupId,
+      String artifactId,
+      String version,
+      String classifier
+      ) {
+        this.groupId = Objects.requireNonNull(groupId)
+        this.artifactId = Objects.requireNonNull(artifactId)
+        this.version = Objects.requireNonNull(version)
+        this.classifier = classifier
+      }
+
+      @Override
+      boolean equals(o) {
+        if (this.is(o)) return true
+        if (!(o instanceof Id)) return false
+
+        Id that = (Id) o
+
+        if (artifactId != that.artifactId) return false
+        if (classifier != that.classifier) return false
+        if (groupId != that.groupId) return false
+        if (version != that.version) return false
+
+        return true
+      }
+
+      @Override
+      int hashCode() {
+        int result
+        result = groupId.hashCode()
+        result = 31 * result + artifactId.hashCode()
+        result = 31 * result + (classifier != null ? classifier.hashCode() : 0)
+        result = 31 * result + version.hashCode()
+        return result
+      }
+    }
+
+    @Input
+    Id id
+
+    @Classpath
+    String file
+
+    SerializableDependency(
+    Id id,
+    String file
+    ) {
+      this.id = Objects.requireNonNull(id)
+      this.file = Objects.requireNonNull(file)
+    }
+
+    Dependency toDependency() {
+      return new Dependency(
+              new Dependency.Id(
+              id.groupId,
+              id.artifactId,
+              id.version,
+              id.classifier
+              ),
+              new File(file)
+              )
+    }
+
+    @Override
+    boolean equals(o) {
+      if (this.is(o)) return true
+      if (!(o instanceof SerializableDependency)) return false
+
+      SerializableDependency that = (SerializableDependency) o
+
+      if (id != that.id) return false
+      if (file != that.file) return false
+      return true
+    }
+
+    @Override
+    int hashCode() {
+      int result
+      result = id.hashCode()
+      result = 31 * result + file.hashCode()
+      return result
+    }
   }
 }
