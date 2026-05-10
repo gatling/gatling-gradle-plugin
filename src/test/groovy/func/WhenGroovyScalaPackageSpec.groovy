@@ -180,6 +180,44 @@ class WhenGroovyScalaPackageSpec extends GatlingFuncSpec {
     gradleVersion << SUPPORTED_GRADLE_VERSIONS
   }
 
+  @Unroll
+  def "package task should compute dependencies lazily #gradleVersion"() {
+    given: "a dependency is added after the task is initialized"
+    buildFile << """
+      tasks.$ENTERPRISE_PACKAGE_TASK_NAME {
+        // force creation of task
+      }
+      afterEvaluate {
+        dependencies {
+          gatlingImplementation 'commons-io:commons-io:2.20.0'
+        }
+      }
+    """
+
+    when: "building the package"
+    def result = build(gradleVersion, ['clean', ENTERPRISE_PACKAGE_TASK_NAME])
+
+    then: "the package task is successful"
+    result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
+
+    where:
+    gradleVersion << SUPPORTED_GRADLE_VERSIONS
+  }
+
+  @Unroll
+  def "package task is compatible with the configuration cache #gradleVersion"() {
+    when: "building the package twice"
+    build(gradleVersion, ['clean', ENTERPRISE_PACKAGE_TASK_NAME, '--configuration-cache'])
+    def result = build(gradleVersion, ['clean', ENTERPRISE_PACKAGE_TASK_NAME, '--configuration-cache'])
+
+    then: "the package task is successful and the configuration cache is reused"
+    result.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
+    result.output.contains('Reusing configuration cache')
+
+    where:
+    gradleVersion << (SUPPORTED_GRADLE_VERSIONS - ['8.4'])
+  }
+
   private BuildResult build(String gradleVersion, List<String> gradleArgs, @DelegatesTo(GradleRunner) Closure<?> configuration = {}) {
     def gradleRunner = createRunner(*gradleArgs)
             .withGradleVersion(gradleVersion)
