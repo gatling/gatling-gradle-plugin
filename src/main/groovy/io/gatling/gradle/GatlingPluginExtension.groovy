@@ -321,7 +321,7 @@ class GatlingPluginExtension {
 
   static final String GATLING_RESOURCES_DIR = "src/gatling/resources"
 
-  static final String GATLING_VERSION = '3.15.0'
+  static final String GATLING_VERSION = '3.15.1'
 
   static final String SCALA_VERSION = '2.13.18'
 
