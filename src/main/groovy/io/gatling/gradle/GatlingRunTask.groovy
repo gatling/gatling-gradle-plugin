@@ -79,7 +79,7 @@ class GatlingRunTask extends DefaultTask {
    * href="https://docs.gradle.org/current/userguide/build_environment.html#environment_variables_reference">JAVA_OPTS env var</a>.
    */
   @Input
-  @Option(option = "same-process", description = "Run gatling in the Gradle process for debugging")
+  @Option(option = "same-process", description = "Run Gatling in the Gradle process for debugging")
   boolean runInSameProcess
 
   @InputFiles
