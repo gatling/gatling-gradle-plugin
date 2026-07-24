@@ -70,6 +70,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
     EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
     packager.createEnterprisePackage(
             classDirectories,
+            [],
             deps.gatling.stream().map { it.toDependency() }.collect(Collectors.toSet()),
             deps.extra.stream().map { it.toDependency() }.collect(Collectors.toSet()),
             groupId,
