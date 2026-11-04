@@ -68,8 +68,8 @@ repositories {
 }
 
 dependencies {
-  gatling group: 'commons-lang', name: 'commons-lang', version: '2.5'
-  gatling group: 'org.json4s', name: 'json4s-jackson_2.13', version: '3.6.10'
+  gatling 'commons-lang:commons-lang:2.5'
+  gatling 'org.json4s:json4s-jackson_2.13:3.6.10'
 }
 """
         break
@@ -87,8 +87,8 @@ dependencies {
             break
           case SimulationLanguage.KOTLIN:
             languagePlugin = """
-    kotlin("jvm") version "1.9.22"
-    kotlin("plugin.allopen") version "1.9.22"
+    kotlin("jvm") version "2.4.21"
+    kotlin("plugin.allopen") version "2.4.21"
 """
         }
 
