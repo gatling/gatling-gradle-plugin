@@ -17,6 +17,7 @@ package io.gatling.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.TaskProvider
 
 final class GatlingPlugin implements Plugin<Project> {
@@ -74,10 +75,20 @@ final class GatlingPlugin implements Plugin<Project> {
   }
 
   private static TaskProvider<GatlingEnterprisePackageTask> registerEnterprisePackageTask(Project project) {
-    project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {packageTask ->
+    def packageTask = project.tasks.register(ENTERPRISE_PACKAGE_TASK_NAME, GatlingEnterprisePackageTask.class) {
       dependsOn(project.tasks.named("gatlingClasses"))
-      packageTask.archiveClassifier.set("tests")
+      archiveClassifier.set("tests")
     }
+    project.allprojects { candidate ->
+      candidate.pluginManager.withPlugin("java-base") {
+        candidate.extensions.getByType(JavaPluginExtension).sourceSets.all { sourceSet ->
+          packageTask.configure {
+            classDirectories.from(sourceSet.output)
+          }
+        }
+      }
+    }
+    return packageTask
   }
 
   private void createConfiguration(Project project) {
