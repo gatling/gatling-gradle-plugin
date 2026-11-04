@@ -22,6 +22,7 @@ import static org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 
 import helper.GatlingFuncSpec
+import java.util.zip.ZipFile
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import spock.lang.TempDir
@@ -49,6 +50,14 @@ class WhenGroovyScalaPackageSpec extends GatlingFuncSpec {
 
     and: "artifact was created"
     artifact.isFile()
+    new ZipFile(artifact).withCloseable { archive ->
+      [
+        'example/BasicSimulation.class',
+        'example/MainUtils.class',
+        'example/TestUtils.class',
+        'search.csv'
+      ].every { archive.getEntry(it) != null }
+    }
 
     where:
     gradleVersion << SUPPORTED_GRADLE_VERSIONS

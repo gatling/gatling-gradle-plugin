@@ -19,11 +19,10 @@ import groovy.transform.EqualsAndHashCode
 import io.gatling.plugin.pkg.Dependency
 import io.gatling.plugin.pkg.EnterprisePackager
 import java.util.stream.Collectors
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ModuleVersionIdentifier
 import org.gradle.api.artifacts.ResolvedDependency
-import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.gradle.jvm.tasks.Jar
@@ -44,7 +43,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   String artifactVersion = project.version.toString()
 
   @Classpath
-  List<File> classDirectories = getClassDirectories(project)
+  final ConfigurableFileCollection classDirectories = project.objects.fileCollection()
 
   @Internal("only used to determine Git metadata (branch name and sha) which should not require task re-execution")
   File projectDir = project.getProjectDir()
@@ -69,7 +68,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
     def deps = dependencies.get()
     EnterprisePackager packager = new EnterprisePackager(new GradlePluginIO(logger).getLogger())
     packager.createEnterprisePackage(
-            classDirectories,
+            classDirectories.files.toList(),
             [],
             deps.gatling.stream().map { it.toDependency() }.collect(Collectors.toSet()),
             deps.extra.stream().map { it.toDependency() }.collect(Collectors.toSet()),
@@ -81,15 +80,6 @@ abstract class GatlingEnterprisePackageTask extends Jar {
             getArchiveFile().get().asFile,
             projectDir
             )
-  }
-
-  static List<File> getClassDirectories(Project rootProject) {
-    rootProject.getAllprojects().collect { p ->
-      JavaPluginExtension javaPluginExtension = p.getExtensions().getByType(JavaPluginExtension.class)
-      javaPluginExtension.getSourceSets().collect { sourceSet ->
-        sourceSet.output.asList()
-      }
-    }.flatten() as List<File>
   }
 
   static class Dependencies implements Serializable {
