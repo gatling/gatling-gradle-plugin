@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package helper
+package helper;
 
-enum SimulationLanguage {
-  JAVA, SCALA, KOTLIN
+public enum SimulationLanguage {
+  JAVA,
+  SCALA,
+  KOTLIN
 }

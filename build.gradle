@@ -1,6 +1,5 @@
 plugins {
   id 'java-gradle-plugin'
-  id 'groovy'
   id 'com.gradle.plugin-publish' version "2.0.0"
   id("com.diffplug.spotless") version "8.0.0"
 }
@@ -20,7 +19,7 @@ tasks {
     options.release.set(11)
   }
   test {
-    // highest Java version supported by the current Gradle range we support (see GatlingFuncSpec)
+    // highest Java version supported by the current Gradle range we support (see GatlingFuncTestBase)
     javaLauncher.set(javaToolchains.launcherFor {
       languageVersion.set(JavaLanguageVersion.of(21))
     })
@@ -42,11 +41,9 @@ dependencies {
   implementation "io.gatling:gatling-enterprise-plugin-commons:1.26.1"
   implementation "io.gatling:gatling-shared-cli:0.0.6"
 
-  testImplementation('org.spockframework:spock-core:2.3-groovy-4.0') {
-    exclude module: 'groovy'
-  }
-  testImplementation 'org.spockframework:spock-junit4:2.3-groovy-4.0'
   testImplementation "org.junit.jupiter:junit-jupiter:5.12.2"
+  testImplementation "org.assertj:assertj-core:3.27.3"
+  testImplementation "com.fasterxml.jackson.core:jackson-databind:2.22.2"
   testRuntimeOnly "org.junit.platform:junit-platform-launcher:1.12.2"
   testImplementation "commons-io:commons-io:2.19.0"
 }
@@ -58,8 +55,6 @@ test {
     showStandardStreams = false
   }
   useJUnitPlatform()
-  // required for Spock, see https://docs.gradle.org/current/userguide/upgrading_version_7.html#remove_test_add_opens
-  jvmArgs = ["--add-opens=java.base/java.util=ALL-UNNAMED"]
 }
 
 gradlePlugin {
@@ -79,12 +74,6 @@ gradlePlugin {
 spotless {
   java {
     googleJavaFormat()
-    licenseHeaderFile("src/etc/header.txt")
-  }
-  groovy {
-    importOrder()
-    removeSemicolons()
-    greclipse().configFile(rootProject.files("src/etc/greclipse.properties"))
     licenseHeaderFile("src/etc/header.txt")
   }
   groovyGradle {

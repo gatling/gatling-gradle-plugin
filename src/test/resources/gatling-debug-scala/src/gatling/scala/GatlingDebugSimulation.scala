@@ -36,11 +36,11 @@ class GatlingDebugSimulation extends Simulation {
 
   private val jvmArgs = ManagementFactory.getRuntimeMXBean.getInputArguments
 
-  println(s"@@@@.jvm ${write(jvmArgs.asScala.filterNot(_.startsWith("-D")))}}")
+  println(s"@@@@.jvm ${write(jvmArgs.asScala.filterNot(_.startsWith("-D")))}")
 
-  println(s"@@@@.env ${write(System.getenv.asScala)}}")
+  println(s"@@@@.env ${write(System.getenv.asScala)}")
 
-  println(s"@@@@.sys ${write(System.getProperties.asScala)}}")
+  println(s"@@@@.sys ${write(System.getProperties.asScala)}")
 
   setUp(scenario("Scenario Name").pause(1).inject(atOnceUsers(1)))
 }
