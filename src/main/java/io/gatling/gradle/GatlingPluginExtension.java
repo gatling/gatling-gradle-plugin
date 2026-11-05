@@ -37,8 +37,6 @@ import java.util.UUID;
 import org.gradle.api.Action;
 import org.gradle.api.InvalidUserDataException;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.Optional;
 
 public class GatlingPluginExtension {
 
@@ -62,6 +60,17 @@ public class GatlingPluginExtension {
 
   private static boolean isNullOrEmpty(String s) {
     return s == null || s.isEmpty();
+  }
+
+  private static UUID toUuid(String name, String s) {
+    if (isNullOrEmpty(s)) {
+      return null;
+    }
+    try {
+      return UUID.fromString(s);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidUserDataException("Invalid " + name + " UUID: " + s, e);
+    }
   }
 
   private static URL toUrl(String s) {
@@ -111,10 +120,18 @@ public class GatlingPluginExtension {
       setWebAppUrl(webAppUrl);
     }
 
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public void setSimulationId(String simulationId) {
       this.simulationId = simulationId;
     }
 
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public void simulationId(String simulationId) {
       setSimulationId(simulationId);
     }
@@ -143,10 +160,18 @@ public class GatlingPluginExtension {
       setRunDescription(runDescription);
     }
 
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public void setPackageId(String packageId) {
       this.packageId = packageId;
     }
 
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public void packageId(String packageId) {
       setPackageId(packageId);
     }
@@ -191,22 +216,18 @@ public class GatlingPluginExtension {
       setValidateSimulationId(validateSimulationId);
     }
 
-    // simulationId and packageId were only used by the removed upload command:
-    // they no longer have a system property or environment variable override
-    @Input
-    @Optional
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public UUID getSimulationId() {
-      return isNullOrEmpty(simulationId) ? null : UUID.fromString(simulationId);
+      return toUuid("simulationId", simulationId);
     }
 
-    @Input
-    @Optional
     public String getSimulationName() {
       return ConfigurationConstants.StartOptions.SimulationName.valueOf(simulationName);
     }
 
-    @Input
-    @Optional
     public String getRunTitle() {
       return ConfigurationConstants.StartOptions.RunTitle.valueOf(runTitle);
     }
@@ -215,58 +236,44 @@ public class GatlingPluginExtension {
       return ConfigurationConstants.StartOptions.RunDescription.valueOf(runDescription);
     }
 
-    @Input
-    @Optional
     public String getApiToken() {
       return ConfigurationConstants.ApiToken.valueOf(apiToken);
     }
 
-    @Input
-    @Optional
+    /**
+     * @deprecated only used by the removed upload command, ignored
+     */
+    @Deprecated
     public UUID getPackageId() {
-      return isNullOrEmpty(packageId) ? null : UUID.fromString(packageId);
+      return toUuid("packageId", packageId);
     }
 
-    @Input
-    @Optional
     public URL getApiUrl() {
       return toUrl(ConfigurationConstants.ApiUrl.valueOf(apiUrl));
     }
 
-    @Input
-    @Optional
     public URL getWebAppUrl() {
       return toUrl(ConfigurationConstants.WebAppUrl.valueOf(webAppUrl));
     }
 
-    @Input
-    @Optional
     public boolean getBatchMode() {
       return ConfigurationConstants.BatchMode.valueOf(batchMode);
     }
 
-    @Input
-    @Optional
     public boolean getWaitForRunEnd() {
       return ConfigurationConstants.StartOptions.WaitForRunEnd.valueOf(waitForRunEnd);
     }
 
-    @Input
-    @Optional
     public URL getControlPlaneUrl() {
       String str = ConfigurationConstants.ControlPlaneUrl.valueOf(controlPlaneUrl);
       return isNullOrEmpty(str) ? null : toUrl(str);
     }
 
-    @Input
-    @Optional
     public String getPackageDescriptorFilename() {
       return ConfigurationConstants.DeployOptions.PackageDescriptorFilename.valueOf(
           packageDescriptorFilename);
     }
 
-    @Input
-    @Optional
     public String getValidateSimulationId() {
       return ConfigurationConstants.DeployOptions.ValidateSimulationId.valueOf(
           validateSimulationId);

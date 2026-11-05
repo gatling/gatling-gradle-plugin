@@ -213,21 +213,24 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
     private static Set<SerializableDependency.Id> collectGatlingDependencyTree(
         Set<ResolvedDependency> firstLevelModuleDependencies) {
       Set<SerializableDependency.Id> acc = new LinkedHashSet<>();
-      collectGatlingDependencyTreeRec(firstLevelModuleDependencies, acc, new HashSet<>());
+      collectGatlingDependencyTreeRec(
+          firstLevelModuleDependencies, acc, new HashSet<>(), new HashSet<>());
       return acc;
     }
 
     private static void collectGatlingDependencyTreeRec(
         Set<ResolvedDependency> dependencies,
         Set<SerializableDependency.Id> acc,
-        Set<ModuleVersionIdentifier> alreadyVisited) {
+        Set<ModuleVersionIdentifier> alreadyVisited,
+        Set<ResolvedDependency> alreadyCollected) {
       for (ResolvedDependency dependency : dependencies) {
         if (hasModuleId(dependency) && alreadyVisited.add(dependency.getModule().getId())) {
           ModuleVersionIdentifier id = dependency.getModule().getId();
           if (id.getGroup().equals("io.gatling") || id.getGroup().equals("io.gatling.highcharts")) {
-            collectAllDependencyTree(dependency, acc);
+            collectAllDependencyTree(dependency, acc, alreadyCollected);
           } else {
-            collectGatlingDependencyTreeRec(dependency.getChildren(), acc, alreadyVisited);
+            collectGatlingDependencyTreeRec(
+                dependency.getChildren(), acc, alreadyVisited, alreadyCollected);
           }
         }
       }
@@ -243,11 +246,17 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
       }
     }
 
+    // alreadyCollected: shared subtrees (gatling-core, netty...) are reachable through many
+    // paths, and walking each of them again for every path grows combinatorially
     private static void collectAllDependencyTree(
-        ResolvedDependency dependency, Set<SerializableDependency.Id> acc) {
-      addAllArtifacts(dependency, acc);
-      for (ResolvedDependency child : dependency.getChildren()) {
-        collectAllDependencyTree(child, acc);
+        ResolvedDependency dependency,
+        Set<SerializableDependency.Id> acc,
+        Set<ResolvedDependency> alreadyCollected) {
+      if (alreadyCollected.add(dependency)) {
+        addAllArtifacts(dependency, acc);
+        for (ResolvedDependency child : dependency.getChildren()) {
+          collectAllDependencyTree(child, acc, alreadyCollected);
+        }
       }
     }
   }

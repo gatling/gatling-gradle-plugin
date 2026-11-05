@@ -234,17 +234,16 @@ public class GatlingRunTask extends DefaultTask {
           systemProperties == null || systemProperties.isEmpty()
               ? gatlingExt.getSystemProperties()
               : systemProperties;
+      Map<String, Object> propagatedSystemProperties = new HashMap<>();
+      for (Map.Entry<Object, Object> systemProp : System.getProperties().entrySet()) {
+        if (SystemProperties.isSystemPropertyPropagated(systemProp.getKey().toString())) {
+          propagatedSystemProperties.put(systemProp.getKey().toString(), systemProp.getValue());
+        }
+      }
 
       Map<String, ExecResult> results = new LinkedHashMap<>();
       for (String simulationClass : simulationClasses()) {
         getLogger().info("Running simulation " + simulationClass + ".");
-        Map<String, Object> propagatedSystemProperties = new HashMap<>();
-        for (Map.Entry<Object, Object> systemProp : System.getProperties().entrySet()) {
-          if (SystemProperties.isSystemPropertyPropagated(systemProp.getKey().toString())) {
-            propagatedSystemProperties.put(systemProp.getKey().toString(), systemProp.getValue());
-          }
-        }
-
         results.put(
             simulationClass,
             execOperations.javaexec(

@@ -15,17 +15,17 @@
  */
 package io.gatling.gradle;
 
-import kotlin.NotImplementedError;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.DisableCachingByDefault;
 
-@CacheableTask
+@DisableCachingByDefault(because = "The upload command has been removed and always fails")
 public class GatlingEnterpriseUploadTask extends DefaultTask {
 
   @TaskAction
   public void publish() {
-    throw new NotImplementedError(
+    throw new GradleException(
         "The enterprise upload command is no longer supported. It has been replaced by the enterprise deploy command."
             + " Refer to the documentation for more information: https://docs.gatling.io/reference/integrations/build-tools/gradle-plugin/#deploying-on-gatling-enterprise");
   }
