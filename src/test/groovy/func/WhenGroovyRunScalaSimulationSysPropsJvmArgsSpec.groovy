@@ -22,17 +22,8 @@ import helper.GatlingFuncSpec
 import io.gatling.gradle.GatlingPluginExtension
 import io.gatling.plugin.GatlingConstants
 import org.gradle.testkit.runner.BuildResult
-import org.junit.Rule
-import org.junit.contrib.java.lang.system.EnvironmentVariables
-import org.junit.contrib.java.lang.system.RestoreSystemProperties
 
 class WhenGroovyRunScalaSimulationSysPropsJvmArgsSpec extends GatlingFuncSpec {
-
-  @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties()
-
-  @Rule
-  public final EnvironmentVariables environmentVariables = new EnvironmentVariables()
 
   def setup() {
     prepareGroovyTestWithScala("/gatling-debug")
@@ -138,9 +129,6 @@ gatling {
     }
   }
 
-  def "should extend system properties from extension"() {
-  }
-
   def "should extend system properties from gatlingRun properties"() {
     given: "override via gatlingRun"
     buildFile << """
@@ -196,10 +184,13 @@ gatlingRun {
   }
 
   def "should pass env vars upstream"() {
-    given:
-    environmentVariables.set("GRADLE_GATLING_ENV_UPSTREAM", "env_upstream_value")
-    when:
-    def result = executeGradle(GATLING_RUN_TASK_NAME)
+    when: "Gradle runs with an extra env var"
+    // not in-process: TestKit ignores withEnvironment in debug mode
+    // withEnvironment replaces the whole environment, hence System.getenv() (PATH, JAVA_HOME...)
+    def result = createRunner(GATLING_RUN_TASK_NAME)
+            .withDebug(false)
+            .withEnvironment(System.getenv() + [GRADLE_GATLING_ENV_UPSTREAM: 'env_upstream_value'])
+            .build()
     then:
     with(new GatlingDebug(result)) {
       env["GRADLE_GATLING_ENV_UPSTREAM"] == "env_upstream_value"
@@ -207,10 +198,8 @@ gatlingRun {
   }
 
   def "should pass system properties upstream"() {
-    given:
-    System.setProperty("gradle_gatling_sys_upstream", "sys_upstream_value")
-    when:
-    def result = executeGradle(GATLING_RUN_TASK_NAME)
+    when: "Gradle is passed a system property on the command line"
+    def result = executeGradle("-Dgradle_gatling_sys_upstream=sys_upstream_value", GATLING_RUN_TASK_NAME)
     then:
     with(new GatlingDebug(result)) {
       systemProperties["gradle_gatling_sys_upstream"] == "sys_upstream_value"
