@@ -35,24 +35,32 @@ public class GatlingEnterpriseDeployTask extends DefaultTask {
 
   @TaskAction
   public void deploy() throws Exception {
-    GatlingPluginExtension.Enterprise enterprise = gatlingExt.getEnterprise();
-    BatchEnterprisePlugin enterprisePlugin = enterprise.initBatchEnterprisePlugin(getLogger());
-    File descriptorFile =
-        DeploymentConfiguration.fromBaseDirectory(
-            projectDir, enterprise.getPackageDescriptorFilename());
-    File packageFile = getInputs().getFiles().getSingleFile();
-    boolean isPrivateRepositoryEnabled = enterprise.getControlPlaneUrl() != null;
-    String validateSimulationId = enterprise.getValidateSimulationId();
+    // deploying checks the package's Java version against the server's: handle turns the
+    // resulting UnsupportedJavaVersionException into actionable guidance
+    RecoverEnterprisePluginException.handle(
+        this,
+        () -> {
+          GatlingPluginExtension.Enterprise enterprise = gatlingExt.getEnterprise();
+          BatchEnterprisePlugin enterprisePlugin =
+              enterprise.initBatchEnterprisePlugin(getLogger());
+          File descriptorFile =
+              DeploymentConfiguration.fromBaseDirectory(
+                  projectDir, enterprise.getPackageDescriptorFilename());
+          File packageFile = getInputs().getFiles().getSingleFile();
+          boolean isPrivateRepositoryEnabled = enterprise.getControlPlaneUrl() != null;
+          String validateSimulationId = enterprise.getValidateSimulationId();
 
-    deploymentInfo =
-        validateSimulationId != null
-            ? enterprisePlugin.deployFromDescriptor(
-                descriptorFile,
-                packageFile,
-                artifactId,
-                isPrivateRepositoryEnabled,
-                validateSimulationId)
-            : enterprisePlugin.deployFromDescriptor(
-                descriptorFile, packageFile, artifactId, isPrivateRepositoryEnabled);
+          deploymentInfo =
+              validateSimulationId != null
+                  ? enterprisePlugin.deployFromDescriptor(
+                      descriptorFile,
+                      packageFile,
+                      artifactId,
+                      isPrivateRepositoryEnabled,
+                      validateSimulationId)
+                  : enterprisePlugin.deployFromDescriptor(
+                      descriptorFile, packageFile, artifactId, isPrivateRepositoryEnabled);
+          return null;
+        });
   }
 }
