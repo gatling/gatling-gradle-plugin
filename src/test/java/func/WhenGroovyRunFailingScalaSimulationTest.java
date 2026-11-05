@@ -93,10 +93,8 @@ class WhenGroovyRunFailingScalaSimulationTest extends GatlingFuncTestBase {
     assertThat(result.task(":" + GATLING_RUN_TASK_NAME).getOutcome()).isEqualTo(FAILED);
     // only the failing simulation is reported
     assertThat(result.getOutput().lines())
-        .anyMatch(
-            line ->
-                line.endsWith(
-                    "Some of the simulations failed assertions: example.AFailedSimulation"));
+        .anyMatch(line ->
+            line.endsWith("Some of the simulations failed assertions: example.AFailedSimulation"));
     assertBothSimulationsRanAndFailedOneHitUnknownHost();
   }
 

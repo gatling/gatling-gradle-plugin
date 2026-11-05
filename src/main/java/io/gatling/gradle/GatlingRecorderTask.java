@@ -158,14 +158,13 @@ public class GatlingRecorderTask extends DefaultTask {
   @TaskAction
   public void gatlingRecorder() {
     ExecResult result =
-        execOperations.javaexec(
-            exec -> {
-              exec.getMainClass().set(GatlingPluginExtension.GATLING_RECORDER_CLASS);
-              exec.setClasspath(gatlingRuntimeClasspath);
-              exec.args(createRecorderArgs());
-              exec.setStandardInput(System.in);
-              exec.setIgnoreExitValue(true);
-            });
+        execOperations.javaexec(exec -> {
+          exec.getMainClass().set(GatlingPluginExtension.GATLING_RECORDER_CLASS);
+          exec.setClasspath(gatlingRuntimeClasspath);
+          exec.args(createRecorderArgs());
+          exec.setStandardInput(System.in);
+          exec.setIgnoreExitValue(true);
+        });
 
     try {
       result.rethrowFailure();

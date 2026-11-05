@@ -59,10 +59,9 @@ class WhenGroovyConfigurationCacheTest extends GatlingFuncTestBase {
   static Stream<Arguments> dryRunTasksAndGradleVersions() {
     return Stream.of(
             GATLING_RECORDER_TASK_NAME, ENTERPRISE_DEPLOY_TASK_NAME, ENTERPRISE_START_TASK_NAME)
-        .flatMap(
-            taskName ->
-                supportedGradleVersionsForScalaConfigurationCache()
-                    .map(gradleVersion -> Arguments.of(taskName, gradleVersion)));
+        .flatMap(taskName ->
+            supportedGradleVersionsForScalaConfigurationCache()
+                .map(gradleVersion -> Arguments.of(taskName, gradleVersion)));
   }
 
   // dry-run: tasks are stored in and restored from the configuration cache without being executed

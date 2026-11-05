@@ -246,27 +246,26 @@ public class GatlingRunTask extends DefaultTask {
         getLogger().info("Running simulation " + simulationClass + ".");
         results.put(
             simulationClass,
-            execOperations.javaexec(
-                exec -> {
-                  exec.getMainClass().set(GatlingPluginExtension.GATLING_MAIN_CLASS);
-                  exec.setClasspath(gatlingRuntimeClasspath);
-                  if (effectiveJvmArgs != null) {
-                    exec.jvmArgs(effectiveJvmArgs);
-                  }
-                  exec.systemProperties(propagatedSystemProperties);
-                  if (effectiveSystemProperties != null) {
-                    exec.systemProperties(effectiveSystemProperties);
-                  }
-                  if (gatlingExt.getEnvironment() != null) {
-                    exec.environment(gatlingExt.getEnvironment());
-                  }
-                  if (environment != null) {
-                    exec.environment(environment);
-                  }
-                  exec.args(createGatlingArgs(simulationClass));
-                  exec.setStandardInput(System.in);
-                  exec.setIgnoreExitValue(true);
-                }));
+            execOperations.javaexec(exec -> {
+              exec.getMainClass().set(GatlingPluginExtension.GATLING_MAIN_CLASS);
+              exec.setClasspath(gatlingRuntimeClasspath);
+              if (effectiveJvmArgs != null) {
+                exec.jvmArgs(effectiveJvmArgs);
+              }
+              exec.systemProperties(propagatedSystemProperties);
+              if (effectiveSystemProperties != null) {
+                exec.systemProperties(effectiveSystemProperties);
+              }
+              if (gatlingExt.getEnvironment() != null) {
+                exec.environment(gatlingExt.getEnvironment());
+              }
+              if (environment != null) {
+                exec.environment(environment);
+              }
+              exec.args(createGatlingArgs(simulationClass));
+              exec.setStandardInput(System.in);
+              exec.setIgnoreExitValue(true);
+            }));
       }
 
       String crashed = sortedSimulationsWithExitValue(results, false);
@@ -286,11 +285,10 @@ public class GatlingRunTask extends DefaultTask {
   private static String sortedSimulationsWithExitValue(
       Map<String, ExecResult> results, boolean assertionFailures) {
     return results.entrySet().stream()
-        .filter(
-            entry -> {
-              int exitValue = entry.getValue().getExitValue();
-              return assertionFailures ? exitValue == 2 : exitValue != 0 && exitValue != 2;
-            })
+        .filter(entry -> {
+          int exitValue = entry.getValue().getExitValue();
+          return assertionFailures ? exitValue == 2 : exitValue != 0 && exitValue != 2;
+        })
         .map(Map.Entry::getKey)
         .sorted()
         .collect(Collectors.joining(", "));

@@ -46,13 +46,12 @@ class RecoverEnterprisePluginExceptionTest extends GatlingUnitTestBase {
 
   @Test
   void shouldTurnUnsupportedJavaVersionIntoGuidance() {
-    assertThatThrownBy(
-            () ->
-                RecoverEnterprisePluginException.handle(
-                    task,
-                    () -> {
-                      throw new UnsupportedJavaVersionException(25, 21);
-                    }))
+    assertThatThrownBy(() ->
+            RecoverEnterprisePluginException.handle(
+                task,
+                () -> {
+                  throw new UnsupportedJavaVersionException(25, 21);
+                }))
         .isInstanceOf(TaskExecutionException.class)
         .hasRootCauseInstanceOf(IllegalArgumentException.class)
         .rootCause()
@@ -62,26 +61,24 @@ class RecoverEnterprisePluginExceptionTest extends GatlingUnitTestBase {
 
   @Test
   void shouldTurnUserQuitIntoBuildCancellation() {
-    assertThatThrownBy(
-            () ->
-                RecoverEnterprisePluginException.handle(
-                    task,
-                    () -> {
-                      throw new UserQuitException();
-                    }))
+    assertThatThrownBy(() ->
+            RecoverEnterprisePluginException.handle(
+                task,
+                () -> {
+                  throw new UserQuitException();
+                }))
         .isInstanceOf(BuildCancelledException.class);
   }
 
   @Test
   void shouldRethrowOtherExceptionsUnchanged() {
     IOException failure = new IOException("boom");
-    assertThatThrownBy(
-            () ->
-                RecoverEnterprisePluginException.handle(
-                    task,
-                    () -> {
-                      throw failure;
-                    }))
+    assertThatThrownBy(() ->
+            RecoverEnterprisePluginException.handle(
+                task,
+                () -> {
+                  throw failure;
+                }))
         .isSameAs(failure);
   }
 }

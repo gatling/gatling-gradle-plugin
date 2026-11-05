@@ -104,23 +104,19 @@ public final class GatlingPlugin implements Plugin<Project> {
                   task.dependsOn(project.getTasks().named("gatlingClasses"));
                   task.getArchiveClassifier().set("tests");
                 });
-    project.allprojects(
-        candidate ->
-            candidate
-                .getPluginManager()
-                .withPlugin(
-                    "java-base",
-                    plugin ->
-                        candidate
-                            .getExtensions()
-                            .getByType(JavaPluginExtension.class)
-                            .getSourceSets()
-                            .all(
-                                sourceSet ->
-                                    packageTask.configure(
-                                        task ->
-                                            task.getClassDirectories()
-                                                .from(sourceSet.getOutput())))));
+    project.allprojects(candidate ->
+        candidate
+            .getPluginManager()
+            .withPlugin(
+                "java-base",
+                plugin ->
+                    candidate
+                        .getExtensions()
+                        .getByType(JavaPluginExtension.class)
+                        .getSourceSets()
+                        .all(sourceSet ->
+                            packageTask.configure(
+                                task -> task.getClassDirectories().from(sourceSet.getOutput())))));
     return packageTask;
   }
 
@@ -180,49 +176,46 @@ public final class GatlingPlugin implements Plugin<Project> {
       project
           .getTasks()
           .named("compileGatlingScala", ScalaCompile.class)
-          .configure(
-              task ->
-                  task.getScalaCompileOptions()
-                      .setAdditionalParameters(
-                          // not List.of: Gradle < 9 can't restore it from the configuration cache
-                          new ArrayList<>(
-                              Arrays.asList(
-                                  "-deprecation",
-                                  "-feature",
-                                  "-unchecked",
-                                  "-language:implicitConversions",
-                                  "-language:postfixOps"))));
+          .configure(task ->
+              task.getScalaCompileOptions()
+                  .setAdditionalParameters(
+                      // not List.of: Gradle < 9 can't restore it from the configuration cache
+                      new ArrayList<>(
+                          Arrays.asList(
+                              "-deprecation",
+                              "-feature",
+                              "-unchecked",
+                              "-language:implicitConversions",
+                              "-language:postfixOps"))));
     }
 
-    project.afterEvaluate(
-        evaluatedProject -> {
-          GatlingPluginExtension evaluatedExt =
-              evaluatedProject.getExtensions().getByType(GatlingPluginExtension.class);
-          DependencyHandler evaluatedDependencies = evaluatedProject.getDependencies();
-          String gatlingImplementation = gatlingSourceSet.getImplementationConfigurationName();
+    project.afterEvaluate(evaluatedProject -> {
+      GatlingPluginExtension evaluatedExt =
+          evaluatedProject.getExtensions().getByType(GatlingPluginExtension.class);
+      DependencyHandler evaluatedDependencies = evaluatedProject.getDependencies();
+      String gatlingImplementation = gatlingSourceSet.getImplementationConfigurationName();
 
-          if (hasScala) {
-            evaluatedDependencies.add(
-                gatlingImplementation,
-                "org.scala-lang:scala-library:" + evaluatedExt.getScalaVersion());
-          }
-          evaluatedDependencies.add(
-              "gatling",
-              "io.gatling.highcharts:gatling-charts-highcharts:"
-                  + evaluatedExt.getGatlingVersion());
+      if (hasScala) {
+        evaluatedDependencies.add(
+            gatlingImplementation,
+            "org.scala-lang:scala-library:" + evaluatedExt.getScalaVersion());
+      }
+      evaluatedDependencies.add(
+          "gatling",
+          "io.gatling.highcharts:gatling-charts-highcharts:" + evaluatedExt.getGatlingVersion());
 
-          SourceSetContainer sourceSets =
-              evaluatedProject.getExtensions().getByType(SourceSetContainer.class);
-          if (Boolean.TRUE.equals(evaluatedExt.getIncludeMainOutput())) {
-            evaluatedDependencies.add(
-                gatlingImplementation,
-                sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
-          }
-          if (Boolean.TRUE.equals(evaluatedExt.getIncludeTestOutput())) {
-            evaluatedDependencies.add(
-                gatlingImplementation,
-                sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME).getOutput());
-          }
-        });
+      SourceSetContainer sourceSets =
+          evaluatedProject.getExtensions().getByType(SourceSetContainer.class);
+      if (Boolean.TRUE.equals(evaluatedExt.getIncludeMainOutput())) {
+        evaluatedDependencies.add(
+            gatlingImplementation,
+            sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).getOutput());
+      }
+      if (Boolean.TRUE.equals(evaluatedExt.getIncludeTestOutput())) {
+        evaluatedDependencies.add(
+            gatlingImplementation,
+            sourceSets.getByName(SourceSet.TEST_SOURCE_SET_NAME).getOutput());
+      }
+    });
   }
 }

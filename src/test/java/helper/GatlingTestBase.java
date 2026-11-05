@@ -127,9 +127,9 @@ public abstract class GatlingTestBase {
         return "id(\"scala\")";
       case KOTLIN:
         return """
-            kotlin("jvm") version "%1$s"
-              kotlin("plugin.allopen") version "%1$s"
-            """
+        kotlin("jvm") version "%1$s"
+          kotlin("plugin.allopen") version "%1$s"
+        """
             .formatted(KOTLIN_PLUGIN_VERSION);
       default:
         throw new IllegalArgumentException(
