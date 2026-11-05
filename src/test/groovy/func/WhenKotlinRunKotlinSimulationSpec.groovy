@@ -35,4 +35,21 @@ class WhenKotlinRunKotlinSimulationSpec extends GatlingFuncSpec {
     and: "logs doesn't contain INFO"
     !result.output.split().any { it.contains("INFO") }
   }
+
+  def "should support configuring boolean task properties with both get and is accessors"() {
+    setup:
+    prepareKotlinTestWitKotlin("/gradle-layout")
+    buildFile << """
+tasks.named<io.gatling.gradle.GatlingRunTask>("$GATLING_RUN_TASK_NAME") {
+  isNonInteractive = true
+  runAllSimulations = true
+}
+"""
+    when:
+    BuildResult result = executeGradle(GATLING_RUN_TASK_NAME)
+    then: "the task was run successfully"
+    result.task(":$GATLING_RUN_TASK_NAME").outcome == SUCCESS
+    and: "all simulations were executed"
+    new File(buildDir, "reports/gatling").listFiles().size() == 2
+  }
 }

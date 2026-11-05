@@ -36,6 +36,7 @@ import org.gradle.api.specs.Specs;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
@@ -121,6 +122,12 @@ public class GatlingRunTask extends DefaultTask {
     return nonInteractive;
   }
 
+  // Groovy used to generate both getters: keep isNonInteractive for Kotlin DSL compatibility
+  @Internal
+  public boolean isNonInteractive() {
+    return nonInteractive;
+  }
+
   @Option(option = "non-interactive", description = "Force this plugin in non interactive mode")
   public void setNonInteractive(boolean nonInteractive) {
     this.nonInteractive = nonInteractive;
@@ -139,6 +146,12 @@ public class GatlingRunTask extends DefaultTask {
 
   @Input
   public boolean getRunAllSimulations() {
+    return runAllSimulations;
+  }
+
+  // Groovy used to generate both getters: keep isRunAllSimulations for Kotlin DSL compatibility
+  @Internal
+  public boolean isRunAllSimulations() {
     return runAllSimulations;
   }
 
@@ -169,6 +182,12 @@ public class GatlingRunTask extends DefaultTask {
    */
   @Input
   public boolean getRunInSameProcess() {
+    return runInSameProcess;
+  }
+
+  // Groovy used to generate both getters: keep isRunInSameProcess for Kotlin DSL compatibility
+  @Internal
+  public boolean isRunInSameProcess() {
     return runInSameProcess;
   }
 
