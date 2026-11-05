@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.gatling.gradle
+package io.gatling.gradle;
 
-final class UnsupportedClientPluginException extends Exception {
-  UnsupportedClientPluginException(Exception cause) {
+public final class UnsupportedClientPluginException extends Exception {
+  public UnsupportedClientPluginException(Exception cause) {
     super(
-    "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://docs.gatling.io/reference/integrations/build-tools/gradle-plugin/ for more information about this plugin.",
-    cause
-    )
+        "Please update the Gatling Gradle plugin to the latest version for compatibility with Gatling Enterprise. See https://docs.gatling.io/reference/integrations/build-tools/gradle-plugin/ for more information about this plugin.",
+        cause);
   }
 }

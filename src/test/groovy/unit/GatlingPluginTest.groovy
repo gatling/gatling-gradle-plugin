@@ -102,6 +102,25 @@ class GatlingPluginTest extends GatlingUnitSpec {
     }
   }
 
+  def "should configure enterprise settings with the DSL"() {
+    when:
+    project.gatling {
+      enterprise {
+        simulationName 'my-simulation'
+        runTitle = 'my-title'
+        waitForRunEnd true
+      }
+    }
+    project.gatling.enterprise.packageDescriptorFilename 'my-descriptor.conf'
+    then:
+    with(gatlingExt.enterprise) {
+      it.simulationName == 'my-simulation'
+      it.runTitle == 'my-title'
+      it.waitForRunEnd
+      it.packageDescriptorFilename == 'my-descriptor.conf'
+    }
+  }
+
   def "#taskName task should have a single action"() {
     expect: "start doesn't run the deploy action a second time"
     project.tasks.getByName(taskName).actions.size() == 1

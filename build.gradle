@@ -9,11 +9,16 @@ group = "gradle.plugin.io.gatling.gradle"
 
 java {
   toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
+    // the Gradle 9 API jar contains Java 17 class files, which javac 11 can't read
+    languageVersion.set(JavaLanguageVersion.of(17))
   }
 }
 
 tasks {
+  compileJava {
+    // still produce Java 11 bytecode for users running Gradle 8 on Java 11
+    options.release.set(11)
+  }
   test {
     // highest Java version supported by the current Gradle range we support (see GatlingFuncSpec)
     javaLauncher.set(javaToolchains.launcherFor {
@@ -75,6 +80,10 @@ gradlePlugin {
 }
 
 spotless {
+  java {
+    googleJavaFormat()
+    licenseHeaderFile("src/etc/header.txt")
+  }
   groovy {
     importOrder()
     removeSemicolons()
