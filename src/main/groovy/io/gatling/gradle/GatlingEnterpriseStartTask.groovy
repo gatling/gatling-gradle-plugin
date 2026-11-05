@@ -27,8 +27,10 @@ import org.gradle.work.DisableCachingByDefault
 @DisableCachingByDefault(because = "Deploying a package on Gatling Enterprise is not a cacheable task")
 class GatlingEnterpriseStartTask extends GatlingEnterpriseDeployTask {
 
+  // overrides the parent action instead of declaring a new one, otherwise Gradle would run both and deploy twice
+  @Override
   @TaskAction
-  void publish() {
+  void deploy() {
     super.deploy()
 
     final boolean waitForRunEnd = gatlingExt.enterprise.waitForRunEnd

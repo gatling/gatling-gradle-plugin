@@ -15,6 +15,8 @@
  */
 package unit
 
+import static io.gatling.gradle.GatlingPlugin.ENTERPRISE_DEPLOY_TASK_NAME
+import static io.gatling.gradle.GatlingPlugin.ENTERPRISE_START_TASK_NAME
 import static io.gatling.gradle.GatlingPlugin.GATLING_RUN_TASK_NAME
 
 import helper.GatlingUnitSpec
@@ -98,5 +100,13 @@ class GatlingPluginTest extends GatlingUnitSpec {
     with(project.tasks.processGatlingResources) {
       it instanceof ProcessResources
     }
+  }
+
+  def "#taskName task should have a single action"() {
+    expect: "start doesn't run the deploy action a second time"
+    project.tasks.getByName(taskName).actions.size() == 1
+
+    where:
+    taskName << [ENTERPRISE_DEPLOY_TASK_NAME, ENTERPRISE_START_TASK_NAME]
   }
 }
