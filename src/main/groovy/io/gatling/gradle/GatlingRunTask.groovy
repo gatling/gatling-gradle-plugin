@@ -91,8 +91,9 @@ class GatlingRunTask extends DefaultTask {
 
   protected final ExecOperations execOperations
   protected final GatlingPluginExtension gatlingExt = project.extensions.getByType(GatlingPluginExtension)
-  protected final def includes = project.gatling.includes
-  protected final def excludes = project.gatling.excludes
+  // copied into mutable lists as Gradle < 9 can't restore JDK immutable collections (e.g. List.of()) from the configuration cache
+  protected final List<String> includes = new ArrayList<>(gatlingExt.includes)
+  protected final List<String> excludes = new ArrayList<>(gatlingExt.excludes)
 
   @Inject
   GatlingRunTask(ExecOperations execOperations) {

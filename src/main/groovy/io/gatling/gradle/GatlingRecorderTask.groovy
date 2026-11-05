@@ -19,7 +19,7 @@ import io.gatling.shared.cli.RecorderCliOptions
 import javax.inject.Inject
 import org.gradle.api.Action
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.gradle.process.JavaExecSpec
@@ -41,21 +41,26 @@ class GatlingRecorderTask extends DefaultTask {
   File gatlingReportDir = project.layout.buildDirectory.dir("reports/gatling").get().getAsFile()
 
   protected final ExecOperations execOperations
-  protected final Configuration gatlingRuntimeClasspathConfiguration = project.configurations.gatlingRuntimeClasspath
-  protected final SourceSet gatlingSourceSet = project.sourceSets.gatling
+  protected final FileCollection gatlingRuntimeClasspath = project.configurations.gatlingRuntimeClasspath
   protected final String groupId = project.group.toString()
+  // resolved eagerly as SourceSet can't be stored in the configuration cache
+  protected final File javaSrcDir
+  protected final File scalaSrcDir
+  protected final File kotlinSrcDir
+  protected final File resourcesDir
 
   @Inject
   GatlingRecorderTask(ExecOperations execOperations) {
     this.execOperations = execOperations
     outputs.upToDateWhen { false }
+    SourceSet gatlingSourceSet = project.sourceSets.gatling
+    javaSrcDir = gatlingSourceSet.hasProperty("java") ? gatlingSourceSet.java.srcDirs?.find() : null
+    scalaSrcDir = gatlingSourceSet.hasProperty("scala") ? gatlingSourceSet.scala.srcDirs?.find() : null
+    kotlinSrcDir = gatlingSourceSet.hasProperty("kotlin") ? gatlingSourceSet.kotlin.srcDirs?.find() : null
+    resourcesDir = gatlingSourceSet.resources.srcDirs?.find()
   }
 
   List<String> createRecorderArgs() {
-    File javaSrcDir = gatlingSourceSet.hasProperty("java") ? gatlingSourceSet.java.srcDirs?.find() : null
-    File scalaSrcDir = gatlingSourceSet.hasProperty("scala") ? gatlingSourceSet.scala.srcDirs?.find() : null
-    File kotlinSrcDir = gatlingSourceSet.hasProperty("kotlin") ? gatlingSourceSet.kotlin.srcDirs?.find() : null
-    File resourcesDir = gatlingSourceSet.resources.srcDirs?.find()
 
     List<String> args
     if (scalaSrcDir != null && scalaSrcDir.exists()) {
@@ -102,7 +107,7 @@ class GatlingRecorderTask extends DefaultTask {
   void gatlingRecorder() {
     def result = execOperations.javaexec({ JavaExecSpec exec ->
       exec.mainClass.set(GatlingPluginExtension.GATLING_RECORDER_CLASS)
-      exec.classpath = gatlingRuntimeClasspathConfiguration
+      exec.classpath = gatlingRuntimeClasspath
       exec.args createRecorderArgs()
 
       exec.standardInput = System.in

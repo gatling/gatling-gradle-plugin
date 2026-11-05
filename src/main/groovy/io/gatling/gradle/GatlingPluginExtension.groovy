@@ -333,8 +333,8 @@ class GatlingPluginExtension {
   Map systemProperties
   Map environment = [:]
 
-  List<String> includes = List.of()
-  List<String> excludes = List.of()
+  List<String> includes = []
+  List<String> excludes = []
 
   Boolean includeMainOutput = true
   Boolean includeTestOutput = true
