@@ -35,6 +35,7 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
@@ -48,11 +49,17 @@ import org.gradle.jvm.tasks.Jar;
 // https://docs.gradle.org/current/userguide/upgrading_major_version_9.html#injection_getters_are_now_abstract
 public abstract class GatlingEnterprisePackageTask extends Jar {
 
-  private String groupId = getProject().getGroup().toString();
+  private String groupId;
 
   private String artifactId = getProject().getName();
 
-  private String artifactVersion = getProject().getVersion().toString();
+  private String artifactVersion;
+
+  // defaults are resolved lazily as group and version are commonly set late, e.g. by release
+  // plugins
+  private final Provider<String> defaultGroupId = GradleProviders.group(getProject());
+
+  private final Provider<String> defaultArtifactVersion = GradleProviders.version(getProject());
 
   private File projectDir = getProject().getProjectDir();
 
@@ -70,7 +77,7 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
 
   @Input
   public String getGroupId() {
-    return groupId;
+    return groupId != null ? groupId : defaultGroupId.get();
   }
 
   public void setGroupId(String groupId) {
@@ -88,7 +95,7 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
 
   @Input
   public String getArtifactVersion() {
-    return artifactVersion;
+    return artifactVersion != null ? artifactVersion : defaultArtifactVersion.get();
   }
 
   public void setArtifactVersion(String artifactVersion) {
@@ -123,9 +130,9 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
           new ArrayList<>(),
           toDependencies(deps.getGatling()),
           toDependencies(deps.getExtra()),
-          groupId,
+          getGroupId(),
           artifactId,
-          artifactVersion,
+          getArtifactVersion(),
           "gradle",
           getClass().getPackage().getImplementationVersion(),
           getArchiveFile().get().getAsFile(),

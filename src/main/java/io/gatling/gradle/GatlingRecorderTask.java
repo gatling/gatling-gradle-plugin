@@ -23,8 +23,10 @@ import java.util.Iterator;
 import java.util.List;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.specs.Specs;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
@@ -35,7 +37,6 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.process.ExecOperations;
 import org.gradle.process.ExecResult;
-import org.gradle.process.internal.ExecException;
 import org.gradle.work.DisableCachingByDefault;
 
 @DisableCachingByDefault(because = "Launching the recorder is not a cacheable task")
@@ -45,18 +46,22 @@ public class GatlingRecorderTask extends DefaultTask {
 
   private String simulationPackage;
 
-  private File gatlingReportDir =
-      getProject().getLayout().getBuildDirectory().dir("reports/gatling").get().getAsFile();
+  private File gatlingReportDir;
+
+  // defaults are resolved lazily so that late project changes (e.g. buildDirectory, group, source
+  // dirs) are honored
+  private final Provider<File> defaultGatlingReportDir =
+      getProject().getLayout().getBuildDirectory().dir("reports/gatling").map(Directory::getAsFile);
 
   protected final ExecOperations execOperations;
   protected final FileCollection gatlingRuntimeClasspath =
       getProject().getConfigurations().getByName("gatlingRuntimeClasspath");
-  protected final String groupId = getProject().getGroup().toString();
-  // resolved eagerly as SourceSet can't be stored in the configuration cache
-  protected final File javaSrcDir;
-  protected final File scalaSrcDir;
-  protected final File kotlinSrcDir;
-  protected final File resourcesDir;
+  private final Provider<String> groupId = GradleProviders.group(getProject());
+  // providers rather than the SourceSet itself, which can't be stored in the configuration cache
+  private final Provider<File> javaSrcDir;
+  private final Provider<File> scalaSrcDir;
+  private final Provider<File> kotlinSrcDir;
+  private final Provider<File> resourcesDir;
 
   @Inject
   public GatlingRecorderTask(ExecOperations execOperations) {
@@ -64,10 +69,14 @@ public class GatlingRecorderTask extends DefaultTask {
     getOutputs().upToDateWhen(Specs.satisfyNone());
     SourceSet gatlingSourceSet =
         getProject().getExtensions().getByType(SourceSetContainer.class).getByName("gatling");
-    javaSrcDir = firstSrcDir(gatlingSourceSet.getJava());
-    scalaSrcDir = firstSrcDir(gatlingSourceSet.getExtensions().findByName("scala"));
-    kotlinSrcDir = firstSrcDir(gatlingSourceSet.getExtensions().findByName("kotlin"));
-    resourcesDir = firstSrcDir(gatlingSourceSet.getResources());
+    javaSrcDir = srcDirProvider(gatlingSourceSet.getJava());
+    scalaSrcDir = srcDirProvider(gatlingSourceSet.getExtensions().findByName("scala"));
+    kotlinSrcDir = srcDirProvider(gatlingSourceSet.getExtensions().findByName("kotlin"));
+    resourcesDir = srcDirProvider(gatlingSourceSet.getResources());
+  }
+
+  private Provider<File> srcDirProvider(Object sourceDirectorySet) {
+    return getProject().provider(() -> firstSrcDir(sourceDirectorySet));
   }
 
   private static File firstSrcDir(Object sourceDirectorySet) {
@@ -100,7 +109,7 @@ public class GatlingRecorderTask extends DefaultTask {
 
   @OutputDirectory
   public File getGatlingReportDir() {
-    return gatlingReportDir;
+    return gatlingReportDir != null ? gatlingReportDir : defaultGatlingReportDir.get();
   }
 
   public void setGatlingReportDir(File gatlingReportDir) {
@@ -108,6 +117,11 @@ public class GatlingRecorderTask extends DefaultTask {
   }
 
   public List<String> createRecorderArgs() {
+    File scalaSrcDir = this.scalaSrcDir.getOrNull();
+    File kotlinSrcDir = this.kotlinSrcDir.getOrNull();
+    File javaSrcDir = this.javaSrcDir.getOrNull();
+    File resourcesDir = this.resourcesDir.get();
+    String groupId = this.groupId.get();
     List<String> args;
     if (scalaSrcDir != null && scalaSrcDir.exists()) {
       args =
@@ -166,10 +180,11 @@ public class GatlingRecorderTask extends DefaultTask {
           exec.setIgnoreExitValue(true);
         });
 
-    try {
-      result.rethrowFailure();
-    } catch (ExecException e) {
-      throw new TaskExecutionException(this, new RuntimeException("Failed to launch recorder", e));
+    if (result.getExitValue() != 0) {
+      throw new TaskExecutionException(
+          this,
+          new RuntimeException(
+              "Failed to launch recorder: process exited with code " + result.getExitValue()));
     }
   }
 }

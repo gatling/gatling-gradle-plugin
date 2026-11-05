@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.specs.Specs;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
@@ -70,16 +72,22 @@ public class GatlingRunTask extends DefaultTask {
   private FileCollection gatlingRuntimeClasspath =
       getProject().getConfigurations().getByName("gatlingRuntimeClasspath");
 
-  private File gatlingReportDir =
-      getProject().getLayout().getBuildDirectory().dir("reports/gatling").get().getAsFile();
+  private File gatlingReportDir;
+
+  // defaults are resolved lazily so that late project changes (e.g. buildDirectory, extension
+  // values set after the task is realized) are honored
+  private final Provider<File> defaultGatlingReportDir =
+      getProject().getLayout().getBuildDirectory().dir("reports/gatling").map(Directory::getAsFile);
 
   protected final ExecOperations execOperations;
   protected final GatlingPluginExtension gatlingExt =
       getProject().getExtensions().getByType(GatlingPluginExtension.class);
   // copied into mutable lists as Gradle < 9 can't restore JDK immutable collections (e.g.
   // List.of()) from the configuration cache
-  protected final List<String> includes = new ArrayList<>(gatlingExt.getIncludes());
-  protected final List<String> excludes = new ArrayList<>(gatlingExt.getExcludes());
+  private final Provider<List<String>> includes =
+      getProject().provider(() -> new ArrayList<>(gatlingExt.getIncludes()));
+  private final Provider<List<String>> excludes =
+      getProject().provider(() -> new ArrayList<>(gatlingExt.getExcludes()));
 
   @Inject
   public GatlingRunTask(ExecOperations execOperations) {
@@ -208,7 +216,7 @@ public class GatlingRunTask extends DefaultTask {
 
   @OutputDirectory
   public File getGatlingReportDir() {
-    return gatlingReportDir;
+    return gatlingReportDir != null ? gatlingReportDir : defaultGatlingReportDir.get();
   }
 
   public void setGatlingReportDir(File gatlingReportDir) {
@@ -304,8 +312,8 @@ public class GatlingRunTask extends DefaultTask {
         SimulationSelector.simulations(
             simulationClassName,
             gatlingClasspath,
-            includes,
-            excludes,
+            includes.get(),
+            excludes.get(),
             runAllSimulations,
             !nonInteractive);
 
@@ -340,7 +348,7 @@ public class GatlingRunTask extends DefaultTask {
                 GatlingCliOptions.Simulation.shortOption(),
                 simulationClass,
                 GatlingCliOptions.ResultsFolder.shortOption(),
-                gatlingReportDir.getAbsolutePath(),
+                getGatlingReportDir().getAbsolutePath(),
                 GatlingCliOptions.Launcher.shortOption(),
                 "gradle",
                 GatlingCliOptions.BuildToolVersion.shortOption(),
