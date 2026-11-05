@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -49,14 +47,6 @@ import org.gradle.jvm.tasks.Jar;
 // abstract because
 // https://docs.gradle.org/current/userguide/upgrading_major_version_9.html#injection_getters_are_now_abstract
 public abstract class GatlingEnterprisePackageTask extends Jar {
-
-  private static final Set<String> EXCLUDED_NETTY_ARTIFACTS =
-      Collections.unmodifiableSet(
-          new HashSet<>(
-              Arrays.asList(
-                  "netty-all",
-                  "netty-resolver-dns-classes-macos",
-                  "netty-resolver-dns-native-macos")));
 
   private String groupId = getProject().getGroup().toString();
 
@@ -236,12 +226,6 @@ public abstract class GatlingEnterprisePackageTask extends Jar {
           ModuleVersionIdentifier id = dependency.getModule().getId();
           if (id.getGroup().equals("io.gatling") || id.getGroup().equals("io.gatling.highcharts")) {
             collectAllDependencyTree(dependency, acc);
-          } else if (id.getGroup().equals("io.netty")
-              // FIXME never matches: getModule() is a ModuleIdentifier, not the artifact name
-              // (behavior inherited from the Groovy implementation)
-              && EXCLUDED_NETTY_ARTIFACTS.contains(id.getModule())) {
-            // so we don't ship them
-            addAllArtifacts(dependency, acc);
           } else {
             collectGatlingDependencyTreeRec(dependency.getChildren(), acc, alreadyVisited);
           }
