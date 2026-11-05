@@ -63,11 +63,13 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
       afterEvaluate {
         sourceSets.additional.java.destinationDirectory.set(
             layout.buildDirectory.dir('late-classes'))
+        sourceSets.create('late')
       }
     """
     writeChildFile("src/main/java/child/Main.java", "package child; public class Main {}")
     writeChildFile("src/test/java/child/Test.java", "package child; public class Test {}")
     writeChildFile("src/additional/java/child/Additional.java", "package child; public class Additional {}")
+    writeChildFile("src/late/java/child/Late.java", "package child; public class Late {}")
     writeChildFile("src/additional/resources/child-resource.txt", "child resource")
     writeChildFile("generated-input/generated-resource.txt", "generated resource")
   }
@@ -88,8 +90,7 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
   @Unroll
   def "late child outputs retain producers and cache tracking #gradleVersion"() {
     given:
-    def cacheArgs = gradleVersion == '8.4' ? [] : ['--configuration-cache']
-    def args = [ENTERPRISE_PACKAGE_TASK_NAME, '--build-cache'] + cacheArgs
+    def args = [ENTERPRISE_PACKAGE_TASK_NAME, '--build-cache', '--configuration-cache']
 
     when: "packaging without explicitly building child tasks"
     def result = createRunner(*args).withGradleVersion(gradleVersion).build()
@@ -99,17 +100,18 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
     result.task(':child:compileJava').outcome == SUCCESS
     result.task(':child:compileTestJava').outcome == SUCCESS
     result.task(':child:compileAdditionalJava').outcome == SUCCESS
+    result.task(':child:compileLateJava').outcome == SUCCESS
     result.task(':child:processAdditionalResources').outcome == SUCCESS
     result.task(':child:generateResources').outcome == SUCCESS
     packageContains('child/Main.class', 'child/Test.class', 'child/Additional.class',
-            'child-resource.txt', 'generated-resource.txt', 'example/BasicSimulation.class')
+            'child/Late.class', 'child-resource.txt', 'generated-resource.txt', 'example/BasicSimulation.class')
 
     when: "packaging again"
     def repeated = createRunner(*args).withGradleVersion(gradleVersion).build()
 
     then:
     repeated.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == UP_TO_DATE
-    cacheArgs.empty || repeated.output.contains('Reusing configuration cache')
+    repeated.output.contains('Reusing configuration cache')
 
     when: "removing all outputs and restoring from the build cache"
     def restored = createRunner(*(['clean', ':child:clean'] + args)).withGradleVersion(gradleVersion).build()
@@ -125,7 +127,7 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
 
     then:
     changedClass.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
-    cacheArgs.empty || changedClass.output.contains('Reusing configuration cache')
+    changedClass.output.contains('Reusing configuration cache')
 
     when: "changing a generated child resource independently"
     writeChildFile("generated-input/generated-resource.txt", "changed resource")
@@ -133,18 +135,22 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
 
     then:
     changedResource.task(":$ENTERPRISE_PACKAGE_TASK_NAME").outcome == SUCCESS
-    cacheArgs.empty || changedResource.output.contains('Reusing configuration cache')
+    changedResource.output.contains('Reusing configuration cache')
     packageResource('generated-resource.txt') == "changed resource\n"
 
     where:
     gradleVersion << SUPPORTED_GRADLE_VERSIONS
   }
 
-  def "late Kotlin child outputs retain their compiler dependency"() {
-    given:
+  @Unroll
+  def "late Kotlin child outputs retain their compiler dependency #gradleVersion"() {
+    given: "the Kotlin plugin is declared on the root project, so its build services can be restored from the configuration cache"
+    buildFile.text = buildFile.text.replace(
+            "id 'io.gatling.gradle'",
+            "id 'io.gatling.gradle'\n  id 'org.jetbrains.kotlin.jvm' version '$KOTLIN_PLUGIN_VERSION' apply false")
     new File(projectDir.root, "child/build.gradle").text = """
       plugins {
-        id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+        id 'org.jetbrains.kotlin.jvm'
       }
       repositories {
         mavenCentral()
@@ -155,13 +161,19 @@ class WhenMixedProjectPackageSpec extends GatlingFuncSpec {
     """
     writeChildFile("src/additional/kotlin/child/KotlinOutput.kt", "package child; class KotlinOutput")
 
-    when:
-    def result = createRunner(ENTERPRISE_PACKAGE_TASK_NAME, '--configuration-cache')
-            .withGradleVersion('8.14.5').build()
+    when: "packaging twice"
+    createRunner('clean', ENTERPRISE_PACKAGE_TASK_NAME, '--configuration-cache')
+            .withGradleVersion(gradleVersion).build()
+    def result = createRunner('clean', ENTERPRISE_PACKAGE_TASK_NAME, '--configuration-cache')
+            .withGradleVersion(gradleVersion).build()
 
     then:
+    result.output.contains('Reusing configuration cache')
     result.task(':child:compileAdditionalKotlin').outcome == SUCCESS
     packageContains('child/KotlinOutput.class', 'child/Additional.class')
+
+    where:
+    gradleVersion << SUPPORTED_GRADLE_VERSIONS
   }
 
   private void writeChildFile(String path, String content) {

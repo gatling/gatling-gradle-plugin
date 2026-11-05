@@ -43,7 +43,7 @@ abstract class GatlingEnterprisePackageTask extends Jar {
   String artifactVersion = project.version.toString()
 
   @Classpath
-  final ConfigurableFileCollection classDirectories = project.objects.fileCollection()
+  abstract ConfigurableFileCollection getClassDirectories()
 
   @Internal("only used to determine Git metadata (branch name and sha) which should not require task re-execution")
   File projectDir = project.getProjectDir()

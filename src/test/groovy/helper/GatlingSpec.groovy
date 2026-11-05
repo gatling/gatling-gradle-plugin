@@ -22,6 +22,8 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 abstract class GatlingSpec extends Specification {
+  protected static final String KOTLIN_PLUGIN_VERSION = "2.4.21"
+
   @Rule
   public final TemporaryFolder projectDir = new TemporaryFolder()
 
@@ -87,8 +89,8 @@ dependencies {
             break
           case SimulationLanguage.KOTLIN:
             languagePlugin = """
-    kotlin("jvm") version "2.4.21"
-    kotlin("plugin.allopen") version "2.4.21"
+    kotlin("jvm") version "$KOTLIN_PLUGIN_VERSION"
+    kotlin("plugin.allopen") version "$KOTLIN_PLUGIN_VERSION"
 """
         }
 
