@@ -30,6 +30,13 @@ import org.junit.jupiter.api.io.TempDir;
 public abstract class GatlingTestBase {
   protected static final String KOTLIN_PLUGIN_VERSION = "2.4.21";
 
+  /**
+   * Gatling's private staging repository on AWS CodeArtifact, holding versions not yet on Maven
+   * Central. Only set up in CI, where the ORG_GRADLE_PROJECT_gatlingStaging* environment variables
+   * configure the plugin's own build.
+   */
+  private static final String STAGING_URL = System.getenv("ORG_GRADLE_PROJECT_gatlingStagingUrl");
+
   @TempDir protected File projectDir;
 
   protected File srcDir;
@@ -68,7 +75,7 @@ public abstract class GatlingTestBase {
             }
 
             repositories {
-              mavenCentral()
+              mavenCentral()%s
             }
 
             dependencies {
@@ -76,7 +83,7 @@ public abstract class GatlingTestBase {
               gatling 'org.json4s:json4s-jackson_2.13:3.6.10'
             }
             """
-                .formatted(groovyLanguagePlugin(simulationLanguage)));
+                .formatted(groovyLanguagePlugin(simulationLanguage), groovyStagingRepository()));
         break;
 
       case KOTLIN:
@@ -90,7 +97,7 @@ public abstract class GatlingTestBase {
             }
 
             repositories {
-              mavenCentral()
+              mavenCentral()%s
             }
 
             dependencies {
@@ -98,12 +105,59 @@ public abstract class GatlingTestBase {
               gatling("org.json4s:json4s-jackson_2.13:3.6.10")
             }
             """
-                .formatted(kotlinLanguagePlugin(simulationLanguage)));
+                .formatted(kotlinLanguagePlugin(simulationLanguage), kotlinStagingRepository()));
         break;
 
       default:
         throw new IllegalArgumentException(
             "Unsupported scripting language: " + gradleScriptingLanguage);
+    }
+    writeStagingRepositoryCredentials();
+  }
+
+  private static String groovyStagingRepository() {
+    return STAGING_URL == null
+        ? ""
+        : """
+
+        maven {
+          name = 'gatlingStaging'
+          url = '%s'
+          credentials(PasswordCredentials)
+        }\
+        """
+            .formatted(STAGING_URL);
+  }
+
+  private static String kotlinStagingRepository() {
+    return STAGING_URL == null
+        ? ""
+        : """
+
+        maven {
+          name = "gatlingStaging"
+          url = uri("%s")
+          credentials(PasswordCredentials::class)
+        }\
+        """
+            .formatted(STAGING_URL);
+  }
+
+  /**
+   * Passed through the project's gradle.properties rather than the environment, which some tests
+   * replace.
+   */
+  private void writeStagingRepositoryCredentials() {
+    if (STAGING_URL != null) {
+      appendToFile(
+          new File(projectDir, "gradle.properties"),
+          """
+          gatlingStagingUsername=%s
+          gatlingStagingPassword=%s
+          """
+              .formatted(
+                  System.getenv("ORG_GRADLE_PROJECT_gatlingStagingUsername"),
+                  System.getenv("ORG_GRADLE_PROJECT_gatlingStagingPassword")));
     }
   }
 
