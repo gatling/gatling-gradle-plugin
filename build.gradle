@@ -38,7 +38,7 @@ repositories {
 }
 
 dependencies {
-  implementation "io.gatling:gatling-enterprise-plugin-commons:1.26.1"
+  implementation "io.gatling:gatling-enterprise-plugin-commons:1.27.0"
   implementation "io.gatling:gatling-shared-cli:0.0.6"
 
   testImplementation "org.junit.jupiter:junit-jupiter:5.12.2"
