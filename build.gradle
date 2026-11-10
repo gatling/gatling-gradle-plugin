@@ -35,6 +35,16 @@ jar {
 repositories {
   mavenCentral()
   gradlePluginPortal()
+  // Gatling's private staging repository on AWS CodeArtifact (set up in CI), holding versions not yet on Maven Central.
+  // Credentials come from the gatlingStagingUsername and gatlingStagingPassword Gradle properties.
+  def gatlingStagingUrl = providers.gradleProperty("gatlingStagingUrl")
+  if (gatlingStagingUrl.present) {
+    maven {
+      name = "gatlingStaging"
+      url = gatlingStagingUrl.get()
+      credentials(PasswordCredentials)
+    }
+  }
 }
 
 dependencies {
