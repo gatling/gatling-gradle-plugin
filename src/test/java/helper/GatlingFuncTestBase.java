@@ -27,7 +27,7 @@ public abstract class GatlingFuncTestBase extends GatlingTestBase {
   protected static final String GATLING_HOST_NAME_SYS_PROP =
       "-Dtest.gatling.hostName=https://api-ecomm.gatling.io";
 
-  protected static final List<String> SUPPORTED_GRADLE_VERSIONS = List.of("8.4", "8.14.5", "9.8.2");
+  protected static final List<String> SUPPORTED_GRADLE_VERSIONS = List.of("8.4", "8.14.5", "9.9.1");
 
   protected static Stream<String> supportedGradleVersions() {
     return SUPPORTED_GRADLE_VERSIONS.stream();
