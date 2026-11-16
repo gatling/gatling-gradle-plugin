@@ -54,7 +54,7 @@ public class GatlingPluginExtension {
 
   public static final String GATLING_RESOURCES_DIR = "src/gatling/resources";
 
-  public static final String GATLING_VERSION = "3.16.0";
+  public static final String GATLING_VERSION = "3.16.1";
 
   public static final String SCALA_VERSION = "2.13.18";
 
